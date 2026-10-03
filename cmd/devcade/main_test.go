@@ -86,8 +86,8 @@ func TestHelpVersionAndListNeedNoTerminal(t *testing.T) {
 	if code != exitOK || errOut != "" {
 		t.Fatalf("list: code=%d stderr=%q", code, errOut)
 	}
-	for _, want := range []string{"snake", "Snake", "Available", "blockdrop", "Block Drop", "Coming soon (M4)",
-		"mazechase", "Maze Chase", "M5", "blastgrid", "Blast Grid", "M6", "--diagnostic"} {
+	for _, want := range []string{"snake", "Snake", "blockdrop", "Block Drop",
+		"mazechase", "Maze Chase", "blastgrid", "Blast Grid", "--diagnostic"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("list output lacks %q:\n%s", want, out)
 		}
@@ -115,9 +115,19 @@ func TestListNeverConstructsGames(t *testing.T) {
 	}
 }
 
+func TestAllBuiltinGamesAreListedAsAvailable(t *testing.T) {
+	stub(t, nil, nil)
+	_, out, _ := runArgs("list")
+	if n := strings.Count(out, "Available"); n != 4 || strings.Contains(out, "Coming soon") {
+		t.Fatalf("want four available games:\n%s", out)
+	}
+}
+
 func TestComingSoonGamesFailBeforeTerminalAccess(t *testing.T) {
 	h := stub(t, nil, nil)
-	for _, id := range []string{"blockdrop", "mazechase", "blastgrid"} {
+	calls := 0
+	catalog = testCatalog(t, &calls) // v1 ships no coming-soon game; keep the path covered
+	for _, id := range []string{"later"} {
 		code, out, errOut := runArgs(id)
 		if code != exitUsage || out != "" || !strings.Contains(errOut, "not available yet") || !strings.Contains(errOut, "devcade list") {
 			t.Errorf("%s: code=%d stdout=%q stderr=%q", id, code, out, errOut)
@@ -258,7 +268,7 @@ func TestBuiltinIDsDoNotShadowCommands(t *testing.T) {
 // TestRedirectedProcessFailsPromptly runs the real binary with piped stdio
 // and no terminal hooks replaced.
 func TestRedirectedProcessFailsPromptly(t *testing.T) {
-	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}} {
+	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}, {"blockdrop"}, {"mazechase"}, {"blastgrid"}} {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		cmd := exec.CommandContext(ctx, os.Args[0], args...) // TestMain calls main(), which exits
 		cmd.Env = append(os.Environ(), "DEVCADE_RUN_MAIN=1")

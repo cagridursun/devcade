@@ -115,8 +115,8 @@ func TestMenuShowsCatalogWithoutConstructingGames(t *testing.T) {
 	a := NewApp(Builtin(), func() engine.Game { t.Fatal("diagnostic built for rendering"); return nil })
 	a.Resize(80, 24)
 	out := render(a, 80, 24)
-	for _, want := range []string{"DEVCADE", " > Snake        Available", "   Block Drop   Coming soon (M4)",
-		"   Maze Chase   Coming soon (M5)", "   Blast Grid   Coming soon (M6)",
+	for _, want := range []string{"DEVCADE", " > Snake        Available", "   Block Drop   Available",
+		"   Maze Chase   Available", "   Blast Grid   Available",
 		"Steer a growing snake", "D  Terminal diagnostic", "Enter: play", "Q / Esc: quit"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("menu lacks %q:\n%s", want, out)

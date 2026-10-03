@@ -71,16 +71,18 @@ jobs:
         run: |
           bin/devcade --version
           bin/devcade --help
-          bin/devcade list | grep -q "snake *Snake *Available"
-          bin/devcade list | grep -q "Coming soon (M4)"
+          for id in snake blockdrop mazechase blastgrid; do
+            bin/devcade list | grep -q "^$id .*Available" || { echo "$id not listed as available"; exit 1; }
+          done
           expect() { # expect <status> <args...>
             want=$1; shift
             set +e; bin/devcade "$@" </dev/null >/dev/null; code=$?; set -e
             [ "$code" -eq "$want" ] || { echo "devcade $* exited $code, want $want"; exit 1; }
           }
           expect 2 not-a-command
-          expect 2 blockdrop
-          expect 1 snake    # playable: needs a terminal
+          for id in snake blockdrop mazechase blastgrid; do
+            expect 1 "$id"  # playable: needs a terminal
+          done
           expect 2 --diagnostic snake
           expect 1          # menu needs a terminal
           expect 1 --diagnostic

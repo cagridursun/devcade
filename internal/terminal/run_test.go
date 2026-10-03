@@ -495,7 +495,15 @@ func TestConsoleCheckRunsOnceBeforeNormalStartup(t *testing.T) {
 func TestArcadeNavigationKeepsOneScreenSession(t *testing.T) {
 	s := newSim(80, 24)
 	var diags []*probe.Probe
-	app := arcade.NewApp(arcade.Builtin(), func() engine.Game {
+	// A catalog with a coming-soon entry; every built-in game is playable.
+	catalog, err := arcade.NewCatalog(
+		arcade.Entry{ID: "snake", Name: "Snake", Description: "Playable.", New: snake.New},
+		arcade.Entry{ID: "later", Name: "Later Game", Description: "Not yet.", Milestone: "M9"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app := arcade.NewApp(catalog, func() engine.Game {
 		p := probe.New()
 		diags = append(diags, p)
 		return p
@@ -505,29 +513,29 @@ func TestArcadeNavigationKeepsOneScreenSession(t *testing.T) {
 	go func() { done <- run(context.Background(), simBackend(s), app, frames) }()
 	s.waitFor(t, " > Snake        Available")
 	s.InjectKey(tcell.KeyDown, 0, 0)
-	s.waitFor(t, " > Block Drop")
+	s.waitFor(t, " > Later Game")
 	s.InjectKey(tcell.KeyEnter, 0, 0)
-	s.waitFor(t, "Block Drop is not playable yet: it is planned for M4.")
+	s.waitFor(t, "Later Game is not playable yet: it is planned for M9.")
 
 	s.InjectKey(tcell.KeyRune, 'd', 0)
 	s.waitFor(t, "Q / Esc: back to menu")
 	s.InjectKey(tcell.KeyRune, ' ', 0) // pause this instance
 	s.waitFor(t, "PAUSED")
 	s.InjectKey(tcell.KeyEscape, 0, 0)
-	s.waitFor(t, " > Block Drop") // selection kept
+	s.waitFor(t, " > Later Game") // selection kept
 
 	s.resize(60, 20)
 	s.waitFor(t, "Need 80x24, have 60x20")
 	s.InjectKey(tcell.KeyDown, 0, 0) // invisible: ignored
 	s.resize(80, 24)
-	s.waitFor(t, " > Block Drop")
+	s.waitFor(t, " > Later Game")
 
 	s.InjectKey(tcell.KeyRune, 'D', tcell.ModShift)
 	if frame := s.waitFor(t, "back to menu"); strings.Contains(frame, "PAUSED") {
 		t.Fatalf("relaunched diagnostic is not fresh:\n%s", frame)
 	}
 	s.InjectKey(tcell.KeyRune, 'q', 0)
-	s.waitFor(t, " > Block Drop")
+	s.waitFor(t, " > Later Game")
 	if s.inits.Load() != 1 || s.finis.Load() != 0 {
 		t.Fatalf("navigation re-initialized the terminal: Init=%d Fini=%d", s.inits.Load(), s.finis.Load())
 	}
