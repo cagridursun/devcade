@@ -1,5 +1,5 @@
-// Command devcade is a terminal arcade for developers. It opens an arcade
-// menu; the games themselves arrive in later milestones.
+// Command devcade is a terminal arcade for developers: an arcade menu over
+// Snake, Block Drop, Maze Chase and Blast Grid, plus a terminal diagnostic.
 package main
 
 import (
