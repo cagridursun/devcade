@@ -31,10 +31,10 @@ Usage:
   devcade --help          show this help
   devcade --version       show the version
 
-Snake is playable (devcade snake). Block Drop, Maze Chase and Blast Grid are
-coming in later releases. The terminal diagnostic moves an '@' around a box to
-check input, timing, resize and terminal restoration. Everything interactive
-needs a terminal of at least 80x24.
+Games (IDs for "devcade <game>"): snake, blockdrop, mazechase, blastgrid.
+The terminal diagnostic moves an '@' around a box to check input, timing,
+resize and terminal restoration. Everything interactive needs a terminal of
+at least 80x24.
 
 Menu:
   Up/Down or W/S          select a game
@@ -42,12 +42,17 @@ Menu:
   D                       open the terminal diagnostic
   Q, Esc, Ctrl+C          quit
 
-Snake:
-  arrows / WASD           turn (up to two turns are queued between steps)
+In every game:
   Space                   pause / resume
-  Enter                   play again after game over
-  Q, Esc                  back to the menu (quit when started with devcade snake)
+  Enter                   play again after game over or a win
+  Q, Esc                  back to the menu (quit when started directly)
   Ctrl+C                  quit DevCade
+
+Snake:       arrows / WASD turn (up to two turns are queued)
+Block Drop:  Left/Right (A/D) move, Up (W) rotate clockwise,
+             Z rotate counterclockwise, Down (S) soft drop, Enter hard drop
+Maze Chase:  arrows / WASD steer (a turn waits for an opening)
+Blast Grid:  arrows / WASD move one cell, Z place a bomb
 
 Terminal diagnostic:
   arrows / WASD           change direction
