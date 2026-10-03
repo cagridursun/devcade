@@ -13,6 +13,7 @@ input and rendering behavior comes from the terminal.
 | Platform | Terminal emulator | Shell | OS / version | Terminal version | Result | Limitations / notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | Windows | Windows Terminal | PowerShell | | | Pending | |
+| Windows | Windows Terminal | Not recorded | Not recorded | Not recorded | **Partial (owner-reported, 2026-10-04)** | Startup, immediate input and arrow/WASD direction control work. Pause, resize, quit and restoration not yet reported |
 | Windows | Windows Terminal | cmd | | | Pending | |
 | Windows | Legacy console (conhost.exe, Windows 10 1809+ with VT support) | PowerShell or cmd | | | Pending | Best-effort target; consoles without VT support are not supported |
 | macOS | Terminal.app | zsh | | | Pending | |
@@ -20,6 +21,11 @@ input and rendering behavior comes from the terminal.
 | macOS | Apple Silicon (`darwin/arm64` binary), either terminal | zsh | | | Pending | |
 | Linux | GNOME Terminal (or equivalent: name it) | bash | | | Pending | |
 | Linux | tmux inside any terminal (record both) | bash | | | Pending | Check `TERM` inside tmux |
+
+Consoles that cannot enable VT output processing (Windows before 10 version
+1809) are rejected at startup with an error that names Windows Terminal or a
+newer Windows. The console mode must be unchanged afterwards. This rejection
+is covered by automated tests only, because no such console was available.
 
 Not supported: Git Bash's default mintty window (not a Windows console; use
 `winpty devcade` or Windows Terminal), and running with stdin or stdout

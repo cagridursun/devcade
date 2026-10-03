@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -88,6 +89,12 @@ func (s *simScreen) waitFor(t *testing.T, text string) {
 	}
 }
 
+func consoleOK() error { return nil }
+
+func simBackend(s tcell.Screen) backend {
+	return backend{check: consoleOK, newScreen: func() (tcell.Screen, error) { return s, nil }}
+}
+
 type harness struct {
 	screen *simScreen
 	game   *probe.Probe
@@ -101,7 +108,7 @@ func start(t *testing.T, ctx context.Context, s *simScreen, game engine.Game) *h
 	t.Helper()
 	h := &harness{screen: s, app: engine.New(game), frames: make(chan time.Time), clock: time.Now(), done: make(chan error, 1)}
 	h.game, _ = game.(*probe.Probe)
-	go func() { h.done <- run(ctx, func() (tcell.Screen, error) { return s, nil }, h.app, h.frames) }()
+	go func() { h.done <- run(ctx, simBackend(s), h.app, h.frames) }()
 	return h
 }
 
@@ -362,7 +369,7 @@ func TestInitFailureReleasesAndReports(t *testing.T) {
 	for _, finiPanics := range []bool{false, true} {
 		s := &failingScreen{Screen: tcell.NewSimulationScreen(""), finiPanics: finiPanics}
 		app := engine.New(probe.New())
-		err := run(context.Background(), func() (tcell.Screen, error) { return s, nil }, app, nil)
+		err := run(context.Background(), simBackend(s), app, nil)
 		if err == nil || !strings.Contains(err.Error(), "initialize terminal: no tty") {
 			t.Fatalf("err = %v", err)
 		}
@@ -373,7 +380,7 @@ func TestInitFailureReleasesAndReports(t *testing.T) {
 }
 
 func TestScreenCreationFailure(t *testing.T) {
-	err := run(context.Background(), func() (tcell.Screen, error) { return nil, errors.New("terminal not supported") },
+	err := run(context.Background(), backend{check: consoleOK, newScreen: func() (tcell.Screen, error) { return nil, errors.New("terminal not supported") }},
 		engine.New(probe.New()), nil)
 	if err == nil || !strings.Contains(err.Error(), "terminal not supported") {
 		t.Fatalf("err = %v", err)
@@ -387,5 +394,89 @@ func TestInputErrorEndsLoop(t *testing.T) {
 	_ = s.PostEvent(tcell.NewEventError(errors.New("tty closed")))
 	if err := h.wait(t); err == nil || !strings.Contains(err.Error(), "tty closed") {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+// lockingScreen models tcell v2.13.10's Windows cScreen: when VT output is
+// unavailable, Init returns an error with its mutex still held, and Fini
+// (via disengage) then blocks acquiring the same mutex.
+type lockingScreen struct {
+	tcell.Screen
+	mu          sync.Mutex
+	inits, fins atomic.Int32
+}
+
+func (s *lockingScreen) Init() error {
+	s.inits.Add(1)
+	s.mu.Lock()
+	return errors.New("failed to initialize: VT output not supported?")
+}
+
+func (s *lockingScreen) Fini() {
+	s.fins.Add(1)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+}
+
+// TestUnsupportedVTNeverReachesBackendInit drives the public startup path on a
+// console that cannot enable VT output. Before the console check existed,
+// run called Init and then Fini on this backend and blocked forever.
+func TestUnsupportedVTNeverReachesBackendInit(t *testing.T) {
+	console := &fakeConsole{mode: legacyMode}
+	screen := &lockingScreen{Screen: tcell.NewSimulationScreen("")}
+	created := false
+	b := backend{
+		check:     func() error { return probeVT(console.ops()) },
+		newScreen: func() (tcell.Screen, error) { created = true; return screen, nil },
+	}
+	done := make(chan error, 1)
+	go func() { done <- run(context.Background(), b, engine.New(probe.New()), nil) }()
+	var err error
+	select {
+	case err = <-done:
+	case <-time.After(guard):
+		t.Fatal("startup hung on an unsupported console") // the reviewed deadlock
+	}
+	if !errors.Is(err, ErrNoVT) || !strings.Contains(err.Error(), "Windows Terminal") {
+		t.Fatalf("err = %v, want actionable ErrNoVT", err)
+	}
+	if created || screen.inits.Load() != 0 || screen.fins.Load() != 0 {
+		t.Fatalf("backend touched: created=%v Init=%d Fini=%d", created, screen.inits.Load(), screen.fins.Load())
+	}
+	if console.mode != legacyMode || console.open != 0 {
+		t.Fatalf("console mode %#x (want %#x), %d handle(s) open", console.mode, legacyMode, console.open)
+	}
+}
+
+// TestConsoleCheckRunsOnceBeforeNormalStartup checks that a passing console
+// check leaves startup, quit and cleanup unchanged.
+func TestConsoleCheckRunsOnceBeforeNormalStartup(t *testing.T) {
+	console := &fakeConsole{mode: legacyMode, vt: true}
+	s := newSim(80, 24)
+	var order []string
+	b := backend{
+		check: func() error { order = append(order, "check"); return probeVT(console.ops()) },
+		newScreen: func() (tcell.Screen, error) {
+			order = append(order, "newScreen")
+			return s, nil
+		},
+	}
+	done := make(chan error, 1)
+	go func() { done <- run(context.Background(), b, engine.New(probe.New()), nil) }()
+	s.waitFor(t, "DEVCADE")
+	s.InjectKey(tcell.KeyRune, 'q', 0)
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(guard):
+		t.Fatal("loop did not exit")
+	}
+	if strings.Join(order, ",") != "check,newScreen" || !s.finalized.Load() {
+		t.Fatalf("order=%v finalized=%v", order, s.finalized.Load())
+	}
+	if console.mode != legacyMode || console.open != 0 || console.opens != 1 {
+		t.Fatalf("console mode %#x, open %d, opens %d", console.mode, console.open, console.opens)
 	}
 }

@@ -43,13 +43,24 @@ func RequireTerminal(stdin, stdout *os.File) error {
 func Run(ctx context.Context, app *engine.Engine) error {
 	ticker := time.NewTicker(engine.FrameInterval)
 	defer ticker.Stop()
-	return run(ctx, tcell.NewScreen, app, ticker.C)
+	return run(ctx, backend{check: checkConsole, newScreen: tcell.NewScreen}, app, ticker.C)
+}
+
+// backend is the terminal seam injected by tests.
+type backend struct {
+	// check rejects consoles the backend cannot drive safely. It runs before
+	// the screen is created and must leave the console as it found it.
+	check     func() error
+	newScreen func() (tcell.Screen, error)
 }
 
 // run is Run with the backend and frame clock injected for tests. Each value
 // received from frames is a monotonic timestamp of one frame opportunity.
-func run(ctx context.Context, newScreen func() (tcell.Screen, error), app *engine.Engine, frames <-chan time.Time) (err error) {
-	screen, err := newScreen()
+func run(ctx context.Context, b backend, app *engine.Engine, frames <-chan time.Time) (err error) {
+	if err := b.check(); err != nil {
+		return fmt.Errorf("unsupported terminal: %w", err)
+	}
+	screen, err := b.newScreen()
 	if err != nil {
 		return fmt.Errorf("open terminal: %w", err)
 	}
@@ -135,10 +146,13 @@ func run(ctx context.Context, newScreen func() (tcell.Screen, error), app *engin
 	}
 }
 
-// releaseAfterFailedInit releases whatever a failed Init acquired. tcell's
-// terminfo screen can fail after opening the tty (charset or raw-mode setup);
-// Fini releases it then, but panics if Init failed before allocating its
-// state. Either way there is nothing further to restore.
+// releaseAfterFailedInit releases whatever a failed Init acquired. This is
+// verified for tcell v2.13.10's terminfo screen, the backend NewScreen picks
+// on every supported platform (Windows included): it can fail after opening
+// the tty (charset or raw-mode setup), and Fini then closes it, but Fini
+// panics if Init failed before allocating its state. It is NOT safe for the
+// legacy Windows cScreen, whose Init can fail with its mutex held so that Fini
+// blocks forever; checkConsole rejects that VT failure before Init runs.
 func releaseAfterFailedInit(screen tcell.Screen) {
 	defer func() { _ = recover() }()
 	screen.Fini()

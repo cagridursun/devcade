@@ -20,7 +20,7 @@ timing, resize and terminal restoration.
 | Area | Status |
 | --- | --- |
 | Implementation and automated checks | Complete (see [CI](.github/workflows/ci.yml)) |
-| Real-terminal acceptance | **Pending.** See the [terminal checklist](docs/terminal-checklist.md) |
+| Real-terminal acceptance | **Pending.** Owner-reported only: Windows Terminal starts and arrow/WASD direction control works. See the [terminal checklist](docs/terminal-checklist.md) |
 | Installers (Homebrew, Windows, Linux packages) | Not started (M7). `brew install devcade` does **not** exist yet |
 
 ## Requirements
@@ -90,6 +90,12 @@ CI fails rather than repairing them.
   for SIGINT, 143 for SIGTERM.
 - `devcade` refuses to start when stdin or stdout is redirected, and prints
   an error instead of taking over the terminal.
+- On Windows, `devcade` first checks that the console can process VT escape
+  sequences. It turns the flag on briefly on `CONOUT$` and then restores the
+  original mode. If the console can't (older than Windows 10 1809), devcade
+  exits with an error naming Windows Terminal or a newer Windows, instead of
+  printing raw escape codes. tcell's legacy console backend could also hang
+  on this failure.
 - Restoration cannot be guaranteed if the process is force-killed (SIGKILL,
   Task Manager "End task"), the machine loses power, or the terminal window is
   destroyed abruptly. If a terminal is ever left in a bad state, run `reset`
@@ -136,7 +142,7 @@ interactive-terminal check.
 
 | Target | Native tests | Cross-build (CGO_ENABLED=0) | Interactive terminal |
 | --- | --- | --- | --- |
-| Windows amd64 | Local (Windows 11) + CI | Yes | Pending |
+| Windows amd64 | Local (Windows 11) + CI | Yes | Partial: owner-reported startup and direction input in Windows Terminal; other checks pending |
 | Windows arm64 | — | Yes | Untested |
 | macOS arm64 (Apple Silicon) | CI (`macos-latest`) | Yes | Pending |
 | macOS amd64 | — | Yes | Untested |
