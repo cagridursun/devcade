@@ -109,6 +109,7 @@ type harness struct {
 	frames chan time.Time
 	clock  time.Time
 	done   chan error
+	last   string // most recent frame read by tickUntil
 }
 
 func start(t *testing.T, ctx context.Context, s *simScreen, game engine.Game) *harness {
