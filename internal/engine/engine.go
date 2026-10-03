@@ -67,6 +67,9 @@ func (e *Engine) Input(ev Event) (done bool) {
 	case key == KeyNone || !e.Ready():
 		// Undersized: the game is not visible, so ignore everything else.
 	case key == KeyPause:
+		if f, ok := e.game.(Finisher); ok && f.Finished() {
+			break // nothing to pause on an end screen
+		}
 		e.paused = !e.paused
 		e.updateRunning()
 	case !e.paused:

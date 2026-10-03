@@ -10,7 +10,7 @@ import (
 func TestBuiltinCatalog(t *testing.T) {
 	c := Builtin()
 	want := []struct{ id, name, milestone string }{
-		{"snake", "Snake", "M3"},
+		{"snake", "Snake", ""}, // playable since M3
 		{"blockdrop", "Block Drop", "M4"},
 		{"mazechase", "Maze Chase", "M5"},
 		{"blastgrid", "Blast Grid", "M6"},
@@ -23,8 +23,11 @@ func TestBuiltinCatalog(t *testing.T) {
 		if e.ID != w.id || e.Name != w.name || e.Milestone != w.milestone {
 			t.Errorf("entry %d = %s/%s/%s, want %s/%s/%s", i, e.ID, e.Name, e.Milestone, w.id, w.name, w.milestone)
 		}
-		if e.Available() || e.New != nil || e.Status() != "Coming soon ("+w.milestone+")" {
-			t.Errorf("%s must be an unavailable entry, status %q", e.ID, e.Status())
+		switch {
+		case w.milestone == "" && (!e.Available() || e.Status() != "Available"):
+			t.Errorf("%s must be available, status %q", e.ID, e.Status())
+		case w.milestone != "" && (e.Available() || e.Status() != "Coming soon ("+w.milestone+")"):
+			t.Errorf("%s must be coming soon, status %q", e.ID, e.Status())
 		}
 		if got, ok := c.Lookup(w.id); !ok || got.Name != w.name {
 			t.Errorf("Lookup(%q) = %v, %v", w.id, got.Name, ok)
@@ -34,6 +37,17 @@ func TestBuiltinCatalog(t *testing.T) {
 		if _, ok := c.Lookup(id); ok {
 			t.Errorf("Lookup(%q) succeeded", id)
 		}
+	}
+}
+
+func TestBuiltinSnakeFactoryBuildsFreshGames(t *testing.T) {
+	e, _ := Builtin().Lookup("snake")
+	a, b := e.New(), e.New()
+	if a == nil || a == b {
+		t.Fatal("each launch must build a new game")
+	}
+	if w, h := a.MinimumSize(); w != 80 || h != 24 {
+		t.Fatalf("Snake minimum size %dx%d", w, h)
 	}
 }
 

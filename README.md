@@ -10,30 +10,60 @@ the distributed binaries. The first release is planned to ship four games —
 **Snake**, **Block Drop**, **Maze Chase** and **Blast Grid** — on Windows,
 macOS and Linux, with more games added in later feature releases.
 
-## Current status: M2 arcade menu
+## Current status: M3 Snake
 
-**No games are playable yet.** Running `devcade` opens the arcade menu. It
-lists the four planned games, each clearly marked *Coming soon* with the
-milestone that will deliver it:
+**One game is playable: Snake.** Running `devcade` opens the arcade menu,
+which lists the four games in this order:
 
 | ID | Game | Status |
 | --- | --- | --- |
-| `snake` | Snake | Coming soon (M3) |
+| `snake` | Snake | **Available** (M3) |
 | `blockdrop` | Block Drop | Coming soon (M4) |
 | `mazechase` | Maze Chase | Coming soon (M5) |
 | `blastgrid` | Blast Grid | Coming soon (M6) |
 
-The only runnable activity is the **terminal diagnostic**, a developer tool
-from M1 in which an `@` moves around a box to check input, timing, resize and
-terminal restoration. Open it from the menu with `D`, or directly with
+The menu also offers the **terminal diagnostic**, a developer tool from M1 in
+which an `@` moves around a box to check input, timing, resize and terminal
+restoration. Open it from the menu with `D`, or directly with
 `devcade --diagnostic`.
 
 | Area | Status |
 | --- | --- |
 | M0/M1 terminal core | Merged ([PR #1](https://github.com/cagridursun/devcade/pull/1)). Real-terminal compatibility checks are still tracked in the [terminal checklist](docs/terminal-checklist.md) |
-| M2 implementation and automated checks | Complete (see [CI](.github/workflows/ci.yml)) |
-| M2 real-terminal acceptance | **Pending.** See the checklist |
+| M2 arcade menu | In review ([PR #2](https://github.com/cagridursun/devcade/pull/2)). M3 is built on top of it |
+| M3 Snake: implementation and automated checks | Complete (see [CI](.github/workflows/ci.yml)) |
+| M2/M3 real-terminal acceptance | **Pending.** See the checklist |
 | Installers (Homebrew, Windows, Linux packages) | Not started (M7). `brew install devcade` does **not** exist yet |
+
+## Snake
+
+Steer the snake to the food (`**`). Each food makes it one segment longer and
+scores 10 points. Hitting a wall or your own body ends the run. Fill the whole
+board and you win.
+
+| Rule | Value |
+| --- | --- |
+| Board | Fixed 36 × 18 cells, each drawn two columns wide: head `@@`, body `oo`, food `**` |
+| Start | Three cells in the center heading right, score 0, level 1 |
+| Score | 10 points per food (current run only; nothing is saved) |
+| Level | 1 + foods eaten ÷ 5, rounded down |
+| Speed | One cell every 180 ms at level 1, 15 ms faster per level, never faster than 80 ms |
+| Walls | Fatal; there is no wraparound |
+| Body | Fatal, except the cell your tail is leaving on the same step |
+
+- **Turning:** arrows or WASD. Up to two turns are remembered between steps
+  and applied one per step, so a quick *Up, Left* while moving right turns up
+  and then left. Reversing straight into your own neck is ignored.
+- **Pause:** Space. Pause and resize work like the diagnostic: the board
+  freezes, and no time is made up afterwards.
+- **Game over / win:** the final score stays on screen until you press Enter
+  to play again, or leave with Q/Esc. Space does nothing on this screen.
+- **Resize:** the board never changes size. A bigger window just centers it,
+  and below 80×24 the game waits with the size warning.
+- **Leaving:** from the menu, Q/Esc return to the menu (the run is discarded,
+  and the next launch starts fresh). Started with `devcade snake`, Q/Esc quit.
+  Ctrl+C quits from anywhere, including while paused, too small or on the game
+  over screen.
 
 ## Requirements
 
@@ -49,7 +79,8 @@ From the repository root:
 go run ./cmd/devcade                  # open the arcade menu
 go run ./cmd/devcade list             # list games and availability (no terminal needed)
 go run ./cmd/devcade --diagnostic     # start the terminal diagnostic directly
-go run ./cmd/devcade snake            # start a game by ID; exits with status 2 while it is coming soon
+go run ./cmd/devcade snake            # start Snake directly (Q/Esc quit)
+go run ./cmd/devcade blockdrop        # a coming-soon game: exits with status 2
 go run ./cmd/devcade --help
 go run ./cmd/devcade --version
 ```
@@ -153,6 +184,7 @@ cmd/devcade/          CLI: commands, flags, signals, exit codes, error reporting
 internal/arcade/      Built-in game catalog; menu and menu/activity navigation
 internal/engine/      Game and Canvas contracts; pause, resize and frame-timing policy
 internal/terminal/    tcell adapter: screen lifecycle, event reader, key mapping, canvas
+internal/games/snake/ Snake (M3): fixed-board rules, turn queue, rendering
 internal/games/probe/ The terminal diagnostic (moving '@'), written as a game
 docs/                 Manual terminal acceptance checklist
 ```
@@ -167,7 +199,11 @@ the first time the screen is big enough), `Resize`, `HandleInput` (normalized
 keys), `Update(dt)` (elapsed game time, capped), and `Render(Canvas)`. The
 engine is the only caller, from one goroutine. Canvas cells are printable ASCII
 only. Any other rune is drawn as `?` so that one rune always takes one cell.
-Colors are decorative only.
+Colors are decorative only. A game that can end may also implement
+`engine.Finisher` (`Finished() bool`). While it reports true, the engine
+ignores the pause key, so an end screen can't be covered by a pause banner
+that would block its restart key (Enter). Snake uses this; the diagnostic
+doesn't need it.
 
 **Input.** The terminal adapter turns each key press into an `engine.Event`:
 a normalized `Key` (`Up`, `Down`, `Left`, `Right`, `Pause`, `Select`, `Back`,

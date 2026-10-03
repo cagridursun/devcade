@@ -215,3 +215,33 @@ func TestPrintable(t *testing.T) {
 		}
 	}
 }
+
+// finishingGame is a fakeGame that can report an end state.
+type finishingGame struct {
+	fakeGame
+	finished bool
+}
+
+func (g *finishingGame) Finished() bool { return g.finished }
+
+func TestPauseIsIgnoredWhileGameIsFinished(t *testing.T) {
+	g := &finishingGame{}
+	e := New(g)
+	e.Resize(80, 24)
+	g.finished = true
+	e.Input(Event{Key: KeyPause})
+	e.Input(Event{Key: KeySelect}) // restart must reach the game
+	c := newGrid(80, 24)
+	e.Render(c)
+	if e.Paused() || strings.Contains(c.String(), "PAUSED") {
+		t.Fatal("end screen was paused")
+	}
+	if fmt.Sprint(g.inputs) != fmt.Sprint([]Key{KeySelect}) {
+		t.Fatalf("inputs = %v, want only select", g.inputs)
+	}
+	g.finished = false // restarted
+	e.Input(Event{Key: KeyPause})
+	if !e.Paused() {
+		t.Fatal("pause must work again after restart")
+	}
+}

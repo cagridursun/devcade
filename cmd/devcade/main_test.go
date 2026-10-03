@@ -86,7 +86,7 @@ func TestHelpVersionAndListNeedNoTerminal(t *testing.T) {
 	if code != exitOK || errOut != "" {
 		t.Fatalf("list: code=%d stderr=%q", code, errOut)
 	}
-	for _, want := range []string{"snake", "Snake", "Coming soon (M3)", "blockdrop", "Block Drop", "M4",
+	for _, want := range []string{"snake", "Snake", "Available", "blockdrop", "Block Drop", "Coming soon (M4)",
 		"mazechase", "Maze Chase", "M5", "blastgrid", "Blast Grid", "M6", "--diagnostic"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("list output lacks %q:\n%s", want, out)
@@ -117,7 +117,7 @@ func TestListNeverConstructsGames(t *testing.T) {
 
 func TestComingSoonGamesFailBeforeTerminalAccess(t *testing.T) {
 	h := stub(t, nil, nil)
-	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid"} {
+	for _, id := range []string{"blockdrop", "mazechase", "blastgrid"} {
 		code, out, errOut := runArgs(id)
 		if code != exitUsage || out != "" || !strings.Contains(errOut, "not available yet") || !strings.Contains(errOut, "devcade list") {
 			t.Errorf("%s: code=%d stdout=%q stderr=%q", id, code, out, errOut)
@@ -153,6 +153,22 @@ func TestDefaultLaunchOpensMenu(t *testing.T) {
 	}
 	if _, ok := h.program.(*arcade.App); !ok || h.checks != 1 || h.plays != 1 {
 		t.Fatalf("default launch played %T (%+v)", h.program, *h)
+	}
+}
+
+func TestSnakeLaunchesDirectlyThroughCatalog(t *testing.T) {
+	h := stub(t, nil, nil)
+	if code, _, errOut := runArgs("snake"); code != exitOK {
+		t.Fatalf("code=%d stderr=%q", code, errOut)
+	}
+	e, ok := h.program.(*engine.Engine)
+	if !ok || h.checks != 1 || h.plays != 1 {
+		t.Fatalf("devcade snake played %T (%+v)", h.program, *h)
+	}
+	// Started directly, Q/Esc end the game and DevCade with it.
+	e.Resize(80, 24)
+	if !e.Input(engine.Event{Key: engine.KeyBack, Char: 'q'}) {
+		t.Fatal("Q did not end direct Snake")
 	}
 }
 
@@ -205,7 +221,7 @@ func TestAvailableGameLaunchesByIDThroughCatalog(t *testing.T) {
 
 func TestNonInteractiveFailsBeforeTouchingTerminal(t *testing.T) {
 	h := stub(t, terminal.ErrNotInteractive, nil)
-	for _, args := range [][]string{{}, {"--diagnostic"}} {
+	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}} {
 		code, _, errOut := runArgs(args...)
 		if code != exitError || !strings.Contains(errOut, "interactive terminal") {
 			t.Fatalf("%v: code=%d stderr=%q", args, code, errOut)
@@ -242,7 +258,7 @@ func TestBuiltinIDsDoNotShadowCommands(t *testing.T) {
 // TestRedirectedProcessFailsPromptly runs the real binary with piped stdio
 // and no terminal hooks replaced.
 func TestRedirectedProcessFailsPromptly(t *testing.T) {
-	for _, args := range [][]string{{}, {"--diagnostic"}} {
+	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}} {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		cmd := exec.CommandContext(ctx, os.Args[0], args...) // TestMain calls main(), which exits
 		cmd.Env = append(os.Environ(), "DEVCADE_RUN_MAIN=1")
