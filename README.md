@@ -30,7 +30,7 @@ restoration. Open it from the menu with `D`, or directly with
 | Area | Status |
 | --- | --- |
 | M0/M1 terminal core | Merged ([PR #1](https://github.com/cagridursun/devcade/pull/1)). Real-terminal compatibility checks are still tracked in the [terminal checklist](docs/terminal-checklist.md) |
-| M2 arcade menu | In review ([PR #2](https://github.com/cagridursun/devcade/pull/2)). M3 is built on top of it |
+| M2 arcade menu | Merged ([PR #2](https://github.com/cagridursun/devcade/pull/2)). Real-terminal menu checks are still pending |
 | M3 Snake: implementation and automated checks | Complete (see [CI](.github/workflows/ci.yml)) |
 | M2/M3 real-terminal acceptance | **Pending.** See the checklist |
 | Installers (Homebrew, Windows, Linux packages) | Not started (M7). `brew install devcade` does **not** exist yet |
@@ -264,7 +264,7 @@ Terminal, or run `winpty devcade` there.
 | Milestone | Goal |
 | --- | --- |
 | M0/M1 | Bootstrap and terminal core: merged; remaining manual compatibility checks tracked |
-| M2 | Arcade menu, catalog and built-in selection plumbing |
+| M2 | Arcade menu, catalog and built-in selection plumbing: merged |
 | M3 | Snake |
 | M4 | Block Drop |
 | M5 | Maze Chase |
