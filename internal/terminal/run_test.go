@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cagridursun/devcade/internal/arcade"
 	"github.com/cagridursun/devcade/internal/engine"
 	"github.com/cagridursun/devcade/internal/games/probe"
 	"github.com/gdamore/tcell/v2"
@@ -24,6 +25,8 @@ type simScreen struct {
 	tcell.SimulationScreen
 	w, h      int
 	finalized atomic.Bool
+	inits     atomic.Int32
+	finis     atomic.Int32
 	shown     chan string // latest rendered frame text
 }
 
@@ -32,6 +35,7 @@ func newSim(w, h int) *simScreen {
 }
 
 func (s *simScreen) Init() error {
+	s.inits.Add(1)
 	if err := s.SimulationScreen.Init(); err != nil {
 		return err
 	}
@@ -40,6 +44,7 @@ func (s *simScreen) Init() error {
 }
 
 func (s *simScreen) Fini() {
+	s.finis.Add(1)
 	s.finalized.Store(true)
 	s.SimulationScreen.Fini()
 }
@@ -74,17 +79,18 @@ func (s *simScreen) resize(w, h int) {
 }
 
 // waitFor blocks until a rendered frame contains text.
-func (s *simScreen) waitFor(t *testing.T, text string) {
+func (s *simScreen) waitFor(t *testing.T, text string) string {
 	t.Helper()
 	timeout := time.After(guard)
 	for {
 		select {
 		case frame := <-s.shown:
 			if strings.Contains(frame, text) {
-				return
+				return frame
 			}
 		case <-timeout:
 			t.Fatalf("no frame containing %q", text)
+			return ""
 		}
 	}
 }
@@ -478,5 +484,80 @@ func TestConsoleCheckRunsOnceBeforeNormalStartup(t *testing.T) {
 	}
 	if console.mode != legacyMode || console.open != 0 || console.opens != 1 {
 		t.Fatalf("console mode %#x, open %d, opens %d", console.mode, console.open, console.opens)
+	}
+}
+
+// TestArcadeNavigationKeepsOneScreenSession drives the real loop through menu,
+// diagnostic and back. The screen is initialized once and finalized once, on
+// the final exit.
+func TestArcadeNavigationKeepsOneScreenSession(t *testing.T) {
+	s := newSim(80, 24)
+	var diags []*probe.Probe
+	app := arcade.NewApp(arcade.Builtin(), func() engine.Game {
+		p := probe.New()
+		diags = append(diags, p)
+		return p
+	})
+	frames := make(chan time.Time)
+	done := make(chan error, 1)
+	go func() { done <- run(context.Background(), simBackend(s), app, frames) }()
+	s.waitFor(t, " > Snake        Coming soon (M3)")
+	s.InjectKey(tcell.KeyDown, 0, 0)
+	s.waitFor(t, " > Block Drop")
+	s.InjectKey(tcell.KeyEnter, 0, 0)
+	s.waitFor(t, "Block Drop is not playable yet: it is planned for M4.")
+
+	s.InjectKey(tcell.KeyRune, 'd', 0)
+	s.waitFor(t, "Q / Esc: back to menu")
+	s.InjectKey(tcell.KeyRune, ' ', 0) // pause this instance
+	s.waitFor(t, "PAUSED")
+	s.InjectKey(tcell.KeyEscape, 0, 0)
+	s.waitFor(t, " > Block Drop") // selection kept
+
+	s.resize(60, 20)
+	s.waitFor(t, "Need 80x24, have 60x20")
+	s.InjectKey(tcell.KeyDown, 0, 0) // invisible: ignored
+	s.resize(80, 24)
+	s.waitFor(t, " > Block Drop")
+
+	s.InjectKey(tcell.KeyRune, 'D', tcell.ModShift)
+	if frame := s.waitFor(t, "back to menu"); strings.Contains(frame, "PAUSED") {
+		t.Fatalf("relaunched diagnostic is not fresh:\n%s", frame)
+	}
+	s.InjectKey(tcell.KeyRune, 'q', 0)
+	s.waitFor(t, " > Block Drop")
+	if s.inits.Load() != 1 || s.finis.Load() != 0 {
+		t.Fatalf("navigation re-initialized the terminal: Init=%d Fini=%d", s.inits.Load(), s.finis.Load())
+	}
+	s.InjectKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(guard):
+		t.Fatal("loop did not exit")
+	}
+	if s.inits.Load() != 1 || s.finis.Load() != 1 || len(diags) != 2 {
+		t.Fatalf("Init=%d Fini=%d diagnostics=%d", s.inits.Load(), s.finis.Load(), len(diags))
+	}
+}
+
+func TestCtrlCExitsFromLaunchedActivity(t *testing.T) {
+	s := newSim(80, 24)
+	app := arcade.NewApp(arcade.Builtin(), func() engine.Game { return probe.New() })
+	done := make(chan error, 1)
+	go func() { done <- run(context.Background(), simBackend(s), app, nil) }()
+	s.waitFor(t, "GAMES")
+	s.InjectKey(tcell.KeyRune, 'd', 0)
+	s.waitFor(t, "back to menu")
+	s.InjectKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)
+	select {
+	case err := <-done:
+		if err != nil || s.finis.Load() != 1 {
+			t.Fatalf("err=%v Fini=%d", err, s.finis.Load())
+		}
+	case <-time.After(guard):
+		t.Fatal("Ctrl+C did not exit from the activity")
 	}
 }

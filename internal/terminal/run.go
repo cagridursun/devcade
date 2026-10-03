@@ -37,10 +37,21 @@ func RequireTerminal(stdin, stdout *os.File) error {
 	return nil
 }
 
-// Run drives app on the user's terminal until the user quits, ctx is
-// cancelled, or an error occurs. The terminal is restored before Run returns
-// on every path, including panics, which are returned as *PanicError.
-func Run(ctx context.Context, app *engine.Engine) error {
+// Program is what the loop drives: a single engine, or the arcade menu with
+// its active game. The loop is its only caller, from one goroutine.
+type Program interface {
+	Resize(width, height int)
+	// Input applies one normalized key press and reports whether the
+	// application should exit.
+	Input(engine.Event) (exit bool)
+	Advance(dt time.Duration)
+	Render(engine.Canvas)
+}
+
+// Run drives app on the user's terminal until it exits, ctx is cancelled, or
+// an error occurs. The screen is initialized once and restored before Run
+// returns on every path, including panics, which are returned as *PanicError.
+func Run(ctx context.Context, app Program) error {
 	ticker := time.NewTicker(engine.FrameInterval)
 	defer ticker.Stop()
 	return run(ctx, backend{check: checkConsole, newScreen: tcell.NewScreen}, app, ticker.C)
@@ -56,7 +67,7 @@ type backend struct {
 
 // run is Run with the backend and frame clock injected for tests. Each value
 // received from frames is a monotonic timestamp of one frame opportunity.
-func run(ctx context.Context, b backend, app *engine.Engine, frames <-chan time.Time) (err error) {
+func run(ctx context.Context, b backend, app Program, frames <-chan time.Time) (err error) {
 	if err := b.check(); err != nil {
 		return fmt.Errorf("unsupported terminal: %w", err)
 	}

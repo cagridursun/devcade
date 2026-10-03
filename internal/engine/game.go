@@ -19,7 +19,9 @@ const (
 	KeyLeft
 	KeyRight
 	KeyPause
-	KeyQuit
+	KeySelect // confirm a choice (Enter)
+	KeyBack   // leave the current screen (Q, Escape)
+	KeyExit   // leave the whole application from anywhere (Ctrl+C)
 )
 
 func (k Key) String() string {
@@ -34,10 +36,22 @@ func (k Key) String() string {
 		return "right"
 	case KeyPause:
 		return "pause"
-	case KeyQuit:
-		return "quit"
+	case KeySelect:
+		return "select"
+	case KeyBack:
+		return "back"
+	case KeyExit:
+		return "exit"
 	}
 	return "none"
+}
+
+// Event is one normalized key press. Char is the lower-case ASCII letter that
+// was typed, or 0, so menus can bind letters without games depending on raw
+// keys. The same press may carry both, e.g. 'd' is KeyRight with Char 'd'.
+type Event struct {
+	Key  Key
+	Char rune
 }
 
 // Color is a decorative hint. Every state must remain understandable on a
@@ -75,7 +89,8 @@ func Printable(r rune) rune {
 // Game is the contract between the engine and a built-in game. The engine is
 // the only caller and calls every method from a single goroutine.
 //
-// The engine calls Start exactly once, the first time the screen meets
+// Games receive only Key values; KeyBack and KeyExit are handled before a
+// game sees input. The engine calls Start exactly once, the first time the screen meets
 // MinimumSize; Start must (re)initialize all game state for that size.
 // Afterwards Resize reports size changes, but only while the screen still
 // meets MinimumSize. HandleInput and Update are never called while the game is

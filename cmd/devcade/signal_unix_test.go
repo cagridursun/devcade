@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/terminal"
 )
 
 func TestSignalsCancelPlayAndSetExitStatus(t *testing.T) {
@@ -19,7 +19,7 @@ func TestSignalsCancelPlayAndSetExitStatus(t *testing.T) {
 		{syscall.SIGINT, exitInterrupt},
 	} {
 		stub(t, nil, nil)
-		play = func(ctx context.Context, _ *engine.Engine) error {
+		play = func(ctx context.Context, _ terminal.Program) error {
 			if err := syscall.Kill(syscall.Getpid(), tc.sig); err != nil {
 				t.Error(err)
 			}

@@ -85,7 +85,7 @@ func (p *Probe) Direction() (dx, dy int) { return p.dx, p.dy }
 func (p *Probe) Render(c engine.Canvas) {
 	w, h := c.Size()
 	c.Text(1, 0, "DEVCADE >_  terminal core diagnostic (M1)", engine.Accent)
-	c.Text(1, 1, "Move: arrows / WASD   Pause: Space   Quit: Q / Esc / Ctrl+C", engine.Default)
+	c.Text(1, 1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
 	c.Text(1, 2, fmt.Sprintf("Position %2d,%-2d  Heading %-5s  Screen %dx%d", p.x, p.y, p.heading(), w, h), engine.Default)
 
 	// Border around the arena: rows headerRows and h-2, columns 0 and w-1.
@@ -105,7 +105,7 @@ func (p *Probe) Render(c engine.Canvas) {
 	if left, top, right, bottom := p.arena(); left <= right && top <= bottom {
 		c.Cell(p.x, p.y, '@', engine.Player)
 	}
-	c.Text(1, h-1, "Diagnostic only - no games yet. Checks input, timing, resize, restore.", engine.Default)
+	c.Text(1, h-1, "Terminal diagnostic: checks input, timing, resize and terminal restore.", engine.Default)
 }
 
 // arena returns the inclusive interior bounds of the play area. The bounds
