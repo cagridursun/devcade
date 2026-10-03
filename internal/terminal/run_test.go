@@ -1,0 +1,391 @@
+package terminal
+
+import (
+	"context"
+	"errors"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/games/probe"
+	"github.com/gdamore/tcell/v2"
+)
+
+// guard bounds how long a test waits for the loop. It only turns a hang into
+// a failure; it never cancels the loop, so it cannot make a test pass.
+const guard = 10 * time.Second
+
+// simScreen is a simulation screen that publishes every rendered frame and
+// records finalization.
+type simScreen struct {
+	tcell.SimulationScreen
+	w, h      int
+	finalized atomic.Bool
+	shown     chan string // latest rendered frame text
+}
+
+func newSim(w, h int) *simScreen {
+	return &simScreen{SimulationScreen: tcell.NewSimulationScreen("UTF-8"), w: w, h: h, shown: make(chan string, 1)}
+}
+
+func (s *simScreen) Init() error {
+	if err := s.SimulationScreen.Init(); err != nil {
+		return err
+	}
+	s.SetSize(s.w, s.h)
+	return nil
+}
+
+func (s *simScreen) Fini() {
+	s.finalized.Store(true)
+	s.SimulationScreen.Fini()
+}
+
+func (s *simScreen) Show() { s.SimulationScreen.Show(); s.publish() }
+func (s *simScreen) Sync() { s.SimulationScreen.Sync(); s.publish() }
+
+func (s *simScreen) publish() {
+	cells, w, _ := s.GetContents()
+	var b strings.Builder
+	for i, c := range cells {
+		if i > 0 && i%w == 0 {
+			b.WriteByte('\n')
+		}
+		if len(c.Bytes) == 0 {
+			b.WriteByte(' ')
+		} else {
+			b.Write(c.Bytes)
+		}
+	}
+	select {
+	case <-s.shown:
+	default:
+	}
+	s.shown <- b.String()
+}
+
+// resize simulates the user resizing the terminal window.
+func (s *simScreen) resize(w, h int) {
+	s.SetSize(w, h)
+	_ = s.PostEvent(tcell.NewEventResize(w, h))
+}
+
+// waitFor blocks until a rendered frame contains text.
+func (s *simScreen) waitFor(t *testing.T, text string) {
+	t.Helper()
+	timeout := time.After(guard)
+	for {
+		select {
+		case frame := <-s.shown:
+			if strings.Contains(frame, text) {
+				return
+			}
+		case <-timeout:
+			t.Fatalf("no frame containing %q", text)
+		}
+	}
+}
+
+type harness struct {
+	screen *simScreen
+	game   *probe.Probe
+	app    *engine.Engine
+	frames chan time.Time
+	clock  time.Time
+	done   chan error
+}
+
+func start(t *testing.T, ctx context.Context, s *simScreen, game engine.Game) *harness {
+	t.Helper()
+	h := &harness{screen: s, app: engine.New(game), frames: make(chan time.Time), clock: time.Now(), done: make(chan error, 1)}
+	h.game, _ = game.(*probe.Probe)
+	go func() { h.done <- run(ctx, func() (tcell.Screen, error) { return s, nil }, h.app, h.frames) }()
+	return h
+}
+
+// tick delivers one frame d after the previous one. The send completes only
+// when the loop receives it, and the loop finishes a frame before receiving
+// the next event or frame.
+func (h *harness) tick(t *testing.T, d time.Duration) {
+	t.Helper()
+	h.clock = h.clock.Add(d)
+	select {
+	case h.frames <- h.clock:
+	case err := <-h.done:
+		t.Fatalf("loop exited early: %v", err)
+	case <-time.After(guard):
+		t.Fatal("loop stopped accepting frames")
+	}
+}
+
+func (h *harness) wait(t *testing.T) error {
+	t.Helper()
+	select {
+	case err := <-h.done:
+		if !h.screen.finalized.Load() {
+			t.Error("screen not finalized")
+		}
+		return err
+	case <-time.After(guard):
+		t.Fatal("loop did not exit")
+		return nil
+	}
+}
+
+func TestQuitKeysEndLoopAndRestoreScreen(t *testing.T) {
+	for _, key := range []struct {
+		name string
+		k    tcell.Key
+		r    rune
+		mod  tcell.ModMask
+	}{
+		{"q", tcell.KeyRune, 'q', 0},
+		{"Q", tcell.KeyRune, 'Q', tcell.ModShift},
+		{"Esc", tcell.KeyEscape, 0, 0},
+		{"Ctrl+C", tcell.KeyCtrlC, 0, tcell.ModCtrl},
+	} {
+		t.Run(key.name, func(t *testing.T) {
+			s := newSim(80, 24)
+			h := start(t, context.Background(), s, probe.New())
+			s.waitFor(t, "DEVCADE")
+			s.InjectKey(key.k, key.r, key.mod)
+			if err := h.wait(t); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestCancellationEndsLoopAndRestoresScreen(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	s := newSim(80, 24)
+	h := start(t, ctx, s, probe.New())
+	s.waitFor(t, "DEVCADE")
+	cancel()
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestInputMovesProbeOnFrames(t *testing.T) {
+	s := newSim(80, 24)
+	h := start(t, context.Background(), s, probe.New())
+	s.waitFor(t, "Heading right")
+	s.InjectKey(tcell.KeyRune, 'S', tcell.ModShift)
+	s.waitFor(t, "Heading down")
+	h.tick(t, 0)
+	h.tick(t, probe.Step)                     // first frame after start: dropped
+	h.tick(t, engine.MaxFrameStep)            // 100ms accumulated
+	h.tick(t, probe.Step-engine.MaxFrameStep) // 120ms: one step
+	s.InjectKey(tcell.KeyRune, 'q', 0)
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+	if x, y := h.game.Position(); x != 39 || y != 13 {
+		t.Fatalf("position %d,%d, want 39,13", x, y)
+	}
+}
+
+func TestUndersizedSuspendsAndResumesWithoutCatchUp(t *testing.T) {
+	s := newSim(80, 24)
+	h := start(t, context.Background(), s, probe.New())
+	s.waitFor(t, "DEVCADE")
+	h.tick(t, 0)
+	h.tick(t, engine.MaxFrameStep) // dropped
+	h.tick(t, engine.MaxFrameStep)
+	h.tick(t, engine.MaxFrameStep) // 200ms: one step, to x=40
+
+	s.resize(30, 6)
+	s.waitFor(t, "Need 80x24, have 30x6")
+	s.InjectKey(tcell.KeyLeft, 0, 0) // ignored while undersized
+	for range 5 {
+		h.tick(t, time.Second)
+	}
+	s.resize(100, 30)
+	s.waitFor(t, "Screen 100x30")
+	h.tick(t, time.Second) // spans the undersized period: dropped
+	s.InjectKey(tcell.KeyRune, 'q', 0)
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+	if x, y := h.game.Position(); x != 40 || y != 12 {
+		t.Fatalf("position %d,%d, want 40,12", x, y)
+	}
+	if dx, _ := h.game.Direction(); dx != 1 {
+		t.Fatal("input applied while undersized")
+	}
+}
+
+func TestPauseSurvivesResize(t *testing.T) {
+	s := newSim(80, 24)
+	h := start(t, context.Background(), s, probe.New())
+	s.waitFor(t, "DEVCADE")
+	s.InjectKey(tcell.KeyRune, ' ', 0)
+	s.waitFor(t, "PAUSED")
+	s.resize(20, 5)
+	s.waitFor(t, "Need 80x24")
+	s.resize(90, 30)
+	s.waitFor(t, "PAUSED")
+	h.tick(t, 0)
+	for range 10 {
+		h.tick(t, engine.MaxFrameStep)
+	}
+	s.InjectKey(tcell.KeyEscape, 0, 0)
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+	if !h.app.Paused() {
+		t.Fatal("resize discarded pause")
+	}
+	if x, y := h.game.Position(); x != 39 || y != 12 {
+		t.Fatalf("paused probe moved to %d,%d", x, y)
+	}
+}
+
+func TestQuitWhileTiny(t *testing.T) {
+	for _, size := range [][2]int{{1, 1}, {10, 2}, {0, 0}} {
+		s := newSim(size[0], size[1])
+		h := start(t, context.Background(), s, probe.New())
+		h.tick(t, 0) // a frame renders at the tiny size without panicking
+		s.InjectKey(tcell.KeyRune, 'q', 0)
+		if err := h.wait(t); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestInputFloodCannotBlockQuit(t *testing.T) {
+	s := newSim(80, 24)
+	h := start(t, context.Background(), s, probe.New())
+	s.waitFor(t, "DEVCADE")
+	stop := make(chan struct{})
+	defer close(stop)
+	go func() {
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				_ = s.PostEvent(tcell.NewEventKey(tcell.KeyRune, 'w', 0))
+			}
+		}
+	}()
+	for range 3 {
+		h.tick(t, engine.MaxFrameStep)
+	}
+	s.InjectKey(tcell.KeyRune, 'q', 0) // PostEventWait-style: blocks until queued
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// panicGame panics in the method named by where.
+type panicGame struct {
+	*probe.Probe
+	where string
+}
+
+func (g panicGame) Start(w, h int) {
+	g.maybe("Start")
+	g.Probe.Start(w, h)
+}
+func (g panicGame) HandleInput(k engine.Key) {
+	g.maybe("HandleInput")
+	g.Probe.HandleInput(k)
+}
+func (g panicGame) Update(dt time.Duration) {
+	g.maybe("Update")
+	g.Probe.Update(dt)
+}
+func (g panicGame) Render(c engine.Canvas) {
+	if g.where == "Render" {
+		panic("boom in Render")
+	}
+	g.Probe.Render(c)
+}
+func (g panicGame) maybe(where string) {
+	if g.where == where {
+		panic("boom in " + where)
+	}
+}
+
+func TestPanicRestoresScreenAndStopsLoop(t *testing.T) {
+	for _, where := range []string{"Start", "Render", "HandleInput", "Update"} {
+		t.Run(where, func(t *testing.T) {
+			s := newSim(80, 24)
+			h := start(t, context.Background(), s, panicGame{probe.New(), where})
+			switch where {
+			case "HandleInput", "Update":
+				s.waitFor(t, "DEVCADE") // the simulated screen accepts input only after Init
+			}
+			switch where {
+			case "HandleInput":
+				s.InjectKey(tcell.KeyUp, 0, 0)
+			case "Update":
+				h.tick(t, 0)
+				h.tick(t, engine.MaxFrameStep) // dropped
+				h.tick(t, engine.MaxFrameStep)
+			}
+			err := h.wait(t)
+			var p *PanicError
+			if !errors.As(err, &p) || p.Value != "boom in "+where || !strings.Contains(string(p.Stack), "panicGame") {
+				t.Fatalf("err = %v, want PanicError from %s with stack", err, where)
+			}
+			// The loop is gone: nothing receives frames any more.
+			select {
+			case h.frames <- time.Now():
+				t.Fatal("loop still running after panic")
+			case <-time.After(10 * time.Millisecond):
+			}
+		})
+	}
+}
+
+// failingScreen fails Init and records cleanup.
+type failingScreen struct {
+	tcell.Screen
+	finiPanics bool
+	finis      int
+}
+
+func (s *failingScreen) Init() error { return errors.New("no tty") }
+func (s *failingScreen) Fini() {
+	s.finis++
+	if s.finiPanics {
+		panic("close of nil channel") // what tcell does when Init fails early
+	}
+}
+
+func TestInitFailureReleasesAndReports(t *testing.T) {
+	for _, finiPanics := range []bool{false, true} {
+		s := &failingScreen{Screen: tcell.NewSimulationScreen(""), finiPanics: finiPanics}
+		app := engine.New(probe.New())
+		err := run(context.Background(), func() (tcell.Screen, error) { return s, nil }, app, nil)
+		if err == nil || !strings.Contains(err.Error(), "initialize terminal: no tty") {
+			t.Fatalf("err = %v", err)
+		}
+		if s.finis != 1 {
+			t.Fatalf("Fini called %d times after failed Init", s.finis)
+		}
+	}
+}
+
+func TestScreenCreationFailure(t *testing.T) {
+	err := run(context.Background(), func() (tcell.Screen, error) { return nil, errors.New("terminal not supported") },
+		engine.New(probe.New()), nil)
+	if err == nil || !strings.Contains(err.Error(), "terminal not supported") {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestInputErrorEndsLoop(t *testing.T) {
+	s := newSim(80, 24)
+	h := start(t, context.Background(), s, probe.New())
+	s.waitFor(t, "DEVCADE")
+	_ = s.PostEvent(tcell.NewEventError(errors.New("tty closed")))
+	if err := h.wait(t); err == nil || !strings.Contains(err.Error(), "tty closed") {
+		t.Fatalf("err = %v", err)
+	}
+}

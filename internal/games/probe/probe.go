@@ -1,40 +1,52 @@
-// Package probe provides the M1 terminal diagnostic, not an arcade game.
+// Package probe is the M1 terminal diagnostic: a single '@' that moves on a
+// fixed tick so input, timing, resize and rendering can be checked by eye.
+// It is not an arcade game.
 package probe
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
 )
 
-const step = 120 * time.Millisecond
+const (
+	// Step is the time the '@' takes to move one cell.
+	Step = 120 * time.Millisecond
 
+	MinWidth  = 80
+	MinHeight = 24
+
+	headerRows = 3 // title, controls, status
+)
+
+// Probe implements engine.Game.
 type Probe struct {
-	x, y int
-	dx, dy int
 	width, height int
-	elapsed time.Duration
-	initialized bool
+	x, y          int
+	dx, dy        int
+	elapsed       time.Duration
 }
 
-func New() *Probe { return &Probe{dx: 1} }
+func New() *Probe { return &Probe{} }
 
-func (p *Probe) MinimumSize() (int, int) { return 80, 24 }
+func (p *Probe) MinimumSize() (int, int) { return MinWidth, MinHeight }
 
-func (p *Probe) Resize(width, height int) {
+// Start centers the '@' and sets it moving right.
+func (p *Probe) Start(width, height int) {
 	p.width, p.height = width, height
-	if !p.initialized {
-		p.Reset()
-	}
-	p.x = max(1, min(p.x, width-2))
-	p.y = max(4, min(p.y, height-3))
-}
-
-func (p *Probe) Reset() {
-	p.x, p.y = p.width/2, p.height/2
+	left, top, right, bottom := p.arena()
+	p.x, p.y = (left+right)/2, (top+bottom)/2
 	p.dx, p.dy = 1, 0
 	p.elapsed = 0
-	p.initialized = true
+}
+
+// Resize keeps the '@' inside the new arena.
+func (p *Probe) Resize(width, height int) {
+	p.width, p.height = width, height
+	left, top, right, bottom := p.arena()
+	p.x = clamp(p.x, left, right)
+	p.y = clamp(p.y, top, bottom)
 }
 
 func (p *Probe) HandleInput(key engine.Key) {
@@ -50,31 +62,88 @@ func (p *Probe) HandleInput(key engine.Key) {
 	}
 }
 
+// Update moves one cell per Step of accumulated time, bouncing off the walls.
 func (p *Probe) Update(dt time.Duration) {
+	left, top, right, bottom := p.arena()
+	if left > right || top > bottom {
+		return
+	}
 	p.elapsed += dt
-	for p.elapsed >= step {
-		p.elapsed -= step
-		nx, ny := p.x+p.dx, p.y+p.dy
-		if nx < 1 || nx > p.width-2 || ny < 4 || ny > p.height-3 {
-			p.dx, p.dy = -p.dx, -p.dy
-			nx, ny = p.x+p.dx, p.y+p.dy
-		}
-		p.x, p.y = nx, ny
+	for p.elapsed >= Step {
+		p.elapsed -= Step
+		p.x, p.dx = bounce(p.x, p.dx, left, right)
+		p.y, p.dy = bounce(p.y, p.dy, top, bottom)
 	}
 }
 
+// Position returns the current cell of the '@'.
+func (p *Probe) Position() (x, y int) { return p.x, p.y }
+
+// Direction returns the current movement vector.
+func (p *Probe) Direction() (dx, dy int) { return p.dx, p.dy }
+
 func (p *Probe) Render(c engine.Canvas) {
 	w, h := c.Size()
-	c.Text(2, 0, "D E V C A D E  |  M1 TERMINAL PROBE", engine.Cyan)
-	c.Text(2, 1, "Arrows / WASD: direction | Space: pause | Q / Esc: quit", engine.Default)
+	c.Text(1, 0, "DEVCADE >_  terminal core diagnostic (M1)", engine.Accent)
+	c.Text(1, 1, "Move: arrows / WASD   Pause: Space   Quit: Q / Esc / Ctrl+C", engine.Default)
+	c.Text(1, 2, fmt.Sprintf("Position %2d,%-2d  Heading %-5s  Screen %dx%d", p.x, p.y, p.heading(), w, h), engine.Default)
+
+	// Border around the arena: rows headerRows and h-2, columns 0 and w-1.
+	top, bottom := headerRows, h-2
 	for x := 0; x < w; x++ {
-		c.Cell(x, 3, '-', engine.Default)
-		c.Cell(x, h-2, '-', engine.Default)
+		c.Cell(x, top, '-', engine.Default)
+		c.Cell(x, bottom, '-', engine.Default)
 	}
-	for y := 3; y < h-1; y++ {
-		c.Cell(0, y, '|', engine.Default)
-		c.Cell(w-1, y, '|', engine.Default)
+	for y := top; y <= bottom; y++ {
+		glyph := '|'
+		if y == top || y == bottom {
+			glyph = '+'
+		}
+		c.Cell(0, y, glyph, engine.Default)
+		c.Cell(w-1, y, glyph, engine.Default)
 	}
-	c.Cell(p.x, p.y, '@', engine.Green)
-	c.Text(2, h-1, "Core checkpoint: input, ticking, resize, rendering and cleanup", engine.Default)
+	if left, top, right, bottom := p.arena(); left <= right && top <= bottom {
+		c.Cell(p.x, p.y, '@', engine.Player)
+	}
+	c.Text(1, h-1, "Diagnostic only - no games yet. Checks input, timing, resize, restore.", engine.Default)
+}
+
+// arena returns the inclusive interior bounds of the play area. The bounds
+// are empty (left > right or top > bottom) when the screen is too small.
+func (p *Probe) arena() (left, top, right, bottom int) {
+	return 1, headerRows + 1, p.width - 2, p.height - 3
+}
+
+func (p *Probe) heading() string {
+	switch {
+	case p.dx > 0:
+		return "right"
+	case p.dx < 0:
+		return "left"
+	case p.dy > 0:
+		return "down"
+	case p.dy < 0:
+		return "up"
+	}
+	return "none"
+}
+
+// bounce advances pos by d, reversing d at either bound.
+func bounce(pos, d, lo, hi int) (int, int) {
+	next := pos + d
+	if next < lo || next > hi {
+		d = -d
+		next = pos + d
+		if next < lo || next > hi {
+			return clamp(pos, lo, hi), d
+		}
+	}
+	return next, d
+}
+
+func clamp(v, lo, hi int) int {
+	if hi < lo {
+		return lo
+	}
+	return max(lo, min(v, hi))
 }

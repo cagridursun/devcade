@@ -1,15 +1,17 @@
 package terminal
 
 import (
-	"unicode"
-
 	"github.com/cagridursun/devcade/internal/engine"
 	"github.com/gdamore/tcell/v2"
 )
 
-func keyOf(event *tcell.EventKey) engine.Key {
-	switch event.Key() {
-	case tcell.KeyEscape, tcell.KeyCtrlC:
+// keyOf normalizes a tcell key event. Letters are matched case-insensitively
+// so Caps Lock and Shift do not change behavior.
+func keyOf(ev *tcell.EventKey) engine.Key {
+	switch ev.Key() {
+	case tcell.KeyEscape, tcell.KeyCtrlC, tcell.KeyETX:
+		// tcell reports Ctrl+C as KeyCtrlC; a raw 0x03 can surface as the
+		// distinct ASCII code KeyETX.
 		return engine.KeyQuit
 	case tcell.KeyUp:
 		return engine.KeyUp
@@ -20,20 +22,30 @@ func keyOf(event *tcell.EventKey) engine.Key {
 	case tcell.KeyRight:
 		return engine.KeyRight
 	case tcell.KeyRune:
-		switch unicode.ToLower(event.Rune()) {
-		case 'q':
+	default:
+		return engine.KeyNone
+	}
+	r := ev.Rune()
+	if ev.Modifiers()&tcell.ModCtrl != 0 {
+		// Extended keyboard protocols may report Ctrl+C as a modified rune.
+		if r == 'c' || r == 'C' {
 			return engine.KeyQuit
-		case 'w':
-			return engine.KeyUp
-		case 's':
-			return engine.KeyDown
-		case 'a':
-			return engine.KeyLeft
-		case 'd':
-			return engine.KeyRight
-		case ' ':
-			return engine.KeyPause
 		}
+		return engine.KeyNone
+	}
+	switch r {
+	case 'q', 'Q':
+		return engine.KeyQuit
+	case 'w', 'W':
+		return engine.KeyUp
+	case 's', 'S':
+		return engine.KeyDown
+	case 'a', 'A':
+		return engine.KeyLeft
+	case 'd', 'D':
+		return engine.KeyRight
+	case ' ':
+		return engine.KeyPause
 	}
 	return engine.KeyNone
 }

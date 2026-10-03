@@ -1,7 +1,15 @@
+// Package engine defines the backend-independent contract shared by DevCade
+// games and the timing, pause and resize policy that drives them.
+//
+// Nothing in this package (or in any game) knows about the terminal backend:
+// games receive normalized keys, elapsed time and a Canvas, and never read
+// stdin, write stdout, emit escape sequences or handle process signals.
 package engine
 
 import "time"
 
+// Key is a normalized input action. Terminals usually report key presses and
+// repeats only, so there is deliberately no key-release concept.
 type Key uint8
 
 const (
@@ -14,28 +22,70 @@ const (
 	KeyQuit
 )
 
+func (k Key) String() string {
+	switch k {
+	case KeyUp:
+		return "up"
+	case KeyDown:
+		return "down"
+	case KeyLeft:
+		return "left"
+	case KeyRight:
+		return "right"
+	case KeyPause:
+		return "pause"
+	case KeyQuit:
+		return "quit"
+	}
+	return "none"
+}
+
+// Color is a decorative hint. Every state must remain understandable on a
+// monochrome terminal, so games must never rely on color alone.
 type Color uint8
 
 const (
 	Default Color = iota
-	Green
-	Cyan
+	Accent        // headers and highlighted text
+	Player        // the player-controlled glyph
+	Warning       // pause and size warnings
 )
 
-// Canvas uses single-cell ASCII glyphs. Games never write terminal escape codes.
+// Canvas is a grid of single-width cells addressed from (0, 0) at the top
+// left. Drawing outside the grid is silently clipped.
+//
+// Cells hold printable ASCII only (0x20-0x7E). Wider or non-printable runes
+// would break the one-rune-per-cell alignment that games rely on, so
+// implementations replace them with '?' (see Printable).
 type Canvas interface {
-	Size() (int, int)
+	Size() (width, height int)
 	Cell(x, y int, glyph rune, color Color)
 	Text(x, y int, text string, color Color)
 }
 
-// Game is the common contract for future built-in arcade games.
-// Game state stays independent of the terminal backend.
+// Printable returns r when it is printable ASCII and '?' otherwise. Canvas
+// implementations use it to enforce the single-cell glyph contract.
+func Printable(r rune) rune {
+	if r < 0x20 || r > 0x7e {
+		return '?'
+	}
+	return r
+}
+
+// Game is the contract between the engine and a built-in game. The engine is
+// the only caller and calls every method from a single goroutine.
+//
+// The engine calls Start exactly once, the first time the screen meets
+// MinimumSize; Start must (re)initialize all game state for that size.
+// Afterwards Resize reports size changes, but only while the screen still
+// meets MinimumSize. HandleInput and Update are never called while the game is
+// paused or undersized. Update receives elapsed gameplay time, already capped
+// by the engine (see MaxFrameStep).
 type Game interface {
-	MinimumSize() (int, int)
+	MinimumSize() (width, height int)
+	Start(width, height int)
 	Resize(width, height int)
 	HandleInput(Key)
-	Update(time.Duration)
+	Update(dt time.Duration)
 	Render(Canvas)
-	Reset()
 }

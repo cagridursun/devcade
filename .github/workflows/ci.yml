@@ -1,4 +1,4 @@
-name: Cross-platform core
+name: CI
 
 on:
   push:
@@ -7,42 +7,98 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: '1.26.x'
+  # Never let a build or test silently edit go.mod/go.sum.
+  GOFLAGS: -mod=readonly
+
 jobs:
-  verify:
+  native:
+    name: native (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        # Git Bash on Windows: one POSIX script for all three runners.
+        shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: '1.24.x'
-          cache: false
-      # Initial scaffold has no generated go.sum: generate/commit it locally
-      # before declaring M0/M1 complete. This permits draft CI validation.
-      - run: go mod tidy
-      - run: go vet ./...
-      - run: go test -race -timeout 60s ./...
-      - run: go build ./...
-      - run: go run ./cmd/devcade --version
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Download and verify locked modules
+        run: |
+          go mod download
+          go mod verify
+
+      - name: go.mod and go.sum are tidy
+        # -diff prints the needed change and fails without editing files.
+        run: go mod tidy -diff
+
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "Files need gofmt:"; echo "$unformatted"; exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Unit tests
+        run: go test -timeout 60s ./...
+
+      - name: Race tests
+        # The race detector needs cgo and a C toolchain; all three hosted
+        # runners provide one. Release builds stay CGO_ENABLED=0.
+        env:
+          CGO_ENABLED: '1'
+        run: go test -race -timeout 120s ./...
+
+      - name: Build
+        run: go build -o bin/devcade ./cmd/devcade
+
+      - name: Non-TTY smoke tests
+        run: |
+          bin/devcade --version
+          bin/devcade --help
+          set +e
+          bin/devcade not-a-command </dev/null; code=$?
+          [ "$code" -eq 2 ] || { echo "unknown command exited $code, want 2"; exit 1; }
+          bin/devcade </dev/null >/dev/null; code=$?
+          [ "$code" -eq 1 ] || { echo "non-interactive run exited $code, want 1"; exit 1; }
+          echo "smoke tests passed"
 
   cross-build:
+    name: build ${{ matrix.goos }}/${{ matrix.goarch }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
+      fail-fast: false
       matrix:
-        target-os: [darwin, linux, windows]
-        target-arch: [amd64, arm64]
+        goos: [darwin, linux, windows]
+        goarch: [amd64, arm64]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: '1.24.x'
-          cache: false
-      - run: go mod tidy
-      - run: go build ./cmd/devcade
+          go-version: ${{ env.GO_VERSION }}
+      - name: Build without cgo
         env:
-          GOOS: ${{ matrix.target-os }}
-          GOARCH: ${{ matrix.target-arch }}
           CGO_ENABLED: '0'
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          ext=""
+          if [ "$GOOS" = windows ]; then ext=".exe"; fi
+          go build -trimpath -o "dist/devcade-$GOOS-$GOARCH$ext" ./cmd/devcade
+          ls -l dist
