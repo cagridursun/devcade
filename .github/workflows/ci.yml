@@ -71,11 +71,17 @@ jobs:
         run: |
           bin/devcade --version
           bin/devcade --help
-          set +e
-          bin/devcade not-a-command </dev/null; code=$?
-          [ "$code" -eq 2 ] || { echo "unknown command exited $code, want 2"; exit 1; }
-          bin/devcade </dev/null >/dev/null; code=$?
-          [ "$code" -eq 1 ] || { echo "non-interactive run exited $code, want 1"; exit 1; }
+          bin/devcade list | grep -q "Coming soon (M3)"
+          expect() { # expect <status> <args...>
+            want=$1; shift
+            set +e; bin/devcade "$@" </dev/null >/dev/null; code=$?; set -e
+            [ "$code" -eq "$want" ] || { echo "devcade $* exited $code, want $want"; exit 1; }
+          }
+          expect 2 not-a-command
+          expect 2 snake
+          expect 2 --diagnostic snake
+          expect 1          # menu needs a terminal
+          expect 1 --diagnostic
           echo "smoke tests passed"
 
   cross-build:

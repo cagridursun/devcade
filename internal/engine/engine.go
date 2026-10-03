@@ -57,14 +57,15 @@ func (e *Engine) Resize(width, height int) {
 	e.updateRunning()
 }
 
-// Input applies one normalized key and reports whether the application should
-// exit. Quit works in every state, including on a tiny screen.
-func (e *Engine) Input(key Key) (quit bool) {
-	switch {
-	case key == KeyQuit:
+// Input applies one normalized event and reports whether the engine's owner
+// should stop it: KeyBack and KeyExit end the activity in every state,
+// including on a tiny screen.
+func (e *Engine) Input(ev Event) (done bool) {
+	switch key := ev.Key; {
+	case key == KeyBack || key == KeyExit:
 		return true
 	case key == KeyNone || !e.Ready():
-		// Undersized: the game is not visible, so ignore everything but quit.
+		// Undersized: the game is not visible, so ignore everything else.
 	case key == KeyPause:
 		e.paused = !e.paused
 		e.updateRunning()
@@ -101,9 +102,7 @@ func (e *Engine) updateRunning() {
 func (e *Engine) Render(c Canvas) {
 	if !e.Ready() {
 		w, h := e.game.MinimumSize()
-		c.Text(0, 0, "DevCade: window too small", Warning)
-		c.Text(0, 1, fmt.Sprintf("Need %dx%d, have %dx%d", w, h, e.width, e.height), Default)
-		c.Text(0, 2, "Enlarge it, or press Q", Default)
+		RenderTooSmall(c, w, h, e.width, e.height)
 		return
 	}
 	e.game.Render(c)
@@ -112,4 +111,12 @@ func (e *Engine) Render(c Canvas) {
 		w, h := c.Size()
 		c.Text((w-len(banner))/2, h/2, banner, Warning)
 	}
+}
+
+// RenderTooSmall draws the undersized-screen warning shared by every screen.
+// Lines are short so they stay readable when clipped on a tiny terminal.
+func RenderTooSmall(c Canvas, minW, minH, width, height int) {
+	c.Text(0, 0, "DevCade: window too small", Warning)
+	c.Text(0, 1, fmt.Sprintf("Need %dx%d, have %dx%d", minW, minH, width, height), Default)
+	c.Text(0, 2, "Enlarge it, or press Q", Default)
 }

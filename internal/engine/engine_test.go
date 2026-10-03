@@ -98,20 +98,20 @@ func TestPauseFreezesGameplayAndResumeDoesNotCatchUp(t *testing.T) {
 	e.Resize(80, 24)
 	e.Advance(frame)
 	e.Advance(frame)
-	e.Input(KeyPause)
+	e.Input(Event{Key: KeyPause})
 	if !e.Paused() {
 		t.Fatal("not paused")
 	}
-	e.Input(KeyUp)
+	e.Input(Event{Key: KeyUp})
 	e.Advance(frame)
 	e.Advance(time.Minute)
 	if len(g.updates) != 1 || len(g.inputs) != 0 {
 		t.Fatalf("paused game advanced: updates=%v inputs=%v", g.updates, g.inputs)
 	}
-	e.Input(KeyPause)
+	e.Input(Event{Key: KeyPause})
 	e.Advance(time.Minute) // spans the pause: dropped
 	e.Advance(frame)
-	e.Input(KeyLeft)
+	e.Input(Event{Key: KeyLeft})
 	if fmt.Sprint(g.updates) != fmt.Sprint([]time.Duration{frame, frame}) {
 		t.Fatalf("updates after resume = %v", g.updates)
 	}
@@ -128,7 +128,7 @@ func TestUndersizedSuspendsWithoutResetAndQuitStillWorks(t *testing.T) {
 	e.Advance(frame)
 	e.Resize(79, 24)
 	for _, k := range []Key{KeyLeft, KeyPause, KeyNone} {
-		if e.Input(k) {
+		if e.Input(Event{Key: k}) {
 			t.Fatalf("%v quit", k)
 		}
 	}
@@ -137,7 +137,7 @@ func TestUndersizedSuspendsWithoutResetAndQuitStillWorks(t *testing.T) {
 	if len(g.updates) != 1 || len(g.inputs) != 0 || e.Paused() {
 		t.Fatalf("undersized game changed: updates=%v inputs=%v paused=%v", g.updates, g.inputs, e.Paused())
 	}
-	if !e.Input(KeyQuit) {
+	if !e.Input(Event{Key: KeyBack}) {
 		t.Fatal("quit ignored while undersized")
 	}
 	e.Resize(80, 24)
@@ -152,7 +152,7 @@ func TestManualPauseSurvivesResize(t *testing.T) {
 	g := &fakeGame{}
 	e := New(g)
 	e.Resize(80, 24)
-	e.Input(KeyPause)
+	e.Input(Event{Key: KeyPause})
 	e.Resize(20, 5)
 	e.Resize(120, 40)
 	e.Advance(frame)
@@ -167,17 +167,30 @@ func TestManualPauseSurvivesResize(t *testing.T) {
 	}
 }
 
-func TestQuitAlwaysWins(t *testing.T) {
-	for _, size := range [][2]int{{0, 0}, {1, 1}, {80, 24}} {
-		e := New(&fakeGame{})
-		e.Resize(size[0], size[1])
-		if !e.Input(KeyQuit) {
-			t.Errorf("quit ignored at %v", size)
+func TestBackAndExitAlwaysEndTheActivity(t *testing.T) {
+	for _, key := range []Key{KeyBack, KeyExit} {
+		for _, size := range [][2]int{{0, 0}, {1, 1}, {80, 24}} {
+			e := New(&fakeGame{})
+			e.Resize(size[0], size[1])
+			if !e.Input(Event{Key: key}) {
+				t.Errorf("%v ignored at %v", key, size)
+			}
+			e.Input(Event{Key: KeyPause})
+			if !e.Input(Event{Key: key, Char: 'q'}) {
+				t.Errorf("%v ignored while paused at %v", key, size)
+			}
 		}
-		e.Input(KeyPause)
-		if !e.Input(KeyQuit) {
-			t.Errorf("quit ignored while paused at %v", size)
-		}
+	}
+}
+
+func TestSelectReachesGameButCharAloneDoesNot(t *testing.T) {
+	g := &fakeGame{}
+	e := New(g)
+	e.Resize(80, 24)
+	e.Input(Event{Key: KeySelect})
+	e.Input(Event{Char: 'x'})
+	if fmt.Sprint(g.inputs) != fmt.Sprint([]Key{KeySelect}) {
+		t.Fatalf("inputs = %v", g.inputs)
 	}
 }
 

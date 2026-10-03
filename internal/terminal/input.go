@@ -7,45 +7,56 @@ import (
 
 // keyOf normalizes a tcell key event. Letters are matched case-insensitively
 // so Caps Lock and Shift do not change behavior.
-func keyOf(ev *tcell.EventKey) engine.Key {
+func keyOf(ev *tcell.EventKey) engine.Event {
 	switch ev.Key() {
-	case tcell.KeyEscape, tcell.KeyCtrlC, tcell.KeyETX:
+	case tcell.KeyCtrlC, tcell.KeyETX:
 		// tcell reports Ctrl+C as KeyCtrlC; a raw 0x03 can surface as the
 		// distinct ASCII code KeyETX.
-		return engine.KeyQuit
+		return engine.Event{Key: engine.KeyExit}
+	case tcell.KeyEscape:
+		return engine.Event{Key: engine.KeyBack}
+	case tcell.KeyEnter:
+		return engine.Event{Key: engine.KeySelect}
 	case tcell.KeyUp:
-		return engine.KeyUp
+		return engine.Event{Key: engine.KeyUp}
 	case tcell.KeyDown:
-		return engine.KeyDown
+		return engine.Event{Key: engine.KeyDown}
 	case tcell.KeyLeft:
-		return engine.KeyLeft
+		return engine.Event{Key: engine.KeyLeft}
 	case tcell.KeyRight:
-		return engine.KeyRight
+		return engine.Event{Key: engine.KeyRight}
 	case tcell.KeyRune:
 	default:
-		return engine.KeyNone
+		return engine.Event{}
 	}
 	r := ev.Rune()
 	if ev.Modifiers()&tcell.ModCtrl != 0 {
 		// Extended keyboard protocols may report Ctrl+C as a modified rune.
 		if r == 'c' || r == 'C' {
-			return engine.KeyQuit
+			return engine.Event{Key: engine.KeyExit}
 		}
-		return engine.KeyNone
+		return engine.Event{}
+	}
+	if r >= 'A' && r <= 'Z' {
+		r += 'a' - 'A'
+	}
+	out := engine.Event{}
+	if r >= 'a' && r <= 'z' {
+		out.Char = r
 	}
 	switch r {
-	case 'q', 'Q':
-		return engine.KeyQuit
-	case 'w', 'W':
-		return engine.KeyUp
-	case 's', 'S':
-		return engine.KeyDown
-	case 'a', 'A':
-		return engine.KeyLeft
-	case 'd', 'D':
-		return engine.KeyRight
+	case 'q':
+		out.Key = engine.KeyBack
+	case 'w':
+		out.Key = engine.KeyUp
+	case 's':
+		out.Key = engine.KeyDown
+	case 'a':
+		out.Key = engine.KeyLeft
+	case 'd':
+		out.Key = engine.KeyRight
 	case ' ':
-		return engine.KeyPause
+		out.Key = engine.KeyPause
 	}
-	return engine.KeyNone
+	return out
 }

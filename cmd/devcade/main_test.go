@@ -10,7 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cagridursun/devcade/internal/arcade"
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/games/probe"
 	"github.com/cagridursun/devcade/internal/terminal"
 )
 
@@ -22,16 +24,26 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// stub replaces the terminal hooks so a test can never take over the real
-// terminal, and records whether the game would have started.
-func stub(t *testing.T, termErr error, playErr error) *bool {
+// hooks records what run asked of the terminal. The stubs guarantee a test
+// can never take over the real terminal or probe the console.
+type hooks struct {
+	checks  int              // requireTerminal calls
+	plays   int              // play calls
+	program terminal.Program // what play was given
+}
+
+func stub(t *testing.T, termErr error, playErr error) *hooks {
 	t.Helper()
-	played := false
-	oldPlay, oldReq := play, requireTerminal
-	t.Cleanup(func() { play, requireTerminal = oldPlay, oldReq })
-	requireTerminal = func() error { return termErr }
-	play = func(context.Context, *engine.Engine) error { played = true; return playErr }
-	return &played
+	h := &hooks{}
+	oldPlay, oldReq, oldCat := play, requireTerminal, catalog
+	t.Cleanup(func() { play, requireTerminal, catalog = oldPlay, oldReq, oldCat })
+	requireTerminal = func() error { h.checks++; return termErr }
+	play = func(_ context.Context, p terminal.Program) error {
+		h.plays++
+		h.program = p
+		return playErr
+	}
+	return h
 }
 
 func runArgs(args ...string) (code int, stdout, stderr string) {
@@ -40,11 +52,27 @@ func runArgs(args ...string) (code int, stdout, stderr string) {
 	return code, out.String(), errOut.String()
 }
 
-func TestHelpAndVersionNeedNoTerminal(t *testing.T) {
-	played := stub(t, terminal.ErrNotInteractive, nil)
+// testGame is a minimal available game for proving the launch path.
+type testGame struct{ *probe.Probe }
+
+func testCatalog(t *testing.T, factoryCalls *int) arcade.Catalog {
+	t.Helper()
+	c, err := arcade.NewCatalog(
+		arcade.Entry{ID: "testgame", Name: "Test Game", Description: "Test-only game.",
+			New: func() engine.Game { *factoryCalls++; return testGame{probe.New()} }},
+		arcade.Entry{ID: "later", Name: "Later", Description: "Not yet.", Milestone: "M9"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return c
+}
+
+func TestHelpVersionAndListNeedNoTerminal(t *testing.T) {
+	h := stub(t, terminal.ErrNotInteractive, nil)
 	for _, args := range [][]string{{"--help"}, {"-h"}, {"-help"}} {
 		code, out, errOut := runArgs(args...)
-		if code != exitOK || !strings.Contains(out, "Usage:") || errOut != "" {
+		if code != exitOK || !strings.Contains(out, "Usage:") || !strings.Contains(out, "--diagnostic") || errOut != "" {
 			t.Errorf("%v: code=%d stdout=%q stderr=%q", args, code, out, errOut)
 		}
 	}
@@ -54,29 +82,137 @@ func TestHelpAndVersionNeedNoTerminal(t *testing.T) {
 			t.Errorf("%v: code=%d stdout=%q", args, code, out)
 		}
 	}
-	if *played {
-		t.Fatal("help/version started the terminal")
+	code, out, errOut := runArgs("list")
+	if code != exitOK || errOut != "" {
+		t.Fatalf("list: code=%d stderr=%q", code, errOut)
+	}
+	for _, want := range []string{"snake", "Snake", "Coming soon (M3)", "blockdrop", "Block Drop", "M4",
+		"mazechase", "Maze Chase", "M5", "blastgrid", "Blast Grid", "M6", "--diagnostic"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("list output lacks %q:\n%s", want, out)
+		}
+	}
+	if strings.Index(out, "snake") > strings.Index(out, "blockdrop") ||
+		strings.Index(out, "blockdrop") > strings.Index(out, "mazechase") ||
+		strings.Index(out, "mazechase") > strings.Index(out, "blastgrid") {
+		t.Errorf("list order is not the catalog order:\n%s", out)
+	}
+	if h.checks != 0 || h.plays != 0 {
+		t.Fatalf("help/version/list touched the terminal: %+v", *h)
+	}
+}
+
+func TestListNeverConstructsGames(t *testing.T) {
+	h := stub(t, nil, nil)
+	calls := 0
+	catalog = testCatalog(t, &calls)
+	code, out, _ := runArgs("list")
+	if code != exitOK || calls != 0 || h.plays != 0 {
+		t.Fatalf("code=%d factory calls=%d plays=%d", code, calls, h.plays)
+	}
+	if !strings.Contains(out, "testgame") || !strings.Contains(out, "Available") || !strings.Contains(out, "Coming soon (M9)") {
+		t.Fatalf("list:\n%s", out)
+	}
+}
+
+func TestComingSoonGamesFailBeforeTerminalAccess(t *testing.T) {
+	h := stub(t, nil, nil)
+	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid"} {
+		code, out, errOut := runArgs(id)
+		if code != exitUsage || out != "" || !strings.Contains(errOut, "not available yet") || !strings.Contains(errOut, "devcade list") {
+			t.Errorf("%s: code=%d stdout=%q stderr=%q", id, code, out, errOut)
+		}
+	}
+	if h.checks != 0 || h.plays != 0 {
+		t.Fatalf("coming-soon IDs touched the terminal: %+v", *h)
 	}
 }
 
 func TestInvalidArgumentsAreUsageErrors(t *testing.T) {
-	played := stub(t, nil, nil)
-	for _, args := range [][]string{{"snake"}, {"--bogus"}, {"--version=maybe"}, {"--version", "extra"}} {
+	h := stub(t, nil, nil)
+	for _, args := range [][]string{
+		{"tetris"}, {"Snake"}, {"--bogus"}, {"--version=maybe"},
+		{"--version", "extra"}, {"--version", "--diagnostic"}, {"--diagnostic", "--version"},
+		{"--diagnostic", "snake"}, {"--diagnostic", "list"}, {"list", "extra"}, {"snake", "extra"},
+		{"list", "--diagnostic"},
+	} {
 		code, out, errOut := runArgs(args...)
 		if code != exitUsage || out != "" || !strings.Contains(errOut, "--help") {
 			t.Errorf("%v: code=%d stdout=%q stderr=%q", args, code, out, errOut)
 		}
 	}
-	if *played {
-		t.Fatal("invalid arguments started the terminal")
+	if h.checks != 0 || h.plays != 0 {
+		t.Fatalf("usage errors touched the terminal: %+v", *h)
+	}
+}
+
+func TestDefaultLaunchOpensMenu(t *testing.T) {
+	h := stub(t, nil, nil)
+	if code, _, errOut := runArgs(); code != exitOK {
+		t.Fatalf("code=%d stderr=%q", code, errOut)
+	}
+	if _, ok := h.program.(*arcade.App); !ok || h.checks != 1 || h.plays != 1 {
+		t.Fatalf("default launch played %T (%+v)", h.program, *h)
+	}
+}
+
+func TestDiagnosticFlagStartsDiagnosticDirectly(t *testing.T) {
+	h := stub(t, nil, nil)
+	if code, _, errOut := runArgs("--diagnostic"); code != exitOK {
+		t.Fatalf("code=%d stderr=%q", code, errOut)
+	}
+	e, ok := h.program.(*engine.Engine)
+	if !ok || h.checks != 1 {
+		t.Fatalf("--diagnostic played %T (%+v)", h.program, *h)
+	}
+	// Direct mode: Q/Esc end the program instead of revealing a menu.
+	e.Resize(80, 24)
+	for _, k := range []engine.Key{engine.KeyBack, engine.KeyExit} {
+		if !e.Input(engine.Event{Key: k}) {
+			t.Errorf("%v did not end direct diagnostic", k)
+		}
+	}
+}
+
+func TestAvailableGameLaunchesByIDThroughCatalog(t *testing.T) {
+	h := stub(t, nil, nil)
+	calls := 0
+	catalog = testCatalog(t, &calls)
+	var order []string
+	requireTerminal = func() error { order = append(order, "check"); return nil }
+	play = func(_ context.Context, p terminal.Program) error {
+		order = append(order, "play")
+		h.program = p
+		return nil
+	}
+	if code, _, errOut := runArgs("testgame"); code != exitOK {
+		t.Fatalf("code=%d stderr=%q", code, errOut)
+	}
+	if _, ok := h.program.(*engine.Engine); !ok || calls != 1 || strings.Join(order, ",") != "check,play" {
+		t.Fatalf("program=%T factory calls=%d order=%v", h.program, calls, order)
+	}
+
+	// A failed terminal check constructs nothing.
+	calls = 0
+	requireTerminal = func() error { return terminal.ErrNotInteractive }
+	if code, _, _ := runArgs("testgame"); code != exitError || calls != 0 {
+		t.Fatalf("code=%d factory calls=%d", code, calls)
+	}
+	if code, _, errOut := runArgs("later"); code != exitUsage || !strings.Contains(errOut, "M9") {
+		t.Fatalf("later: code=%d stderr=%q", code, errOut)
 	}
 }
 
 func TestNonInteractiveFailsBeforeTouchingTerminal(t *testing.T) {
-	played := stub(t, terminal.ErrNotInteractive, nil)
-	code, _, errOut := runArgs()
-	if code != exitError || !strings.Contains(errOut, "interactive terminal") || *played {
-		t.Fatalf("code=%d stderr=%q played=%v", code, errOut, *played)
+	h := stub(t, terminal.ErrNotInteractive, nil)
+	for _, args := range [][]string{{}, {"--diagnostic"}} {
+		code, _, errOut := runArgs(args...)
+		if code != exitError || !strings.Contains(errOut, "interactive terminal") {
+			t.Fatalf("%v: code=%d stderr=%q", args, code, errOut)
+		}
+	}
+	if h.plays != 0 {
+		t.Fatal("play called without a terminal")
 	}
 }
 
@@ -89,30 +225,42 @@ func TestRuntimeErrorsAreReportedAfterPlay(t *testing.T) {
 	if code, _, errOut := runArgs(); code != exitError || !strings.Contains(errOut, "bad state") || !strings.Contains(errOut, "goroutine 1") {
 		t.Fatalf("code=%d stderr=%q", code, errOut)
 	}
-	if played := stub(t, nil, nil); func() bool { code, _, _ := runArgs(); return code != exitOK || !*played }() {
+	h := stub(t, nil, nil)
+	if code, _, _ := runArgs(); code != exitOK || h.plays != 1 {
 		t.Fatal("normal quit should exit 0")
+	}
+}
+
+func TestBuiltinIDsDoNotShadowCommands(t *testing.T) {
+	for i := range arcade.Builtin().Len() {
+		if id := arcade.Builtin().Entry(i).ID; id == "list" {
+			t.Fatalf("catalog ID %q collides with a command", id)
+		}
 	}
 }
 
 // TestRedirectedProcessFailsPromptly runs the real binary with piped stdio
 // and no terminal hooks replaced.
 func TestRedirectedProcessFailsPromptly(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, os.Args[0]) // TestMain calls main(), which exits
-	cmd.Env = append(os.Environ(), "DEVCADE_RUN_MAIN=1")
-	cmd.Stdin = strings.NewReader("q")
-	var out, errOut bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &out, &errOut
-	err := cmd.Run()
-	if ctx.Err() != nil {
-		t.Fatal("redirected devcade hung")
-	}
-	var exit *exec.ExitError
-	if !errors.As(err, &exit) || exit.ExitCode() != exitError {
-		t.Fatalf("err=%v stdout=%q stderr=%q", err, out.String(), errOut.String())
-	}
-	if !strings.Contains(errOut.String(), "interactive terminal") || out.Len() != 0 {
-		t.Fatalf("stdout=%q stderr=%q", out.String(), errOut.String())
+	for _, args := range [][]string{{}, {"--diagnostic"}} {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		cmd := exec.CommandContext(ctx, os.Args[0], args...) // TestMain calls main(), which exits
+		cmd.Env = append(os.Environ(), "DEVCADE_RUN_MAIN=1")
+		cmd.Stdin = strings.NewReader("q")
+		var out, errOut bytes.Buffer
+		cmd.Stdout, cmd.Stderr = &out, &errOut
+		err := cmd.Run()
+		hung := ctx.Err() != nil
+		cancel()
+		if hung {
+			t.Fatalf("%v: redirected devcade hung", args)
+		}
+		var exit *exec.ExitError
+		if !errors.As(err, &exit) || exit.ExitCode() != exitError {
+			t.Fatalf("%v: err=%v stdout=%q stderr=%q", args, err, out.String(), errOut.String())
+		}
+		if !strings.Contains(errOut.String(), "interactive terminal") || out.Len() != 0 {
+			t.Fatalf("%v: stdout=%q stderr=%q", args, out.String(), errOut.String())
+		}
 	}
 }
