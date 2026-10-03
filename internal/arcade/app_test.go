@@ -318,3 +318,15 @@ func TestFooterOffersPlayOnlyForAvailableGames(t *testing.T) {
 		t.Fatalf("available footer:\n%s", out)
 	}
 }
+
+func TestActionKeyIsIgnoredByMenuAndRoutedToGames(t *testing.T) {
+	f := newFixture(t)
+	f.press(t, engine.Event{Key: engine.KeyAction, Char: 'z'})
+	if f.app.active != nil || f.app.selected != 0 {
+		t.Fatal("Z changed the menu")
+	}
+	f.press(t, key(engine.KeyDown), key(engine.KeySelect), engine.Event{Key: engine.KeyAction, Char: 'z'})
+	if g := f.games[0]; fmt.Sprint(g.inputs) != fmt.Sprint([]engine.Key{engine.KeyAction}) {
+		t.Fatalf("game inputs %v", g.inputs)
+	}
+}

@@ -22,6 +22,7 @@ const (
 	KeySelect // confirm a choice (Enter)
 	KeyBack   // leave the current screen (Q, Escape)
 	KeyExit   // leave the whole application from anywhere (Ctrl+C)
+	KeyAction // the game's primary action (Z): rotate counterclockwise, place a bomb
 )
 
 func (k Key) String() string {
@@ -42,6 +43,8 @@ func (k Key) String() string {
 		return "back"
 	case KeyExit:
 		return "exit"
+	case KeyAction:
+		return "action"
 	}
 	return "none"
 }
