@@ -1,0 +1,18 @@
+{
+    "version": "{{.Version}}",
+    "description": "Arcade games that run in your terminal.",
+    "homepage": "https://github.com/cagridursun/devcade",
+    "license": "Unknown",
+    "notes": "No license has been granted yet; see LICENSE-NOTICE.txt in the app directory. The binary is not code-signed.",
+    "architecture": {
+        "64bit": {
+            "url": "{{url "windows" "amd64"}}",
+            "hash": "{{sha256 "windows" "amd64"}}"
+        },
+        "arm64": {
+            "url": "{{url "windows" "arm64"}}",
+            "hash": "{{sha256 "windows" "arm64"}}"
+        }
+    },
+    "bin": "devcade.exe"
+}

@@ -1,0 +1,12 @@
+DevCade license notice
+======================
+
+DevCade is a non-commercial project, but no license has been chosen yet.
+
+Until the copyright owner publishes a license, no license is granted to
+copy, modify or redistribute DevCade or this binary. "Non-commercial" describes
+the project's intent; it is not a license.
+
+The binary in this archive is not code-signed or notarized.
+
+Project: https://github.com/cagridursun/devcade
