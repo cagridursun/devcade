@@ -88,6 +88,14 @@ jobs:
           expect 1 --diagnostic
           echo "smoke tests passed"
 
+      - name: Release builder dry run
+        # Builds all six archives with the release tooling and verifies the
+        # checksums; nothing is uploaded or published.
+        if: runner.os == 'Linux'
+        run: |
+          go run ./tools/release -version 0.0.0-ci.1 -out dist/release
+          (cd dist/release && sha256sum -c SHA256SUMS)
+
   cross-build:
     name: build ${{ matrix.goos }}/${{ matrix.goarch }}
     runs-on: ubuntu-latest
