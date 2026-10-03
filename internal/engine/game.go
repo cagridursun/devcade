@@ -104,3 +104,11 @@ type Game interface {
 	Update(dt time.Duration)
 	Render(Canvas)
 }
+
+// Finisher is implemented by games that can end, for example on game over or
+// a completed board. While Finished reports true the engine ignores the pause
+// key, so the end screen stays visible and its restart key (KeySelect) always
+// reaches the game. Games that never end need not implement it.
+type Finisher interface {
+	Finished() bool
+}

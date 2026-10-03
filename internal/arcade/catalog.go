@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/games/snake"
 )
 
 // Entry describes one built-in game. An entry is playable exactly when New
@@ -87,11 +88,11 @@ func (c Catalog) Lookup(id string) (Entry, bool) {
 	return Entry{}, false
 }
 
-// Builtin returns the games that ship with DevCade, in menu order. None is
-// playable in M2; each milestone replaces Milestone with a factory.
+// Builtin returns the games that ship with DevCade, in menu order. A planned
+// game names its milestone; the milestone that delivers it sets New instead.
 func Builtin() Catalog {
 	c, err := NewCatalog(
-		Entry{ID: "snake", Name: "Snake", Milestone: "M3",
+		Entry{ID: "snake", Name: "Snake", New: snake.New,
 			Description: "Steer a growing snake to food without hitting walls or yourself."},
 		Entry{ID: "blockdrop", Name: "Block Drop", Milestone: "M4",
 			Description: "Rotate falling blocks and clear full rows before the stack tops out."},

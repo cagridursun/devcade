@@ -31,16 +31,23 @@ Usage:
   devcade --help          show this help
   devcade --version       show the version
 
-No games are playable yet: Snake, Block Drop, Maze Chase and Blast Grid are
+Snake is playable (devcade snake). Block Drop, Maze Chase and Blast Grid are
 coming in later releases. The terminal diagnostic moves an '@' around a box to
-check input, timing, resize and terminal restoration. The menu and the
-diagnostic need an interactive terminal of at least 80x24.
+check input, timing, resize and terminal restoration. Everything interactive
+needs a terminal of at least 80x24.
 
 Menu:
   Up/Down or W/S          select a game
   Enter                   play the selected game
   D                       open the terminal diagnostic
   Q, Esc, Ctrl+C          quit
+
+Snake:
+  arrows / WASD           turn (up to two turns are queued between steps)
+  Space                   pause / resume
+  Enter                   play again after game over
+  Q, Esc                  back to the menu (quit when started with devcade snake)
+  Ctrl+C                  quit DevCade
 
 Terminal diagnostic:
   arrows / WASD           change direction

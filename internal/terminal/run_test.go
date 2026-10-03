@@ -12,6 +12,7 @@ import (
 	"github.com/cagridursun/devcade/internal/arcade"
 	"github.com/cagridursun/devcade/internal/engine"
 	"github.com/cagridursun/devcade/internal/games/probe"
+	"github.com/cagridursun/devcade/internal/games/snake"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -501,7 +502,7 @@ func TestArcadeNavigationKeepsOneScreenSession(t *testing.T) {
 	frames := make(chan time.Time)
 	done := make(chan error, 1)
 	go func() { done <- run(context.Background(), simBackend(s), app, frames) }()
-	s.waitFor(t, " > Snake        Coming soon (M3)")
+	s.waitFor(t, " > Snake        Available")
 	s.InjectKey(tcell.KeyDown, 0, 0)
 	s.waitFor(t, " > Block Drop")
 	s.InjectKey(tcell.KeyEnter, 0, 0)
@@ -559,5 +560,120 @@ func TestCtrlCExitsFromLaunchedActivity(t *testing.T) {
 		}
 	case <-time.After(guard):
 		t.Fatal("Ctrl+C did not exit from the activity")
+	}
+}
+
+// startArcade runs the real loop over the built-in arcade with injected
+// frames.
+func startArcade(t *testing.T, s *simScreen) *harness {
+	t.Helper()
+	h := &harness{screen: s, frames: make(chan time.Time), clock: time.Now(), done: make(chan error, 1)}
+	app := arcade.NewApp(arcade.Builtin(), func() engine.Game { return probe.New() })
+	go func() { h.done <- run(context.Background(), simBackend(s), app, h.frames) }()
+	return h
+}
+
+// crashSnake sends frames until the snake (heading right from the center,
+// so at most 18 steps) hits the wall.
+func (h *harness) crashSnake(t *testing.T) {
+	t.Helper()
+	h.tick(t, 0)
+	for range 60 {
+		h.tick(t, engine.MaxFrameStep)
+	}
+	h.screen.waitFor(t, "GAME OVER")
+}
+
+func TestSnakeFromMenuRestartAndReturn(t *testing.T) {
+	s := newSim(80, 24)
+	h := startArcade(t, s)
+	s.waitFor(t, " > Snake        Available")
+	s.InjectKey(tcell.KeyEnter, 0, 0)
+	s.waitFor(t, "Q / Esc: back to menu")
+	h.crashSnake(t)
+
+	// Space on the end screen must not pause it, so Enter still restarts.
+	s.InjectKey(tcell.KeyRune, ' ', 0)
+	s.InjectKey(tcell.KeyEnter, 0, 0)
+	if frame := s.waitFor(t, "Score 0     Level 1   Length 3    PLAYING"); strings.Contains(frame, "PAUSED") {
+		t.Fatalf("restart blocked by pause:\n%s", frame)
+	}
+
+	s.InjectKey(tcell.KeyRune, ' ', 0)
+	s.waitFor(t, "PAUSED")
+	s.InjectKey(tcell.KeyEscape, 0, 0)
+	s.waitFor(t, " > Snake        Available") // selection kept
+	s.InjectKey(tcell.KeyEnter, 0, 0)         // fresh, unpaused run
+	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score 0") {
+		t.Fatalf("relaunch is not fresh:\n%s", frame)
+	}
+	h.crashSnake(t)
+	s.InjectKey(tcell.KeyCtrlC, 0, tcell.ModCtrl) // exit from game over
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+	if s.inits.Load() != 1 || s.finis.Load() != 1 {
+		t.Fatalf("Init=%d Fini=%d, want one screen session", s.inits.Load(), s.finis.Load())
+	}
+}
+
+func TestSnakePauseSurvivesResizeWithoutCatchUp(t *testing.T) {
+	s := newSim(80, 24)
+	h := startArcade(t, s)
+	s.waitFor(t, "GAMES")
+	s.InjectKey(tcell.KeyEnter, 0, 0)
+	s.waitFor(t, "PLAYING")
+	s.InjectKey(tcell.KeyRune, ' ', 0)
+	s.waitFor(t, "PAUSED")
+	s.resize(50, 12)
+	s.waitFor(t, "Need 80x24, have 50x12")
+	s.resize(90, 30)
+	s.waitFor(t, "PAUSED")
+	h.tick(t, 0)
+	for range 100 { // 10 s paused: would crash the snake if it advanced
+		h.tick(t, engine.MaxFrameStep)
+	}
+	s.InjectKey(tcell.KeyRune, ' ', 0)
+	h.tick(t, time.Minute) // first frame after resuming: dropped
+	h.tick(t, engine.MaxFrameStep)
+	s.InjectKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+	if frame := <-s.shown; strings.Contains(frame, "GAME OVER") {
+		t.Fatalf("paused or resumed time was replayed:\n%s", frame)
+	}
+}
+
+func TestDirectSnakeQuitsOnQ(t *testing.T) {
+	s := newSim(80, 24)
+	h := start(t, context.Background(), s, snake.New())
+	s.waitFor(t, "SNAKE")
+	s.InjectKey(tcell.KeyRune, 'q', 0)
+	if err := h.wait(t); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCtrlCExitsSnakeWhilePausedOrUndersized(t *testing.T) {
+	for _, name := range []string{"paused", "undersized"} {
+		t.Run(name, func(t *testing.T) {
+			s := newSim(80, 24)
+			h := startArcade(t, s)
+			s.waitFor(t, "GAMES")
+			s.InjectKey(tcell.KeyEnter, 0, 0)
+			s.waitFor(t, "PLAYING")
+			if name == "paused" {
+				s.InjectKey(tcell.KeyRune, ' ', 0)
+				s.waitFor(t, "PAUSED")
+			} else {
+				s.resize(20, 4)
+				s.waitFor(t, "Need 80x24")
+			}
+			s.InjectKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)
+			if err := h.wait(t); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
