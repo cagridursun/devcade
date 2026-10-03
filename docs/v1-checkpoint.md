@@ -77,7 +77,7 @@ Snake (M3) is merged and owned by no other session: coordinator audit only.
 | Item | Status |
 | --- | --- |
 | Contract freeze (`KeyAction`) | Done |
-| M3 Snake audit | Pending |
+| M3 Snake audit | Done: rules, Finisher, KeyAction ignored, fresh factory per launch. No changes needed. Owner reported Snake works in their terminal (environment not recorded) |
 | M4 Block Drop | Delegated |
 | M5 Maze Chase | Delegated |
 | M6 Blast Grid | Delegated |

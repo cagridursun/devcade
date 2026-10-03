@@ -25,6 +25,7 @@ terminal emulator test.
 | macOS | Apple Silicon (`darwin/arm64` binary), either terminal | zsh | | | Pending | Pending | Pending | |
 | Linux | GNOME Terminal (or equivalent: name it) | bash | | | Pending | Pending | Pending | |
 | Linux | tmux inside any terminal (record both) | bash | | | Pending | Pending | Pending | Check `TERM` inside tmux |
+| Not recorded | Owner's terminal (not recorded) | Not recorded | Not recorded | Not recorded | n/a | n/a | **Passed (owner-reported, M3 review):** "works without problems" | Owner's own play test of Snake. Environment and individual steps not recorded |
 | Linux amd64 | PTY smoke test (not an emulator) | n/a | Not recorded | n/a | **Passed (reported before M2):** startup, direction input, pause, undersized resize, quit while undersized, restored TTY attributes | Pending | Pending | Covers the M1 diagnostic only |
 
 Consoles that cannot enable VT output processing (Windows before 10 version
