@@ -76,17 +76,27 @@ Snake (M3) is merged and owned by no other session: coordinator audit only.
 
 | Item | Status |
 | --- | --- |
-| Contract freeze (`KeyAction`) | Done |
+| Contract freeze (`KeyAction`) | Done (`80ea9b4`) |
 | M3 Snake audit | Done: rules, Finisher, KeyAction ignored, fresh factory per launch. No changes needed. Owner reported Snake works in their terminal (environment not recorded) |
-| M4 Block Drop | Delegated |
-| M5 Maze Chase | Delegated |
-| M6 Blast Grid | Delegated |
-| M7 Packaging | Delegated |
-| Catalog / CLI / docs integration | Pending |
-| Review agent pass | Pending |
-| M8 verification | Pending |
+| M4 Block Drop | Done by the Block Drop agent (`feat/v1-blockdrop` `5f48f0d`), merged. Review fixes requested from the same agent |
+| M5 Maze Chase | Done by the Maze Chase agent (`feat/v1-mazechase` `cccf352`), merged |
+| M6 Blast Grid | Done by the Blast Grid agent (`feat/v1-blastgrid` `259f9fb`), merged. Review fix requested from the same agent |
+| M7 Packaging | Done by the packaging agent (`feat/v1-packaging` `1897769`), merged. Nothing published |
+| Catalog / CLI / docs integration | Done: all four games registered (`80a1002`), help, README, CHANGELOG, docs/games.md, CI release dry run |
+| Generic per-game loop test | Done (`internal/terminal/games_test.go`): every playable game through menu, pause/resize, end screen, restart, back, Ctrl+C, direct launch |
+| Review agent pass | Done on `80a1002`: 2 defects (Block Drop color-only active piece; Blast Grid bots stepping into pending blasts), 2 low (Block Drop zero lock delay after exhausted budget; stale CLI comment). CLI comment fixed; the rest are with the owning agents |
+| M8 verification | Automated: in progress. Manual terminal acceptance: pending (no usable interactive terminal in this session) |
+
+Note: every agent worktree was created at `cf33b34` rather than the freeze
+commit; each agent reset its branch to `80ea9b4` before starting, so all
+branches share the frozen baseline.
 
 ## Decisions log
 
 - `KeyAction` is appended after `KeyExit`, so existing key values are unchanged.
 - Snake ignores `KeyAction` (its `HandleInput` only acts on directions).
+- Block Drop lock rule after the 8-reset budget is used: a fresh 400 ms only
+  when landing lower than any previous resting row; otherwise lock at once.
+- Blast Grid scoring attribution: earliest-placed covering bomb.
+- Maze Chase uses no randomness; its constructor takes no RNG.
+- CI's Ubuntu job runs the release builder as a dry run (nothing uploaded).
