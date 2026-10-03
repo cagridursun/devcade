@@ -16,7 +16,10 @@ import "time"
 //     route's first step at once.
 //  4. Otherwise walk toward the nearest safe cell from which a bomb would
 //     threaten an opponent (within huntSteps), else break a crate, else
-//     wander to any safe neighbor.
+//     wander to any safe neighbor. A bot that is safe never steps onto a
+//     cell that is threatened when it would arrive (a pending blast, even
+//     its own): every cell of the route must stay safe from then on. If no
+//     such route exists it stays put.
 //
 // Ties between equally short routes are broken by a direction order the
 // run's seeded RNG shuffles once per decision, so runs are reproducible.
@@ -114,10 +117,12 @@ func (g *Game) danger(extra *bomb) *dangerMap {
 // plan searches decision ticks j = 0..maxSteps for bot i. At tick j the bot
 // moves (or waits) onto a cell it then occupies from now+j*botInterval until
 // the next tick; such a cell must be walkable and not burning meanwhile.
+// With strict set, every route cell must also be unthreatened from its
+// arrival time on, so the route never crosses a future blast.
 // It returns the first cell of the shortest route to a cell satisfying goal
 // (which is told the arrival time), or false if none exists. extra is a
 // hypothetical bomb on the bot's cell that blocks re-entry once left.
-func (g *Game) plan(i int, extra *bomb, dm *dangerMap, order []point, maxSteps int, goal func(p point, arrive time.Duration) bool) (point, bool) {
+func (g *Game) plan(i int, extra *bomb, dm *dangerMap, order []point, maxSteps int, strict bool, goal func(p point, arrive time.Duration) bool) (point, bool) {
 	type node struct{ p, first point }
 	start := g.actors[i].pos
 	frontier := []node{{start, start}}
@@ -129,7 +134,8 @@ func (g *Game) plan(i int, extra *bomb, dm *dangerMap, order []point, maxSteps i
 		for _, n := range frontier {
 			for _, d := range order {
 				q := n.p.add(d)
-				if seen[q.y][q.x] || (q != n.p && !g.walkable(q, i, extra)) || dm.unsafe(q, arrive, leave) {
+				if seen[q.y][q.x] || (q != n.p && !g.walkable(q, i, extra)) || dm.unsafe(q, arrive, leave) ||
+					(strict && dm.threatened(q, arrive)) {
 					continue
 				}
 				seen[q.y][q.x] = true
@@ -175,7 +181,7 @@ func (g *Game) think(i int) {
 	safe := func(p point, arrive time.Duration) bool { return !dm.threatened(p, arrive) }
 
 	if dm.threatened(pos, g.now) {
-		if first, ok := g.plan(i, nil, dm, order, escapeSteps, safe); ok {
+		if first, ok := g.plan(i, nil, dm, order, escapeSteps, false, safe); ok {
 			g.step(i, first)
 		}
 		return // no safe route: hold position
@@ -185,7 +191,7 @@ func (g *Game) think(i int) {
 		nb := &bomb{pos: pos, owner: i, explodeAt: g.now + fuseTime}
 		dm2 := g.danger(nb)
 		safe2 := func(p point, arrive time.Duration) bool { return !dm2.threatened(p, arrive) }
-		if first, ok := g.plan(i, nb, dm2, order, escapeSteps, safe2); ok {
+		if first, ok := g.plan(i, nb, dm2, order, escapeSteps, false, safe2); ok {
 			g.placeBomb(i)
 			g.step(i, first)
 			return
@@ -207,7 +213,7 @@ func (g *Game) think(i int) {
 		goal := func(p point, arrive time.Duration) bool {
 			return p != pos && (target.use == nil || target.use[p.y][p.x]) && safe(p, arrive)
 		}
-		if first, ok := g.plan(i, nil, dm, order, target.steps, goal); ok {
+		if first, ok := g.plan(i, nil, dm, order, target.steps, true, goal); ok {
 			g.step(i, first)
 			return
 		}
