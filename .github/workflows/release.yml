@@ -1,0 +1,83 @@
+name: Release candidate
+
+# Builds the release-candidate artifacts and uploads them as a workflow
+# artifact. It never creates a tag, never publishes a GitHub release and
+# uses no secrets; publishing is a separate, manual owner decision
+# (see docs/releasing.md).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version without a leading "v", for example 1.0.0-rc.1'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-candidate-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GO_VERSION: '1.26.x'
+  GOFLAGS: -mod=readonly
+
+jobs:
+  build:
+    name: build ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      # Passed through the environment, never interpolated into scripts.
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Verify modules
+        run: go mod verify
+
+      - name: Test the release tooling and installers
+        run: go test -count=1 -timeout 120s ./tools/...
+
+      - name: Build archives, SHA256SUMS and manifests
+        run: go run ./tools/release -version "$VERSION" -out dist/release
+
+      - name: Verify checksums
+        working-directory: dist/release
+        run: sha256sum --strict -c SHA256SUMS
+
+      - name: Smoke-test linux/amd64
+        run: |
+          archive="dist/release/devcade_${VERSION}_linux_amd64.tar.gz"
+          tar -tvzf "$archive"
+          tar -tvzf "$archive" | grep -Eq '^-rwxr-xr-x 0/0 .* devcade$'
+          x="$RUNNER_TEMP/smoke"
+          mkdir -p "$x"
+          tar -xzf "$archive" -C "$x"
+          test "$("$x/devcade" --version)" = "devcade $VERSION"
+          "$x/devcade" --help >/dev/null
+          "$x/devcade" list | grep -q "snake"
+
+      - name: Install with install.sh from the built files
+        run: |
+          sh packaging/install/install.sh --version "$VERSION" \
+            --base-url "$PWD/dist/release" --install-dir "$RUNNER_TEMP/bin"
+          test "$("$RUNNER_TEMP/bin/devcade" --version)" = "devcade $VERSION"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: devcade-${{ inputs.version }}
+          path: dist/release/
+          if-no-files-found: error
+          retention-days: 30
