@@ -36,9 +36,16 @@ var usageID = regexp.MustCompile(`^[a-f0-9]{32}$`)
 var username = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
 
 func ValidUsername(s string) bool { return username.MatchString(s) }
-func ValidGame(s string) bool {
-	return s == "snake" || s == "blockdrop" || s == "mazechase" || s == "blastgrid" || s == "terminalfc"
+var validGames = map[string]struct{}{
+	"snake": {}, "blockdrop": {}, "mazechase": {}, "blastgrid": {}, "terminalfc": {},
 }
+
+func ValidGame(s string) bool {
+	_, ok := validGames[s]
+	return ok
+}
+
+func GameCount() int { return len(validGames) }
 func ValidScore(game string, n int) bool {
 	if !ValidGame(game) || n < 0 || n > 1000000000 {
 		return false
