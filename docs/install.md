@@ -9,7 +9,7 @@
 > release downloadable publicly. Until then, build from source (see the
 > [README](../README.md)) or use a release-candidate workflow artifact.
 
-In the commands below, replace `1.0.0` with the release version. Release
+In the commands below, use `1.0.0-rc.1` for the first release candidate, or replace it with a later release version. Release
 files live at:
 
 ```
@@ -39,8 +39,8 @@ browser or other runtime is needed.
 (`<sha256><two spaces><file name>`) and covers the six archives and the two
 installer scripts.
 
-**License:** the owner has not chosen a license yet. No license is granted
-(see `LICENSE-NOTICE.txt`).
+**License:** MIT. `LICENSE-NOTICE.txt` includes the project license and the
+full license texts for dependencies bundled in the binaries.
 
 ## Direct download
 
@@ -49,7 +49,7 @@ Always verify the checksum before extracting or running anything.
 ### macOS and Linux
 
 ```sh
-v=1.0.0
+v=1.0.0-rc.1
 os=linux      # or darwin
 arch=amd64    # or arm64 (Apple silicon, aarch64)
 base=https://github.com/cagridursun/devcade/releases/download/v$v
@@ -72,7 +72,7 @@ Add `~/.local/bin` to `PATH` if it is not there yet.
 ### Windows (PowerShell)
 
 ```powershell
-$v = "1.0.0"; $arch = "amd64"   # or arm64
+$v = "1.0.0-rc.1"; $arch = "amd64"   # or arm64
 $base = "https://github.com/cagridursun/devcade/releases/download/v$v"
 $zip = "devcade_${v}_windows_$arch.zip"
 Invoke-WebRequest -UseBasicParsing "$base/$zip" -OutFile $zip
@@ -113,7 +113,7 @@ Download the script, read it, check it against `SHA256SUMS`, then run it.
 ### macOS and Linux: `install.sh`
 
 ```sh
-v=1.0.0
+v=1.0.0-rc.1
 base=https://github.com/cagridursun/devcade/releases/download/v$v
 curl -fLO "$base/install.sh" && curl -fLO "$base/SHA256SUMS"
 sha256sum --ignore-missing -c SHA256SUMS     # macOS: grep ' install.sh$' SHA256SUMS | shasum -a 256 -c
@@ -129,10 +129,13 @@ with an "unsupported" error. It needs `curl` (or `wget` for https), `tar`,
 ### Windows: `install.ps1`
 
 ```powershell
-$v = "1.0.0"
+$v = "1.0.0-rc.1"
 $base = "https://github.com/cagridursun/devcade/releases/download/v$v"
 Invoke-WebRequest -UseBasicParsing "$base/install.ps1" -OutFile install.ps1
-# optional: compare (Get-FileHash install.ps1).Hash with SHA256SUMS
+Invoke-WebRequest -UseBasicParsing "$base/SHA256SUMS" -OutFile SHA256SUMS
+$line = @(Get-Content SHA256SUMS | Where-Object { $_ -match '^[0-9a-f]{64}  install\.ps1$' })
+if ($line.Count -ne 1) { throw "Missing or duplicate installer checksum" }
+if ((Get-FileHash install.ps1 -Algorithm SHA256).Hash.ToLowerInvariant() -ne $line[0].Substring(0,64)) { throw "Installer checksum mismatch" }
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version $v
 ```
 
@@ -168,7 +171,7 @@ scoop bucket add devcade https://github.com/cagridursun/scoop-devcade
 scoop install devcade/devcade
 ```
 
-The manifest's `license` is `Unknown` because no license has been chosen.
+The generated manifest declares the MIT project license.
 
 ## Unsigned binaries
 

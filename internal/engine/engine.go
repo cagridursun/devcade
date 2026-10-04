@@ -74,6 +74,7 @@ func (e *Engine) Input(ev Event) (done bool) {
 		e.updateRunning()
 	case !e.paused:
 		e.game.HandleInput(key)
+		e.updateRunning() // input can end a run or restart it
 	}
 	return false
 }
@@ -83,6 +84,7 @@ func (e *Engine) Input(ev Event) (done bool) {
 // (it may span the suspended period), and each frame is capped at
 // MaxFrameStep.
 func (e *Engine) Advance(dt time.Duration) {
+	e.updateRunning()
 	if !e.running || dt <= 0 {
 		return
 	}
@@ -91,10 +93,14 @@ func (e *Engine) Advance(dt time.Duration) {
 		return
 	}
 	e.game.Update(min(dt, MaxFrameStep))
+	e.updateRunning() // a gameplay step can finish the run
 }
 
 func (e *Engine) updateRunning() {
 	running := e.Ready() && !e.paused
+	if f, ok := e.game.(Finisher); ok && f.Finished() {
+		running = false
+	}
 	if running && !e.running {
 		e.discardNext = true
 	}

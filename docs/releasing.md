@@ -1,8 +1,9 @@
 # Releasing DevCade
 
-This describes how release-candidate artifacts are built and checked. Nothing
-here publishes anything: creating a tag, a GitHub release, a Homebrew tap or a
-Scoop bucket are separate owner decisions (listed at the end).
+This describes how release artifacts are built, checked and optionally
+published. Pull requests and the default manual workflow run only prepare
+artifacts. Publishing requires an explicit `publish=true` manual run on main
+in a public repository; all three native verification jobs must pass first.
 
 ## What the tooling produces
 
@@ -104,24 +105,41 @@ reference build.
    installer against the local files, for example
    `sh packaging/install/install.sh --version 1.0.0-rc.1 --base-url "$PWD/dist/release" --install-dir /tmp/devcade-bin`
    or `install.ps1 -Version 1.0.0-rc.1 -BaseUrl <full path to dist\release> -InstallDir <dir>`.
-5. Build the reference artifacts in CI: run the **Release candidate**
-   workflow (`.github/workflows/release.yml`, *Actions > Release candidate >
-   Run workflow*) with the version. It tests the tooling and installers,
-   builds on `ubuntu-latest`, runs `sha256sum --strict -c`, smoke-tests the
-   linux/amd64 binary, installs it with `install.sh` from the built files,
-   and uploads `dist/release/` as the workflow artifact
-   `devcade-<version>` (kept 30 days). It has `contents: read` only, uses no
-   secrets, and creates no tag or release.
-6. Compare the workflow artifact's `SHA256SUMS` with the local one. They
-   should match when both used the same Go patch release; if not, use the
-   workflow artifact and note the difference.
-7. Do manual checks on real terminals (see `docs/terminal-checklist.md`).
+5. Open **Actions > Release candidate > Run workflow**. Select `main`,
+   version `1.0.0-rc.1` and leave **publish unchecked** for a preparation run.
+   Pull requests changing release files also run this preparation automatically.
+6. The workflow pins Go 1.26.8, verifies source/modules, builds all six
+   archives and uploads the `devcade-release` workflow artifact (30 days).
+   Linux, macOS and Windows jobs download that same artifact, run native
+   race tests, verify its checksums, install the native archive with the
+   bundled script and run version/help/game-list/non-TTY smoke tests.
+7. Complete or record manual terminal evidence; see the terminal checklist.
+   The first release is a pre-release because full human emulator acceptance
+   on macOS/Linux and all ARM64 targets is not complete.
 
-Publishing is **not** part of these steps. When the owner decides to publish
-(see below), the files to attach to the GitHub release `v<version>` are the
-six archives, `SHA256SUMS`, `install.sh` and `install.ps1` from the same
-build. The formula and manifest go to their own repositories, not to the
-release.
+## Publish the first release
+
+1. Merge the release-preparation PR after both CI and Release candidate checks
+   are green. No tag or release is created by merging.
+2. Make `cagridursun/devcade` public using GitHub repository settings. Check
+   that the README screenshots and source can be opened signed out.
+3. Run **Release candidate** on `main`, version `1.0.0-rc.1`, with
+   **publish checked**. This rebuilds and verifies all artifacts before the
+   publication job can run.
+4. The publish job refuses a private repository, a branch other than main,
+   missing versioned release notes, an existing release or an existing tag.
+   It creates `v1.0.0-rc.1` at the exact workflow commit and uploads the six
+   archives, `SHA256SUMS`, `install.sh` and `install.ps1` from that verified
+   build. A version containing `-` is published as a GitHub pre-release.
+   Only this job has `contents: write`; preparation jobs have read access.
+5. Open the release signed out, download the native archive and checksum file,
+   and try a clean installation from the public URL. These anonymous network
+   checks cannot be completed while the repository/release is private.
+
+The formula and manifest remain in the workflow artifact under `homebrew/`
+and `scoop/`. Tap/bucket creation and code signing are follow-up work.
+A stable `1.0.0` needs its own `docs/releases/1.0.0.md` and a green publication
+run; never replace the assets of an already published version.
 
 If the release URL changes, regenerate only the manifests:
 
@@ -152,31 +170,15 @@ fixture releases built in a temporary directory (no network):
   entry, unsupported architecture, invalid version, refusing `http://`,
   refusing to overwrite a foreign file, `-Force`, and upgrading.
 
-## Outstanding owner decisions
+## Distribution status
 
-These need the owner; the tooling does not do any of them.
-
-1. **License.** None is chosen, so archives ship `LICENSE-NOTICE.txt` saying
-   no license is granted, the formula has no `license` line and the Scoop
-   manifest says `Unknown`. "Non-commercial" is an intent, not a license.
-   Homebrew core in particular requires an accepted open-source license.
-   After choosing one: add `LICENSE`, update `packaging/LICENSE-NOTICE.txt`
-   (or ship the license file in the archives), and set `license` in both
-   templates.
-2. **Repository visibility / download access.** The repository is private,
-   so release assets cannot be downloaded anonymously: the installers,
-   Homebrew and Scoop will all fail with download errors until the release
-   assets are publicly reachable.
-3. **Tag and GitHub release.** Whether and when to create tag `v<version>`
-   and publish a (pre-)release with the artifacts listed above.
-4. **Homebrew tap.** Whether to create `cagridursun/homebrew-devcade` and
-   commit `Formula/devcade.rb` from the generated `homebrew/devcade.rb`
-   (enables `brew install cagridursun/devcade/devcade`). Submitting to
-   Homebrew core is a further, separate decision.
-5. **Scoop bucket.** Whether to create a bucket repository (for example
-   `cagridursun/scoop-devcade`) with the generated `scoop/devcade.json`, or
-   to submit to an existing bucket. winget is not prepared.
-6. **Signing and notarization.** Binaries are unsigned. macOS notarization
-   needs an Apple Developer ID; Windows Authenticode needs a code-signing
-   certificate. Both need secrets in CI and changes to the build (signing must
-   happen before archiving and checksumming).
+- License: MIT; binary archives carry the project license and complete
+  third-party license texts. Update `THIRD_PARTY_NOTICES.txt` and
+  `packaging/LICENSE-NOTICE.txt` if dependencies change.
+- Public visibility and the explicit publish run are the remaining launch
+  operations. The available GitHub connector cannot change repository
+  visibility or dispatch a workflow; perform those operations in GitHub.
+- Homebrew tap and Scoop bucket are not created. The generated manifests are
+  ready for separate repositories after public release downloads work.
+- Signing/notarization remain optional follow-up work requiring the owner's
+  certificates. No certificate or account is required for the unsigned RC.

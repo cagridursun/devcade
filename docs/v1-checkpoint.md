@@ -101,11 +101,20 @@ branches share the frozen baseline.
 - Maze Chase uses no randomness; its constructor takes no RNG.
 - CI's Ubuntu job runs the release builder as a dry run (nothing uploaded).
 
-## Remaining blockers (owner)
+## Release preparation (2026-10-04)
 
-- Manual real-terminal acceptance of all four games (docs/terminal-checklist.md).
-- License choice.
-- Repository visibility or another public download location.
-- Whether to tag and publish `v1.0.0-rc.1` / `v1.0.0` as a GitHub release.
-- Whether to create the Homebrew tap and Scoop bucket repositories.
-- Code signing / notarization (needs credentials).
+- PR #4 merged; CI synchronization fix `1165c6d` is included on main.
+- Owner reports successful Windows gameplay of all four games.
+- Four 80×24 PTY captures added to the README; normal quit and TTY restoration
+  verified for every game on Linux amd64.
+- Restart timing fixed: the first frame spanning a finished run is discarded.
+- MIT license added; project and dependency license texts bundled in archives.
+- Release workflow prepares artifacts on PRs and verifies actual packaged
+  native binaries/installers on three OSes. Publication is explicit, main-only
+  and requires public repository visibility.
+- Versioned RC release notes prepared in `docs/releases/1.0.0-rc.1.md`.
+
+Remaining: merge release preparation after green checks, make repo public,
+run the publishing workflow, verify anonymous public downloads, collect
+remaining human macOS/Linux acceptance. Homebrew/Scoop repositories and
+signing are deferred; cross-builds are not manual platform acceptance.

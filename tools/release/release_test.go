@@ -21,7 +21,7 @@ var testMTime = time.Unix(defaultEpoch, 0).UTC()
 
 const (
 	fakeReadme = "# DevCade\n\nfixture readme\n"
-	fakeNotice = "no license granted\n"
+	fakeNotice = "MIT License fixture\n"
 )
 
 func fakeBinary(t target) []byte {
@@ -204,6 +204,26 @@ func TestNormalizeNewlines(t *testing.T) {
 	}
 }
 
+func TestDistributionLicenseIncludesProjectAndDependencies(t *testing.T) {
+	root := filepath.Join("..", "..")
+	license, err := os.ReadFile(filepath.Join(root, "LICENSE"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	notice, err := os.ReadFile(filepath.Join(root, "packaging", noticeName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(notice, normalizeNewlines(license)) {
+		t.Fatal("binary distribution omits the project license")
+	}
+	for _, component := range []string{"github.com/gdamore/tcell/v2", "github.com/gdamore/encoding", "github.com/lucasb-eyer/go-colorful", "github.com/rivo/uniseg", "golang.org/x/sys", "golang.org/x/term", "golang.org/x/text", "Go runtime and standard library"} {
+		if !bytes.Contains(notice, []byte(component)) {
+			t.Errorf("binary distribution omits notices for %s", component)
+		}
+	}
+}
+
 var sumsLine = regexp.MustCompile(`^[0-9a-f]{64}  [A-Za-z0-9._+-]+$`)
 
 func TestChecksumFile(t *testing.T) {
@@ -331,7 +351,7 @@ func TestManifestsFromTemplates(t *testing.T) {
 	if err := json.Unmarshal(js, &scoop); err != nil {
 		t.Fatalf("scoop manifest: %v\n%s", err, js)
 	}
-	if scoop.Version != v || scoop.Bin != "devcade.exe" || scoop.License != "Unknown" || len(scoop.Architecture) != 2 {
+	if scoop.Version != v || scoop.Bin != "devcade.exe" || scoop.License != "MIT" || len(scoop.Architecture) != 2 {
 		t.Errorf("scoop manifest = %+v", scoop)
 	}
 	for key, tg := range map[string]target{"64bit": {"windows", "amd64"}, "arm64": {"windows", "arm64"}} {

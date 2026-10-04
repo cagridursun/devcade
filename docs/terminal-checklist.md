@@ -1,6 +1,6 @@
 # Real-terminal acceptance checklist
 
-**Status: pending.** Automated checks use tcell's simulated screen, and
+**Status: partial.** Automated checks use tcell's simulated screen, and
 cross-builds only prove the code compiles. The v1 release (terminal core,
 menu and all four games) is accepted only after the surfaces below have been
 tested by hand. Earlier results are kept in their own column and do not
@@ -191,3 +191,14 @@ in a broken state, run `reset` (POSIX) or open a new tab.
 
 Add one row per run to the surface table above, and record any failures here
 with steps to reproduce.
+
+## 2026-10-04 release preparation evidence
+
+- Owner reports having played Snake, Block Drop, Maze Chase and Blast Grid
+  successfully on Windows. OS build, emulator, shell and individual checklist
+  steps were not supplied, so this does not mark every surface/step accepted.
+- Linux amd64 PTY capture: all four native binaries started, responded to
+  gameplay keys, quit with Q/status 0 and restored the original TTY attributes.
+  Frames captured at 80×24; see `screenshots/README.md`.
+- This PTY evidence does not replace human macOS/Linux emulator acceptance.
+  Cross-builds are not manual ARM64 or Intel macOS gameplay tests.

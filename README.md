@@ -8,6 +8,23 @@ another terminal, run `devcade`, pick a game and play without leaving the
 terminal: no browser, no graphical window, and no language runtime needed for
 the distributed binaries. It runs on Windows, macOS and Linux.
 
+<table>
+  <tr>
+    <td><strong>Snake</strong><br><img src="docs/screenshots/snake.png" alt="Snake running in an 80 by 24 terminal" width="480"></td>
+    <td><strong>Block Drop</strong><br><img src="docs/screenshots/blockdrop.png" alt="Block Drop with a falling piece, stack and next-piece preview" width="480"></td>
+  </tr>
+  <tr>
+    <td><strong>Maze Chase</strong><br><img src="docs/screenshots/mazechase.png" alt="Maze Chase with pellets, four chasers and the player" width="480"></td>
+    <td><strong>Blast Grid</strong><br><img src="docs/screenshots/blastgrid.png" alt="Blast Grid with bombs, crates and three bots" width="480"></td>
+  </tr>
+</table>
+
+Captured from the running Linux binary through an 80×24 pseudo-terminal;
+these are actual game frames, not mockups. See [capture details](docs/screenshots/README.md).
+
+[Release downloads](https://github.com/cagridursun/devcade/releases) ·
+[Installation](docs/install.md) · [Game rules](docs/games.md)
+
 ## Status: v1 release candidate
 
 **All four v1 games are playable.** Running `devcade` opens the arcade menu:
@@ -26,11 +43,11 @@ resize and terminal restoration.
 
 | Area | Status |
 | --- | --- |
-| Code: four games, menu, CLI, terminal core | Complete on the v1 integration branch, with automated tests (see [CI](.github/workflows/ci.yml)) |
+| Code: four games, menu, CLI, terminal core | Merged into main, with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
 | Distribution | **Not published.** No GitHub release, tap or bucket exists yet, and the repository is private. See [docs/install.md](docs/install.md) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
-| License | Not chosen yet (see below) |
+| License | MIT; dependency notices included in binary archives |
 
 `brew install devcade` and `scoop install devcade` do **not** work yet.
 
@@ -208,11 +225,11 @@ used for the interactive-terminal check.
 
 | Target | Native tests | Cross-build (CGO_ENABLED=0) | Interactive terminal |
 | --- | --- | --- | --- |
-| Windows amd64 | Local (Windows 11) + CI | Yes | Owner-reported: M1 diagnostic input in Windows Terminal; Snake "works without problems" (environment not recorded). Block Drop, Maze Chase, Blast Grid pending |
+| Windows amd64 | Local (Windows 11) + CI | Yes | Owner-reported successful gameplay of all four games (2026-10-04); detailed terminal/checklist data not recorded |
 | Windows arm64 | — | Yes | Untested |
 | macOS arm64 (Apple Silicon) | CI (`macos-latest`) | Yes | Pending |
 | macOS amd64 | — | Yes | Untested |
-| Linux amd64 | CI (`ubuntu-latest`) | Yes | M1 diagnostic PTY smoke test (reported earlier). Games pending |
+| Linux amd64 | CI (`ubuntu-latest`) | Yes | All four games: PTY startup, gameplay input, normal quit and TTY restoration verified (2026-10-04). Human emulator acceptance pending |
 | Linux arm64 | — | Yes | Untested |
 
 Automated tests run every game through the real terminal loop on tcell's
@@ -228,10 +245,10 @@ use Windows Terminal, or run `winpty devcade` there.
 | M0/M1 | Bootstrap and terminal core | Merged; manual compatibility checks tracked |
 | M2 | Arcade menu, catalog and built-in selection | Merged |
 | M3 | Snake | Merged |
-| M4 | Block Drop | Done on the v1 integration branch |
-| M5 | Maze Chase | Done on the v1 integration branch |
-| M6 | Blast Grid | Done on the v1 integration branch |
-| M7 | Packaging, distribution and installers | Tooling done; publication pending owner decisions |
+| M4 | Block Drop | Merged |
+| M5 | Maze Chase | Merged |
+| M6 | Blast Grid | Merged |
+| M7 | Packaging, distribution and installers | Archives, installers and gated publishing workflow ready; public release pending |
 | M8 | Four-game v1.0 | Release candidate; manual acceptance and publication pending |
 
 See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.md).
@@ -240,5 +257,7 @@ scope for v1.
 
 ## License
 
-The license has not been chosen yet. Until the owner picks one, no license is
-granted. Release archives include `LICENSE-NOTICE.txt` saying so.
+MIT — see [LICENSE](LICENSE). DevCade is a free hobby project; MIT permits
+commercial use as well. Dependencies retain their own licenses. Binary
+archives include the complete MIT license and third-party license texts in
+`LICENSE-NOTICE.txt`; see [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt).
