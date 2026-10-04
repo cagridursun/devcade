@@ -12,16 +12,19 @@ leaderboard identity is included. See [analytics.md](analytics.md).
 
 ## Scoreboard
 
-The existing API does not enable browser CORS. The `Project website` workflow
-therefore reads the four public, read-only leaderboard endpoints during the
-site build and publishes a small `leaderboards.json` alongside the page.
-The website fetches this file from its own origin. It needs no secrets or
-changes to the deployed leaderboard container, proxy or player clients.
+On opening the page or pressing Refresh, the browser reads the four public
+leaderboard endpoints directly. The server permits GET ranking reads from
+`DEVCADE_SITE_ORIGIN` (default `https://cagridursun.github.io`); it does not
+permit cross-origin registration, score writes or admin reads. No credentials
+are sent. **Updating the deployed leaderboard container is required** for this
+read-only CORS support; updating the website alone is not sufficient.
 
-The schedule requests an update roughly every 15 minutes, at minutes 7, 22,
-37 and 52. GitHub may delay scheduled runs. Each board shows its own successful
-fetch time; a browser flags scores older than 45 minutes. Refresh reloads the
-latest published JSON; it does not force an API sync or a new deployment.
+The `Project website` workflow still publishes `leaderboards.json` as a
+fallback. It requests snapshots at minutes 7, 22, 37 and 52; GitHub may delay
+scheduled runs. Successful live reads do not wait for that schedule. A failed
+live read preserves the newest valid copy per game, including an in-memory
+live board newer than the published file, with its original timestamp and an
+explicit stale warning. The browser also flags timestamps older than 45 minutes.
 
 An unavailable API preserves the previous valid board and its original
 timestamp, explicitly marked stale. Without previous data, the page shows

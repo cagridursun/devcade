@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { games, cleanRows, cleanSnapshot, isStale } from '../../site/data.mjs';
 import { collectBoards, fetchJSON } from './snapshot.mjs';
+import { loadBoards } from '../../site/leaderboards.mjs';
 
 const now = '2026-10-04T14:00:00.000Z';
 const previousDate = '2026-10-04T13:45:00.000Z';
@@ -37,6 +38,39 @@ test('one failed game preserves its last successful rows and timestamp', async (
   assert.deepEqual(data.boards.mazechase, { ...old().boards.mazechase, status: 'stale' });
   assert.equal(data.boards.snake.updated_at, now);
   assert.equal(data.boards.snake.status, 'ok');
+});
+
+test('page opening and Refresh read live scores instead of waiting for a Pages deployment', async () => {
+  let score = 310;
+  const fetcher = async (url, options) => {
+    assert.equal(options.cache, 'no-store');
+    assert.equal(options.credentials, 'omit');
+    if (String(url) === 'snapshot') return response(old());
+    return response({ rows: [{ ...row, score }] });
+  };
+  const first = await loadBoards({ endpoint: 'https://example.test', snapshotURL: 'snapshot', now, fetcher });
+  assert.equal(first.boards.snake.rows[0].score, 310);
+  score = 410;
+  const refreshed = await loadBoards({ endpoint: 'https://example.test', snapshotURL: 'snapshot', previous: first, now, fetcher });
+  assert.equal(refreshed.boards.snake.rows[0].score, 410);
+  assert.equal(refreshed.boards.snake.status, 'ok');
+  assert.equal(Object.hasOwn(refreshed.boards.snake.rows[0], 'player_id'), false);
+});
+
+test('a failed live read keeps newer in-memory scores ahead of the older published copy', async () => {
+  const recent = old(); recent.boards.snake.updated_at = now; recent.boards.snake.rows = [{ ...row, score: 410 }];
+  const result = await loadBoards({ endpoint: 'https://example.test', snapshotURL: 'snapshot', previous: recent, now,
+    fetcher: async url => { if (String(url) === 'snapshot') return response(old()); throw new Error('CORS/network unavailable'); } });
+  assert.equal(result.boards.snake.rows[0].score, 410);
+  assert.equal(result.boards.snake.updated_at, now);
+  assert.equal(result.boards.snake.status, 'stale');
+  assert.equal(result.boards.mazechase.updated_at, previousDate);
+});
+
+test('live scores remain available even if the static snapshot cannot load', async () => {
+  const result = await loadBoards({ endpoint: 'https://example.test', snapshotURL: 'snapshot', now,
+    fetcher: async url => { if (String(url) === 'snapshot') throw new Error('Pages unavailable'); return response({ rows: [] }); } });
+  for (const game of games) assert.equal(result.boards[game].status, 'ok');
 });
 
 test('invalid previous data is discarded rather than published', async () => {

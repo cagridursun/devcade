@@ -54,6 +54,9 @@ func TestBuiltinFactoriesBuildFreshGames(t *testing.T) {
 		if _, ok := a.(engine.Finisher); !ok {
 			t.Fatalf("%s: must implement engine.Finisher so its end screen cannot be paused", e.ID)
 		}
+		if _, ok := a.(interface{ Score() int }); !ok {
+			t.Fatalf("%s: must expose its score for personal bests and leaderboard submissions", e.ID)
+		}
 	}
 }
 

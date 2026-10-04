@@ -1,6 +1,15 @@
 # Changelog
 
-## 1.0.0-rc.1 (release candidate, not published)
+## Unreleased
+
+- Fix Maze Chase exposing no score to the shared personal-best/leaderboard path.
+  Add real-game completion, persistence and submission regression coverage.
+- Read public leaderboard scores on website opening and Refresh, with restricted
+  read-only CORS and the newest available per-game snapshot as a fallback.
+- Add a private operator analytics panel and independent, default-off game/site
+  usage sharing; download counters are distinct from active installations.
+
+## 1.0.0-rc.1 (published 2026-10-04)
 
 First four-game release candidate.
 
@@ -50,9 +59,9 @@ First four-game release candidate.
 - A manual `release` GitHub workflow that builds and uploads the artifacts
   without publishing anything.
 
-### Not done yet
-- No GitHub release, tag, Homebrew tap or Scoop bucket has been published, and
-  the repository is private.
+### Acceptance status
+- Public release candidate, GitHub Pages website, Homebrew tap and Scoop bucket
+  are published. Stable v1.0 acceptance remains tracked separately.
 - Binaries are not signed or notarized.
 - The project is licensed under MIT.
 - Real-terminal acceptance is incomplete; see `docs/terminal-checklist.md`.

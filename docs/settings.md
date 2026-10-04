@@ -10,6 +10,7 @@ immediately and are saved for the next run.
 | Color palette | Black / white, Midnight, Colorful | Black / white |
 | Username | 3–20 lowercase ASCII letters, digits or underscores | Guest until chosen |
 | Global score sharing | Off / On | Off |
+| Usage statistics | Off / On, independent of score sharing | Off |
 
 The language applies to menus, game HUDs, controls, pause/resize warnings and
 end screens. Game names, key names, usernames and board glyphs stay stable.
@@ -63,3 +64,12 @@ credential cannot reclaim an occupied online alias automatically. Changing
 the username creates a new online identity; old published rows remain.
 Turning sharing off stops future submissions; it does not remove old rows.
 See [leaderboard deployment and API](leaderboard.md).
+
+## Usage statistics
+
+Opt-in usage measurement uses a separate random installation ID and sends no
+username or leaderboard credential. See [analytics.md](analytics.md) for the
+data fields, private panel and deployment. The published v1.0.0-rc.1 predates
+this setting. It also lacks the Maze Chase score accessor: completed Maze Chase
+scores begin being recorded only by clients built with the subsequent fix.
+Older runs that never saved a best cannot be reconstructed retroactively.

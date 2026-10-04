@@ -48,7 +48,12 @@ func run() error {
 			return err
 		}
 	}
-	var handler http.Handler = h
+	origin := os.Getenv("DEVCADE_SITE_ORIGIN")
+	if origin == "" {
+		origin = "https://cagridursun.github.io"
+	}
+	scoreHandler := leaderboard.WithReadOrigin(h, origin)
+	var handler http.Handler = scoreHandler
 	var downloads *metrics.DownloadStore
 	if password != "" {
 		store, err := metrics.Open(filepath.Join(filepath.Dir(*data), "metrics.jsonl"))
@@ -58,10 +63,6 @@ func run() error {
 		downloads, err = metrics.OpenDownloads(filepath.Join(filepath.Dir(*data), "downloads.json"))
 		if err != nil {
 			return err
-		}
-		origin := os.Getenv("DEVCADE_SITE_ORIGIN")
-		if origin == "" {
-			origin = "https://cagridursun.github.io"
 		}
 		stats := &metrics.Server{Store: store, Downloads: downloads, Password: password, SiteOrigin: origin}
 		if *proxy != "" {
@@ -74,7 +75,7 @@ func run() error {
 				stats.ServeHTTP(w, r)
 				return
 			}
-			h.ServeHTTP(w, r)
+			scoreHandler.ServeHTTP(w, r)
 		})
 	}
 	srv := &http.Server{Addr: *addr, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 5 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 8192}
