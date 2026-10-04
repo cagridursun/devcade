@@ -16,8 +16,9 @@ const fetcher = offline ? async () => { throw new Error('Offline validation'); }
 const snapshot = await collectBoards({ endpoint, previous, fetcher });
 await rm(output, { recursive: true, force: true });
 await mkdir(resolve(output, 'assets'), { recursive: true });
-for (const file of ['index.html', 'style.css', 'app.mjs', 'data.mjs', 'favicon.svg']) await cp(resolve(root, 'site', file), resolve(output, file));
+for (const file of ['index.html', 'style.css', 'app.mjs', 'data.mjs', 'favicon.svg', 'animation.css', 'snake-preview.mjs']) await cp(resolve(root, 'site', file), resolve(output, file));
 for (const game of ['snake', 'blockdrop', 'mazechase', 'blastgrid']) await cp(resolve(root, 'docs/screenshots', `${game}.png`), resolve(output, 'assets', `${game}.png`));
+await cp(resolve(root, 'site/assets/snake-demo.json'), resolve(output, 'assets/snake-demo.json'));
 await writeFile(resolve(output, 'leaderboards.json'), `${JSON.stringify(snapshot)}\n`);
 await writeFile(resolve(output, '.nojekyll'), '');
 for (const [game, board] of Object.entries(snapshot.boards)) console.log(`${game}: ${board.status}, ${board.rows.length} rows, updated ${board.updated_at || 'unavailable'}`);

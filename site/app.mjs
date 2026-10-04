@@ -1,10 +1,12 @@
 import { cleanSnapshot, gameNames, isStale } from './data.mjs';
+import { initSnakePreview } from './snake-preview.mjs';
 
 const messages = {
   en: {
     skip: 'Skip to content', nav: 'Main navigation', language: 'Page language', games: 'Games', install: 'Install', leaderboard: 'Leaderboard',
     eyebrow: 'A small break between builds', headline: ['Your terminal.', 'Your next high score.'],
     intro: 'Waiting on a build, a test run or an AI response? Open another terminal and play. DevCade brings four arcade games to the place you already work.',
+    playAnimation: 'Play animation', pauseAnimation: 'Pause animation', animationAlt: 'Animated replay of actual Snake gameplay',
     get: 'Install DevCade', github: 'View on GitHub', open: 'Free & open source', realframe: 'Actual gameplay. Right in your terminal.',
     four: 'arcade games', five: 'in-game languages', three: 'colour palettes', offline: 'offline play', collection: 'The collection', pick: 'Pick your next break.', coming: 'New games coming soon.',
     snake: 'Eat, grow, turn. Try to beat your best without running into yourself.',
@@ -26,6 +28,7 @@ const messages = {
     skip: 'İçeriğe geç', nav: 'Ana gezinme', language: 'Sayfa dili', games: 'Oyunlar', install: 'Kurulum', leaderboard: 'Skor tablosu',
     eyebrow: "Build'ler arasında küçük bir mola", headline: ['Terminalin açık.', 'Sıradaki rekor senin.'],
     intro: 'Build, test ya da AI cevabı mı bekliyorsun? Başka bir terminal açıp oyna. DevCade, dört arcade oyununu zaten çalıştığın yere getiriyor.',
+    playAnimation: 'Animasyonu oynat', pauseAnimation: 'Animasyonu duraklat', animationAlt: 'Gerçek Snake oyunundan animasyonlu tekrar',
     get: "DevCade'i yükle", github: "GitHub'da incele", open: 'Ücretsiz ve açık kaynak', realframe: 'Gerçek oyun görüntüsü. Doğrudan terminalinde.',
     four: 'arcade oyunu', five: 'oyun içi dil', three: 'renk paleti', offline: 'çevrimdışı oyun', collection: 'Oyun koleksiyonu', pick: 'Molanda ne oynayacaksın?', coming: 'Yeni oyunlar yakında.',
     snake: 'Ye, büyü, dön. Kendine çarpmadan kendi rekorunu geçmeye çalış.',
@@ -44,6 +47,8 @@ const messages = {
     follow: "X / Twitter'da takip et", footer: 'Yazılımcılar için geliştirildi. MIT lisanslı.', feedback: 'Görüş ve fikirlerini paylaş ↗',
   },
 };
+
+const preview = initSnakePreview();
 
 let language = 'en';
 let selected = 'snake';
@@ -101,6 +106,7 @@ function setLanguage(next) {
   for (const button of document.querySelectorAll('[data-language]')) button.setAttribute('aria-pressed', String(button.dataset.language === next));
   try { localStorage.setItem('devcade-page-language', next); } catch { /* Private browsing may disable storage. */ }
   document.querySelector('#copy-status').textContent = '';
+  preview.setLabels({ play: t('playAnimation'), pause: t('pauseAnimation'), alt: t('animationAlt') });
   renderBoard();
 }
 
