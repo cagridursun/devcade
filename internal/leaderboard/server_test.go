@@ -44,7 +44,7 @@ func TestTwoClientsShareBestPerGameAndSurviveRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	var wg sync.WaitGroup
-	for _, game := range []string{"snake", "blockdrop", "mazechase", "blastgrid"} {
+	for _, game := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "terminalfc"} {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
