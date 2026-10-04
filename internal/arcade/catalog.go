@@ -6,6 +6,9 @@ import (
 	"fmt"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/games/blastgrid"
+	"github.com/cagridursun/devcade/internal/games/blockdrop"
+	"github.com/cagridursun/devcade/internal/games/mazechase"
 	"github.com/cagridursun/devcade/internal/games/snake"
 )
 
@@ -94,12 +97,12 @@ func Builtin() Catalog {
 	c, err := NewCatalog(
 		Entry{ID: "snake", Name: "Snake", New: snake.New,
 			Description: "Steer a growing snake to food without hitting walls or yourself."},
-		Entry{ID: "blockdrop", Name: "Block Drop", Milestone: "M4",
+		Entry{ID: "blockdrop", Name: "Block Drop", New: blockdrop.New,
 			Description: "Rotate falling blocks and clear full rows before the stack tops out."},
-		Entry{ID: "mazechase", Name: "Maze Chase", Milestone: "M5",
-			Description: "Clear the maze of dots while staying ahead of the chasers."},
-		Entry{ID: "blastgrid", Name: "Blast Grid", Milestone: "M6",
-			Description: "Drop timed blasts to break walls and outlast rivals on the grid."},
+		Entry{ID: "mazechase", Name: "Maze Chase", New: mazechase.New,
+			Description: "Clear the maze of dots, dodge four chasers, power up to eat them."},
+		Entry{ID: "blastgrid", Name: "Blast Grid", New: blastgrid.New,
+			Description: "Bomb crates and outlast three bots in a fixed 17x13 blast arena."},
 	)
 	if err != nil {
 		panic(err) // a programming error in this table; covered by tests

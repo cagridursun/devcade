@@ -10,10 +10,10 @@ import (
 func TestBuiltinCatalog(t *testing.T) {
 	c := Builtin()
 	want := []struct{ id, name, milestone string }{
-		{"snake", "Snake", ""}, // playable since M3
-		{"blockdrop", "Block Drop", "M4"},
-		{"mazechase", "Maze Chase", "M5"},
-		{"blastgrid", "Blast Grid", "M6"},
+		{"snake", "Snake", ""},          // M3
+		{"blockdrop", "Block Drop", ""}, // M4
+		{"mazechase", "Maze Chase", ""}, // M5
+		{"blastgrid", "Blast Grid", ""}, // M6
 	}
 	if c.Len() != len(want) {
 		t.Fatalf("Len = %d, want %d", c.Len(), len(want))
@@ -40,14 +40,20 @@ func TestBuiltinCatalog(t *testing.T) {
 	}
 }
 
-func TestBuiltinSnakeFactoryBuildsFreshGames(t *testing.T) {
-	e, _ := Builtin().Lookup("snake")
-	a, b := e.New(), e.New()
-	if a == nil || a == b {
-		t.Fatal("each launch must build a new game")
-	}
-	if w, h := a.MinimumSize(); w != 80 || h != 24 {
-		t.Fatalf("Snake minimum size %dx%d", w, h)
+func TestBuiltinFactoriesBuildFreshGames(t *testing.T) {
+	c := Builtin()
+	for i := range c.Len() {
+		e := c.Entry(i)
+		a, b := e.New(), e.New()
+		if a == nil || a == b {
+			t.Fatalf("%s: each launch must build a new game", e.ID)
+		}
+		if w, h := a.MinimumSize(); w != 80 || h != 24 {
+			t.Fatalf("%s: minimum size %dx%d", e.ID, w, h)
+		}
+		if _, ok := a.(engine.Finisher); !ok {
+			t.Fatalf("%s: must implement engine.Finisher so its end screen cannot be paused", e.ID)
+		}
 	}
 }
 

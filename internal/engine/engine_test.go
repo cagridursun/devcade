@@ -183,13 +183,14 @@ func TestBackAndExitAlwaysEndTheActivity(t *testing.T) {
 	}
 }
 
-func TestSelectReachesGameButCharAloneDoesNot(t *testing.T) {
+func TestSelectAndActionReachGameButCharAloneDoesNot(t *testing.T) {
 	g := &fakeGame{}
 	e := New(g)
 	e.Resize(80, 24)
 	e.Input(Event{Key: KeySelect})
+	e.Input(Event{Key: KeyAction, Char: 'z'})
 	e.Input(Event{Char: 'x'})
-	if fmt.Sprint(g.inputs) != fmt.Sprint([]Key{KeySelect}) {
+	if fmt.Sprint(g.inputs) != fmt.Sprint([]Key{KeySelect, KeyAction}) {
 		t.Fatalf("inputs = %v", g.inputs)
 	}
 }

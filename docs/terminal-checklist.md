@@ -1,9 +1,9 @@
 # Real-terminal acceptance checklist
 
 **Status: pending.** Automated checks use tcell's simulated screen, and
-cross-builds only prove the code compiles. The M1 terminal core (merged), the
-M2 arcade menu and M3 Snake are accepted only after the surfaces below have
-been tested by hand. Earlier results are kept in their own column and do not
+cross-builds only prove the code compiles. The v1 release (terminal core,
+menu and all four games) is accepted only after the surfaces below have been
+tested by hand. Earlier results are kept in their own column and do not
 count toward later milestones.
 
 A *shell* (PowerShell, cmd, bash, zsh) is not a *terminal emulator* (Windows
@@ -14,18 +14,19 @@ terminal emulator test.
 
 ## Surfaces
 
-| Platform | Terminal emulator | Shell | OS / version | Terminal version | M1 diagnostic (section B) | M2 menu (section A) | M3 Snake (section D) | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Windows | Windows Terminal | PowerShell | | | Pending | Pending | Pending | |
-| Windows | Windows Terminal | Not recorded | Not recorded | Not recorded | **Partial (owner-reported, 2026-10-04, before M2):** startup, immediate input and arrow/WASD direction control work | Pending | Pending | Pause, resize, quit and restoration not yet reported. M1 evidence only; not an M2 or M3 test |
-| Windows | Windows Terminal | cmd | | | Pending | Pending | Pending | |
-| Windows | Legacy console (conhost.exe, Windows 10 1809+ with VT support) | PowerShell or cmd | | | Pending | Pending | Pending | Best-effort target; consoles without VT support are rejected |
-| macOS | Terminal.app | zsh | | | Pending | Pending | Pending | |
-| macOS | iTerm2 | zsh | | | Pending | Pending | Pending | |
-| macOS | Apple Silicon (`darwin/arm64` binary), either terminal | zsh | | | Pending | Pending | Pending | |
-| Linux | GNOME Terminal (or equivalent: name it) | bash | | | Pending | Pending | Pending | |
-| Linux | tmux inside any terminal (record both) | bash | | | Pending | Pending | Pending | Check `TERM` inside tmux |
-| Linux amd64 | PTY smoke test (not an emulator) | n/a | Not recorded | n/a | **Passed (reported before M2):** startup, direction input, pause, undersized resize, quit while undersized, restored TTY attributes | Pending | Pending | Covers the M1 diagnostic only |
+| Platform | Terminal emulator | Shell | OS / version | Terminal version | Diagnostic (B) | Menu (A) | Snake (D) | Block Drop (E) | Maze Chase (F) | Blast Grid (G) | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Windows | Windows Terminal | PowerShell |  |  | Pending | Pending | Pending | Pending | Pending | Pending |  |
+| Windows | Windows Terminal | Not recorded | Not recorded | Not recorded | **Partial (owner-reported, 2026-10-04, before M2):** startup, immediate input and arrow/WASD direction control work | Pending | Pending | Pending | Pending | Pending | Pause, resize, quit and restoration not yet reported. M1 evidence only |
+| Windows | Windows Terminal | cmd |  |  | Pending | Pending | Pending | Pending | Pending | Pending |  |
+| Windows | Legacy console (conhost.exe, Windows 10 1809+ with VT support) | PowerShell or cmd |  |  | Pending | Pending | Pending | Pending | Pending | Pending | Best-effort target; consoles without VT support are rejected |
+| macOS | Terminal.app | zsh |  |  | Pending | Pending | Pending | Pending | Pending | Pending |  |
+| macOS | iTerm2 | zsh |  |  | Pending | Pending | Pending | Pending | Pending | Pending |  |
+| macOS | Apple Silicon (`darwin/arm64` binary), either terminal | zsh |  |  | Pending | Pending | Pending | Pending | Pending | Pending |  |
+| Linux | GNOME Terminal (or equivalent: name it) | bash |  |  | Pending | Pending | Pending | Pending | Pending | Pending |  |
+| Linux | tmux inside any terminal (record both) | bash |  |  | Pending | Pending | Pending | Pending | Pending | Pending | Check `TERM` inside tmux |
+| Not recorded | Owner's terminal (not recorded) | Not recorded | Not recorded | Not recorded | n/a | n/a | **Passed (owner-reported, M3 review):** "works without problems" | n/a | n/a | n/a | Owner's own play test of Snake. Environment and individual steps not recorded |
+| Linux amd64 | PTY smoke test (not an emulator) | n/a | Not recorded | n/a | **Passed (reported before M2):** startup, direction input, pause, undersized resize, quit while undersized, restored TTY attributes | Pending | Pending | Pending | Pending | Pending | Covers the M1 diagnostic only |
 
 Consoles that cannot enable VT output processing (Windows before 10 version
 1809) are rejected at startup with an error that names Windows Terminal or a
@@ -46,18 +47,15 @@ be checked.
 
 1. **Startup.** At 80×24 or larger, `devcade` opens the menu (not the
    diagnostic) in the alternate screen with the cursor hidden. It shows the
-   title, Snake / Block Drop / Maze Chase / Blast Grid in that order, with
-   Snake `Available` and the others `Coming soon (M4)`…`(M6)`, a `>` marker
-   on Snake, Snake's description, a `D  Terminal diagnostic` line and a
-   footer.
-2. **Footer.** On Snake the footer says `Enter: play`. On a coming-soon game
-   it says `Enter: details`, never `Enter: play`.
+   title, Snake / Block Drop / Maze Chase / Blast Grid in that order, all
+   `Available`, a `>` marker on Snake, the highlighted game's description, a
+   `D  Terminal diagnostic` line and a footer.
+2. **Footer.** The footer says `Enter: play`.
 3. **Selection.** `Down`/`Up`, `s`/`w` and `S`/`W` move the marker
    immediately. It wraps from the last game to the first and back. The
    description follows the marker. Holding a key causes no growing lag.
-4. **Unavailable entry.** `Enter` on Block Drop, Maze Chase or Blast Grid keeps the menu open and shows
-   "<Game> is not playable yet: it is planned for M<n>." Moving the selection
-   clears the note.
+4. **Launch.** `Enter` on each game opens it with the footer
+   `Q / Esc: back to menu   Ctrl+C: quit DevCade`.
 5. **Diagnostic from the menu.** `D` (and `d`) opens the diagnostic with a
    footer `Q / Esc: back to menu   Ctrl+C: quit DevCade`. Run steps B2–B4.
    Then `Q` returns to the menu with the same game selected. Repeat with
@@ -119,15 +117,59 @@ be checked.
    quit. Ctrl+C quits while playing, paused, too small and on the game over
    screen. Check restoration each time as in A7.
 
+## Every game (E, F, G use these too)
+
+For each game, from the menu and once directly (`devcade <id>`):
+- the board fits 80×24 with the HUD above or beside it and nothing but the
+  footer on the last row;
+- keys respond immediately;
+- Space pauses and resumes with no jump;
+- shrink below 80×24 and enlarge: the board is unchanged and only
+  re-centered, and a pause survives;
+- reach the end screen: Space does nothing and Enter starts a fresh run;
+- Q/Esc return to the menu with the same game selected (or quit when started
+  directly);
+- Ctrl+C quits while playing, paused, too small and on the end screen, and
+  the terminal is restored as in A7.
+
+## E. Block Drop
+
+1. Pieces fall about 1.4 rows per second at level 1. The falling piece `<>`
+   looks different from settled blocks `[]` without color, and `::` shows
+   where it will land.
+2. Left/Right move, Up rotates clockwise, Z counterclockwise, including next
+   to walls (the piece shifts sideways if needed). Down soft-drops one row per
+   press; Enter hard-drops and locks immediately.
+3. Clear one and several rows: score and lines go up and the stack moves
+   down. Next shows the coming piece.
+4. Stack to the top: GAME OVER with final score.
+
+## F. Maze Chase
+
+1. The player `@@` keeps moving; pressing a direction early turns at the next
+   opening; walls stop you.
+2. Pellets add 10, power pellets 50, and chasers turn to `c1`–`c4` and flee
+   for 8 s. Eating one adds 200; it comes back after 2 s as `~n`.
+3. Getting caught costs one life and resets positions; pellets eaten stay
+   eaten. After three lives: GAME OVER. Clearing every pellet: YOU WIN.
+
+## G. Blast Grid
+
+1. Each arrow press moves one cell; holding a key doesn't race ahead.
+2. Z drops a bomb `()`. It explodes after 2 s for 3 cells each way as `**`,
+   stops at walls, breaks the first crate, and sets off other bombs.
+3. You can step off your own bomb but not back on.
+4. Bots move, bomb crates and each other, and usually escape their own
+   bombs. Destroying a bot adds 100, a crate 10.
+5. Getting caught by a flame: GAME OVER. All bots destroyed: YOU WIN.
+
 ## C. Command line (any surface)
 
 1. `devcade --help`, `devcade --version` and `devcade list` print without
    opening the fullscreen view. They also work piped, for example
    `devcade list | more`.
-2. `devcade blockdrop` (and `mazechase`, `blastgrid`) prints "not available
-   yet" and exits with status 2, without opening the screen. `devcade snake`
-   with redirected input fails with "interactive terminal is required" and
-   status 1.
+2. `devcade snake`, `blockdrop`, `mazechase` and `blastgrid` with redirected
+   input fail with "interactive terminal is required" and status 1.
 3. `devcade nope`, `devcade list extra`, `devcade --diagnostic snake` and
    `devcade --version --diagnostic` print usage errors with status 2.
 4. `devcade < /dev/null` (PowerShell: `"" | devcade`) and the same with

@@ -115,8 +115,8 @@ func TestMenuShowsCatalogWithoutConstructingGames(t *testing.T) {
 	a := NewApp(Builtin(), func() engine.Game { t.Fatal("diagnostic built for rendering"); return nil })
 	a.Resize(80, 24)
 	out := render(a, 80, 24)
-	for _, want := range []string{"DEVCADE", " > Snake        Available", "   Block Drop   Coming soon (M4)",
-		"   Maze Chase   Coming soon (M5)", "   Blast Grid   Coming soon (M6)",
+	for _, want := range []string{"DEVCADE", " > Snake        Available", "   Block Drop   Available",
+		"   Maze Chase   Available", "   Blast Grid   Available",
 		"Steer a growing snake", "D  Terminal diagnostic", "Enter: play", "Q / Esc: quit"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("menu lacks %q:\n%s", want, out)
@@ -316,5 +316,17 @@ func TestFooterOffersPlayOnlyForAvailableGames(t *testing.T) {
 	f.press(t, key(engine.KeyDown))
 	if out := render(f.app, 80, 24); !strings.Contains(out, "Enter: play") {
 		t.Fatalf("available footer:\n%s", out)
+	}
+}
+
+func TestActionKeyIsIgnoredByMenuAndRoutedToGames(t *testing.T) {
+	f := newFixture(t)
+	f.press(t, engine.Event{Key: engine.KeyAction, Char: 'z'})
+	if f.app.active != nil || f.app.selected != 0 {
+		t.Fatal("Z changed the menu")
+	}
+	f.press(t, key(engine.KeyDown), key(engine.KeySelect), engine.Event{Key: engine.KeyAction, Char: 'z'})
+	if g := f.games[0]; fmt.Sprint(g.inputs) != fmt.Sprint([]engine.Key{engine.KeyAction}) {
+		t.Fatalf("game inputs %v", g.inputs)
 	}
 }
