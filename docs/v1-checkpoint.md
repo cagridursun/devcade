@@ -78,14 +78,14 @@ Snake (M3) is merged and owned by no other session: coordinator audit only.
 | --- | --- |
 | Contract freeze (`KeyAction`) | Done (`80ea9b4`) |
 | M3 Snake audit | Done: rules, Finisher, KeyAction ignored, fresh factory per launch. No changes needed. Owner reported Snake works in their terminal (environment not recorded) |
-| M4 Block Drop | Done by the Block Drop agent (`feat/v1-blockdrop` `5f48f0d`), merged. Review fixes requested from the same agent |
+| M4 Block Drop | Done by the Block Drop agent (`feat/v1-blockdrop` `5f48f0d`), merged. Review fixes (`f75decc`: distinct `<>` piece glyph, depth-based lock after exhausted resets) merged |
 | M5 Maze Chase | Done by the Maze Chase agent (`feat/v1-mazechase` `cccf352`), merged |
-| M6 Blast Grid | Done by the Blast Grid agent (`feat/v1-blastgrid` `259f9fb`), merged. Review fix requested from the same agent |
+| M6 Blast Grid | Done by the Blast Grid agent (`feat/v1-blastgrid` `259f9fb`), merged. Review fix (`41aa00e`: safe bots never route through pending blasts) merged |
 | M7 Packaging | Done by the packaging agent (`feat/v1-packaging` `1897769`), merged. Nothing published |
 | Catalog / CLI / docs integration | Done: all four games registered (`80a1002`), help, README, CHANGELOG, docs/games.md, CI release dry run |
 | Generic per-game loop test | Done (`internal/terminal/games_test.go`): every playable game through menu, pause/resize, end screen, restart, back, Ctrl+C, direct launch |
-| Review agent pass | Done on `80a1002`: 2 defects (Block Drop color-only active piece; Blast Grid bots stepping into pending blasts), 2 low (Block Drop zero lock delay after exhausted budget; stale CLI comment). CLI comment fixed; the rest are with the owning agents |
-| M8 verification | Automated: in progress. Manual terminal acceptance: pending (no usable interactive terminal in this session) |
+| Review agent pass | Done on `80a1002`: 2 defects (Block Drop color-only active piece; Blast Grid bots stepping into pending blasts), 2 low (Block Drop zero lock delay after exhausted budget; stale CLI comment). All four resolved: CLI comment by the coordinator, the others by the owning agents, re-verified after merge |
+| M8 verification | Automated: complete on `0c3e4bf` (Windows local; CI pending at push). Release candidate `1.0.0-rc.1` built locally from `0c3e4bf` into `dist/release` (gitignored, not uploaded); `SHA256SUMS` verified; Windows amd64 binary smoke-tested. Manual terminal acceptance: pending (no usable interactive terminal in this session) |
 
 Note: every agent worktree was created at `cf33b34` rather than the freeze
 commit; each agent reset its branch to `80ea9b4` before starting, so all
@@ -100,3 +100,12 @@ branches share the frozen baseline.
 - Blast Grid scoring attribution: earliest-placed covering bomb.
 - Maze Chase uses no randomness; its constructor takes no RNG.
 - CI's Ubuntu job runs the release builder as a dry run (nothing uploaded).
+
+## Remaining blockers (owner)
+
+- Manual real-terminal acceptance of all four games (docs/terminal-checklist.md).
+- License choice.
+- Repository visibility or another public download location.
+- Whether to tag and publish `v1.0.0-rc.1` / `v1.0.0` as a GitHub release.
+- Whether to create the Homebrew tap and Scoop bucket repositories.
+- Code signing / notarization (needs credentials).
