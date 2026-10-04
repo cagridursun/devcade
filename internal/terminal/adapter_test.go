@@ -38,7 +38,8 @@ func TestKeyNormalization(t *testing.T) {
 		{tcell.KeyRune, 3, 0, ev(engine.KeyExit, 0)}, // raw ETX byte
 		{tcell.KeyRune, 'c', tcell.ModCtrl, ev(engine.KeyExit, 0)},
 		{tcell.KeyRune, 'w', tcell.ModCtrl, ev(engine.KeyNone, 0)},
-		{tcell.KeyRune, 'x', 0, ev(engine.KeyNone, 'x')},
+		{tcell.KeyRune, 'x', 0, ev(engine.KeySecondary, 'x')},
+		{tcell.KeyRune, 'X', tcell.ModShift, ev(engine.KeySecondary, 'x')},
 		{tcell.KeyRune, 'z', 0, ev(engine.KeyAction, 'z')},
 		{tcell.KeyRune, 'Z', tcell.ModShift, ev(engine.KeyAction, 'z')},
 		{tcell.KeyRune, 'z', tcell.ModCtrl, ev(engine.KeyNone, 0)},
