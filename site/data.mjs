@@ -1,5 +1,5 @@
-export const games = ['snake', 'blockdrop', 'mazechase', 'blastgrid'];
-export const gameNames = { snake: 'Snake', blockdrop: 'Block Drop', mazechase: 'Maze Chase', blastgrid: 'Blast Grid' };
+export const games = ['snake', 'blockdrop', 'mazechase', 'blastgrid', 'terminalfc'];
+export const gameNames = { snake: 'Snake', blockdrop: 'Block Drop', mazechase: 'Maze Chase', blastgrid: 'Blast Grid', terminalfc: 'Terminal FC' };
 
 // Keep the public website response small and omit identity fields it does not use.
 export function cleanRows(game, rows) {
@@ -9,7 +9,8 @@ export function cleanRows(game, rows) {
   return rows.map((row, index) => {
     if (!row || row.rank !== index + 1 || typeof row.username !== 'string' || !/^[a-z0-9_]{3,20}$/.test(row.username) ||
       names.has(row.username) || !Number.isSafeInteger(row.score) || row.score < 0 || row.score > 1_000_000_000 ||
-      row.score > previousScore || (game === 'snake' && (row.score > 6450 || row.score % 10 !== 0))) {
+      row.score > previousScore || (game === 'snake' && (row.score > 6450 || row.score % 10 !== 0)) ||
+      (game === 'terminalfc' && row.score > 1750)) {
       throw new Error('Invalid leaderboard row');
     }
     names.add(row.username);
