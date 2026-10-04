@@ -40,6 +40,11 @@ shell. If unavailable, the address remains visible to open manually.
 
 ## Storage
 
+Source builds and official release packages use the community leaderboard at
+`https://devcade.cinesdigital.com`. `DEVCADE_LEADERBOARD_URL` overrides that
+address; setting it to an empty string disables network access for offline-only
+play. Score sharing remains Off until enabled in Settings.
+
 Preferences, the alias, per-game personal bests and the anonymous online
 credential are stored in `devcade/profile.json` under the OS configuration
 directory: `%APPDATA%` on Windows, `~/Library/Application Support` on macOS,

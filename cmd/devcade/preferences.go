@@ -10,8 +10,9 @@ import (
 	"os"
 )
 
-// Set at build time once the owner has deployed the common HTTPS service.
-var leaderboardURL string
+// Release builds may override the community service; the environment takes
+// precedence, including an explicitly empty value for offline-only play.
+var leaderboardURL = "https://devcade.cinesdigital.com"
 
 func preferences() (profile.Profile, func(profile.Profile) error, string) {
 	p := profile.Default()

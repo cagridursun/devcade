@@ -2,8 +2,12 @@
 
 The game keeps local personal bests offline. A global ranking requires **one
 shared public HTTPS service**, operated separately from the release downloads.
-The service implementation and deployment files ship in this repository;
-they have not been deployed to a public host by this PR.
+The community service is live at **https://devcade.cinesdigital.com** on a
+Google Compute Engine VM with Docker/Caddy and a persistent score volume.
+Source builds and official releases use this endpoint by default. The owner
+verified public Windows access, a real Snake score submission and retention of
+that score after a server restart on 2026-10-04. The implementation and deployment
+files also ship in this repository for operators running their own instance.
 
 ## Player behavior
 
@@ -68,11 +72,14 @@ environment variable disables a compiled-in endpoint.
    volumes. Stop the server for a consistent restore. Do not use
    `docker compose down -v` when retaining scores. OS file locks prevent a
    second server writer and are released automatically after process death.
-4. In **Release candidate**, supply `leaderboard_url=https://scores.example.com`
-   and `publish=true`. The workflow embeds that address in all six binaries,
+4. In **Release candidate**, the default is
+   `leaderboard_url=https://devcade.cinesdigital.com`; replace it with your own
+   HTTPS hostname if operating a separate service, then set `publish=true`.
+   The workflow embeds that address in all six binaries,
    checks service health, builds/smoke-tests the server container, runs the
    platform package checks and then publishes. A publication without the
-   common endpoint is refused. Preparation/PR runs can build offline binaries.
+   healthy common endpoint is refused. All builds still support offline play;
+   an explicitly empty `DEVCADE_LEADERBOARD_URL` disables network access.
 5. Verify a public installed client from a separate machine, register two
    distinct usernames, and confirm the same shared ranking appears for both.
 
@@ -80,7 +87,7 @@ For a manual release build:
 
 ```sh
 go run ./tools/release -version 1.0.0-rc.1 -out dist/release \
-  -leaderboard-url https://scores.example.com
+  -leaderboard-url https://devcade.cinesdigital.com
 ```
 
 ## API and operating limits
@@ -110,4 +117,7 @@ operator tasks for this release. No analytics or client telemetry is added.
 Native API tests cover multiple clients, per-game isolation, restart recovery,
 max-only/concurrent updates, own rank outside top 20, validation, authentication,
 redirect refusal, rate limits, trusted proxy headers, write rollback and writer
-locks. Human public-network and deployed TLS acceptance remain launch checks.
+locks. The owner also verified Windows public HTTPS access, a real Snake score
+submission and score retention after restarting the deployed server. Other
+games and platforms retain their automated coverage; this is not a claim of
+human end-to-end acceptance on every platform.

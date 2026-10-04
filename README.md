@@ -47,7 +47,7 @@ resize and terminal restoration.
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
 | Distribution | **Not published.** No GitHub release, tap or bucket exists yet, and the repository is private. See [docs/install.md](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
-| Global leaderboard | Server/client implemented; shared public HTTPS deployment pending ([deployment](docs/leaderboard.md)) |
+| Global leaderboard | Live at `https://devcade.cinesdigital.com`; Windows score submission and server restart persistence verified ([service](docs/leaderboard.md)) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
 | License | MIT; dependency notices included in binary archives |
 
@@ -62,7 +62,8 @@ unverified username; Esc continues as guest. **Settings** (or O in the main
 menu) changes English (default), Turkish, Spanish, Dutch or French, and
 Black / white (default), Midnight or Colorful. Preferences and completed-run
 personal bests survive restarts. Global sharing defaults to Off; it publishes
-your alias and bests when enabled and a shared service is configured.
+your alias and bests when enabled. Source builds and official release packages
+use `https://devcade.cinesdigital.com` by default; local play works offline.
 The creator profile opens from the main menu. New games are coming soon.
 See [player settings](docs/settings.md) and [global leaderboard deployment](docs/leaderboard.md).
 
@@ -276,8 +277,8 @@ use Windows Terminal, or run `winpty devcade` there.
 | M8 | Four-game v1.0 | Release candidate; manual acceptance and publication pending |
 
 See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.md).
-Anonymous community leaderboards are included in this candidate; deploying the
-shared HTTPS service remains a launch requirement. Verified accounts, multiplayer,
+Anonymous community leaderboards are included in this candidate; the shared
+HTTPS service is deployed. Verified accounts, multiplayer,
 analytics and plugins are out of scope for v1.
 
 ## License

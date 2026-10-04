@@ -126,6 +126,12 @@ onboarding, New game/Leaderboard submenus, atomic local bests and an anonymous
 HTTP global score server/client. The server has native tests, persistent
 snapshots, max-only updates, public own-rank lookup and single-writer OS locks.
 Docker/Caddy deployment files and a release endpoint input are included.
-Publication now requires a deployed healthy public HTTPS score endpoint; no
-public service has been provisioned. See docs/settings.md and docs/leaderboard.md.
-The existing Windows gameplay report predates this follow-up.
+Publication now requires a deployed healthy public HTTPS score endpoint.
+The community service is live at https://devcade.cinesdigital.com on Google
+Compute Engine using Docker/Caddy and the persistent score volume. The owner
+verified Windows public HTTPS access and a real Snake submission, then restarted
+the server and confirmed the same score remained. Source builds and official
+release packages now default to that endpoint; sharing remains opt-in.
+See docs/settings.md and docs/leaderboard.md. Other games/platforms retain their
+automated coverage; the earlier four-game Windows gameplay report predates
+this follow-up.

@@ -27,7 +27,7 @@ on:
         type: boolean
       leaderboard_url:
         description: 'Shared HTTPS leaderboard endpoint (required to publish)'
-        default: ''
+        default: 'https://devcade.cinesdigital.com'
         type: string
 
 permissions:
@@ -41,7 +41,7 @@ env:
   GO_VERSION: '1.26.8'
   GOFLAGS: -mod=readonly
   VERSION: ${{ inputs.version || '1.0.0-rc.1' }}
-  LEADERBOARD_URL: ${{ inputs.leaderboard_url || '' }}
+  LEADERBOARD_URL: ${{ inputs.leaderboard_url || 'https://devcade.cinesdigital.com' }}
 
 jobs:
   build:

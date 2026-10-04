@@ -18,7 +18,7 @@ go run ./tools/release -version 1.0.0-rc.1 -out dist/release
 | `-version` | (required) | `MAJOR.MINOR.PATCH[-PRERELEASE]`, no leading `v`, no `+build` metadata |
 | `-out` | `dist/release` | Output directory. Must be below `<root>/dist` (git-ignored); it is emptied first |
 | `-root` | `.` | Repository root (must be the `github.com/cagridursun/devcade` module) |
-| `-leaderboard-url` | (empty) | Public HTTPS score API embedded in all six clients; required for publishing |
+| `-leaderboard-url` | (empty; keeps the source default) | Override the community HTTPS score API in all six clients; the publish workflow explicitly supplies its endpoint |
 | `-base-url` | `https://github.com/cagridursun/devcade/releases/download/v{version}` | URL prefix written into the manifests; `{version}` is substituted; https only |
 | `-manifests-only` | `false` | Skip building; regenerate the manifests from an existing `<out>/SHA256SUMS` |
 | `-go` | `go` | Go command to build with |
@@ -120,9 +120,12 @@ reference build.
 
 ## Publish the first release
 
-Deploy the shared [leaderboard service](leaderboard.md) and obtain its public
-HTTPS address first. The workflow refuses publication without a healthy
-`leaderboard_url`; preparation builds may leave it empty for offline play.
+The shared [leaderboard service](leaderboard.md) is deployed at
+`https://devcade.cinesdigital.com`. The owner verified Windows public access,
+real score submission and retention after server restart. The workflow defaults
+to this address and refuses publication unless its health and four board
+endpoints respond successfully. Offline play remains available, and an empty
+`DEVCADE_LEADERBOARD_URL` disables network access at runtime.
 
 1. Merge the release-preparation PR after both CI and Release candidate checks
    are green. No tag or release is created by merging.
