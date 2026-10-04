@@ -977,7 +977,7 @@ func (g *Game) Render(c engine.Canvas) {
 			poss = "AWAY"
 		}
 	}
-	c.Text(max(0, ox), 1, engine.Format(c, "Selected H%d   Possession %s   Move WASD  Z pass/tackle  Enter shoot  X switch", g.active+1, poss), engine.Default)
+	c.Text(max(0, ox), 1, engine.Format(c, "Selected H%d   Possession %s   Move WASD  Z pass/tackle  Enter shoot  X switch  Pause: Space", g.active+1, poss), engine.Default)
 
 	// Border and pitch markings. Exact goal mouth is rows 6..11.
 	c.Text(ox, oy, "+"+repeat("-", 72)+"+", engine.Default)
