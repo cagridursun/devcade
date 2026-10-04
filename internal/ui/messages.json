@@ -622,5 +622,23 @@
     "Compartir activo: se publicarán tu nombre y récords guardados.",
     "Delen staat aan: je naam en opgeslagen records worden gepubliceerd.",
     "Partage activé : ton pseudo et tes records seront publiés."
+  ],
+  "Usage statistics": [
+    "Kullanım istatistikleri",
+    "Estadísticas de uso",
+    "Gebruiksstatistieken",
+    "Statistiques d'utilisation"
+  ],
+  "Usage sharing requires a saved profile.": [
+    "Kullanım paylaşımı için profil kaydedilebilmelidir.",
+    "Para compartir el uso se necesita un perfil guardado.",
+    "Delen vereist een opgeslagen profiel.",
+    "Le partage nécessite un profil enregistré."
+  ],
+  "Shares a random ID, game, score, duration, result, version and platform.": [
+    "Rastgele kimlik, oyun, skor, süre, sonuç, sürüm ve platform paylaşılır.",
+    "Comparte un ID aleatorio, juego, puntos, duración, resultado, versión y plataforma.",
+    "Deelt een willekeurige ID, spel, score, duur, resultaat, versie en platform.",
+    "Partage un ID aléatoire, jeu, score, durée, résultat, version et plateforme."
   ]
 }

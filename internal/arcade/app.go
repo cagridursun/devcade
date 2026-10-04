@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cagridursun/devcade/internal/engine"
 	"github.com/cagridursun/devcade/internal/leaderboard"
+	"github.com/cagridursun/devcade/internal/metrics"
 	"github.com/cagridursun/devcade/internal/profile"
 	"github.com/cagridursun/devcade/internal/ui"
 	"sync"
@@ -34,6 +35,7 @@ type Options struct {
 	Profile     profile.Profile
 	Save        func(profile.Profile) error
 	Client      *leaderboard.Client
+	Metrics     *metrics.Client
 	Onboard     bool
 	InitialGame string
 	Notice      string
@@ -60,6 +62,7 @@ type App struct {
 	profile                 profile.Profile
 	save                    func(profile.Profile) error
 	client                  *leaderboard.Client
+	metrics                 *metrics.Client
 	ctx                     context.Context
 	cancel                  context.CancelFunc
 	wg                      sync.WaitGroup
@@ -84,7 +87,8 @@ func NewAppWithOptions(c Catalog, d func() engine.Game, o Options) *App {
 		p = profile.Default()
 	}
 	p = p.Clone()
-	a := &App{catalog: c, diagnostic: d, profile: p, save: o.Save, client: o.Client, notice: o.Notice, ctx: ctx, cancel: cancel, results: make(chan result, 1), social: make(chan error, 1), boards: map[string]leaderboard.Board{}, openURL: o.OpenURL}
+	a := &App{catalog: c, diagnostic: d, profile: p, save: o.Save, client: o.Client, metrics: o.Metrics, notice: o.Notice, ctx: ctx, cancel: cancel, results: make(chan result, 1), social: make(chan error, 1), boards: map[string]leaderboard.Board{}, openURL: o.OpenURL}
+	a.configureMetrics()
 	if o.InitialGame != "" {
 		for i := range c.Len() {
 			if c.Entry(i).ID == o.InitialGame {
@@ -99,7 +103,12 @@ func NewAppWithOptions(c Catalog, d func() engine.Game, o Options) *App {
 	}
 	return a
 }
-func (a *App) Close()          { a.cancel(); a.wg.Wait() }
+func (a *App) Close() {
+	a.endMetrics("closed")
+	a.cancel()
+	a.wg.Wait()
+	a.metrics.Close()
+}
 func (a *App) Theme() string   { return a.profile.Theme }
 func (a *App) menuReady() bool { return a.width >= MenuWidth && a.height >= MenuHeight }
 func (a *App) Resize(w, h int) {
@@ -136,11 +145,13 @@ func (a *App) observeScore() {
 func (a *App) Input(ev engine.Event) bool {
 	a.poll()
 	if ev.Key == engine.KeyExit {
+		a.endMetrics("closed")
 		a.observeScore()
 		return true
 	}
 	if a.active != nil {
 		if ev.Key == engine.KeyBack {
+			a.endMetrics("left")
 			a.observeScore()
 			a.active = nil
 			a.game = nil
@@ -281,11 +292,11 @@ func (a *App) nameEvent(ev engine.Event) bool {
 }
 func (a *App) settingsInput(ev engine.Event) {
 	if ev.Key == engine.KeyUp {
-		a.setting = (a.setting + 3) % 4
+		a.setting = (a.setting + 4) % 5
 		return
 	}
 	if ev.Key == engine.KeyDown {
-		a.setting = (a.setting + 1) % 4
+		a.setting = (a.setting + 1) % 5
 		return
 	}
 	if ev.Key != engine.KeyLeft && ev.Key != engine.KeyRight && ev.Key != engine.KeySelect {
@@ -324,6 +335,16 @@ func (a *App) settingsInput(ev engine.Event) {
 			return
 		}
 		a.profile.Share = !a.profile.Share
+	case 4:
+		old := a.profile.Clone()
+		a.profile.Metrics = !a.profile.Metrics
+		if a.save == nil || !a.persist() {
+			a.profile = old
+			a.notice = "Usage sharing requires a saved profile."
+			return
+		}
+		a.configureMetrics()
+		return
 	}
 	a.persist()
 	if a.setting == 3 && a.profile.Share {
@@ -333,6 +354,9 @@ func (a *App) settingsInput(ev engine.Event) {
 func (a *App) launch(newGame func() engine.Game) {
 	a.notice = ""
 	a.game = newGame()
+	if a.profile.Metrics && a.metrics != nil && profile.ValidGame(a.activity) {
+		a.game = metrics.Track(a.game, a.activity, a.metrics)
+	}
 	a.active = engine.New(a.game)
 	a.active.Resize(a.width, a.height)
 }

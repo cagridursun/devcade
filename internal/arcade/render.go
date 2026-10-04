@@ -89,7 +89,11 @@ func (a *App) Render(raw engine.Canvas) {
 		if a.profile.Share {
 			sharing = "On"
 		}
-		labels := []string{ui.Translate(a.profile.Language, "Language") + ": " + lname, ui.Translate(a.profile.Language, "Color palette") + ": " + tname, ui.Translate(a.profile.Language, "Username") + ": " + name, ui.Translate(a.profile.Language, "Global score sharing") + ": " + ui.Translate(a.profile.Language, sharing)}
+		usage := "Off"
+		if a.profile.Metrics {
+			usage = "On"
+		}
+		labels := []string{ui.Translate(a.profile.Language, "Language") + ": " + lname, ui.Translate(a.profile.Language, "Color palette") + ": " + tname, ui.Translate(a.profile.Language, "Username") + ": " + name, ui.Translate(a.profile.Language, "Global score sharing") + ": " + ui.Translate(a.profile.Language, sharing), ui.Translate(a.profile.Language, "Usage statistics") + ": " + ui.Translate(a.profile.Language, usage)}
 		for i, s := range labels {
 			option(6+i, s, i == a.setting)
 		}
@@ -98,6 +102,9 @@ func (a *App) Render(raw engine.Canvas) {
 		}
 		for i, line := range ui.Wrap(ui.Translate(a.profile.Language, "Username changes create a new online identity; old records stay public."), w-4) {
 			text(15+i, line, engine.Default)
+		}
+		for i, line := range ui.Wrap(ui.Translate(a.profile.Language, "Shares a random ID, game, score, duration, result, version and platform."), w-4) {
+			text(17+i, line, engine.Default)
 		}
 		text(19, ui.Translate(a.profile.Language, a.networkNotice), engine.Warning)
 		c.Text(0, h-1, " Up/Down: select  Left/Right/Enter: change  Q / Esc: back", engine.Accent)

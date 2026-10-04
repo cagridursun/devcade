@@ -5,7 +5,10 @@ Public page: **https://cagridursun.github.io/devcade/**. The static site in
 provides Homebrew/Scoop installation commands and links to the creator's
 GitHub and X/Twitter profiles. English is the default; EN/TR switches the
 whole page. `?lang=tr` is a shareable Turkish URL. The selection is stored
-locally; no analytics, account or backend session is added.
+locally. Optional usage sharing defaults to Off: a visitor may enable it with
+the explicit footer control. Only then are visits and successful installation
+command copies sent with a random session ID. No account, browsing URL or
+leaderboard identity is included. See [analytics.md](analytics.md).
 
 ## Scoreboard
 

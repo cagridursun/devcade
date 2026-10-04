@@ -4,6 +4,8 @@ COPY go.mod go.sum ./
 COPY cmd/devcade-leaderboard/ ./cmd/devcade-leaderboard/
 COPY internal/profile/ ./internal/profile/
 COPY internal/leaderboard/ ./internal/leaderboard/
+COPY internal/metrics/ ./internal/metrics/
+COPY internal/engine/ ./internal/engine/
 RUN CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w" -o /devcade-leaderboard ./cmd/devcade-leaderboard
 
 FROM alpine:3.22

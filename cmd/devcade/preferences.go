@@ -4,6 +4,7 @@ import (
 	"github.com/cagridursun/devcade/internal/arcade"
 	"github.com/cagridursun/devcade/internal/engine"
 	"github.com/cagridursun/devcade/internal/leaderboard"
+	"github.com/cagridursun/devcade/internal/metrics"
 	"github.com/cagridursun/devcade/internal/profile"
 	"github.com/cagridursun/devcade/internal/terminal"
 	"github.com/cagridursun/devcade/internal/ui"
@@ -39,7 +40,15 @@ func newArcade(initial string) *arcade.App {
 			notice = "Global service is not configured. Your personal bests are saved locally."
 		}
 	}
-	return arcade.NewAppWithOptions(catalog, newDiagnostic, arcade.Options{Profile: p, Save: save, Client: client, Notice: notice, InitialGame: initial, Onboard: true, OpenURL: terminal.OpenCreatorProfile})
+	metricsEndpoint := endpoint
+	if v, ok := os.LookupEnv("DEVCADE_METRICS_URL"); ok {
+		metricsEndpoint = v
+	}
+	var usage *metrics.Client
+	if metricsEndpoint != "" {
+		usage, _ = metrics.NewClient(metricsEndpoint, version)
+	}
+	return arcade.NewAppWithOptions(catalog, newDiagnostic, arcade.Options{Profile: p, Save: save, Client: client, Metrics: usage, Notice: notice, InitialGame: initial, Onboard: true, OpenURL: terminal.OpenCreatorProfile})
 }
 
 type diagnosticProgram struct {
