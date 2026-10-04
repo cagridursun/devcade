@@ -61,30 +61,50 @@ control also requires deploying the updated Pages artifact.
 
 ## Enable on the existing GCP VM
 
-After this branch is merged, run from your VM SSH session:
+Use the following from the VM SSH session. The current `/opt/devcade` is an
+archive deployment, not a Git checkout, and source files require sudo to update.
 
 ```sh
-cd /opt/devcade
-git pull --ff-only origin main
-cd packaging/leaderboard
-bash setup-analytics.sh
-sudo docker compose -p devcade -f compose.yml up -d --build leaderboard
-sudo docker compose -p devcade -f compose.yml ps
+(
+  set -e
+  cd /opt/devcade
+  devcade_archive="$(mktemp /tmp/devcade-update.XXXXXX.tar.gz)"
+  curl --fail --show-error --location \
+    https://github.com/cagridursun/devcade/archive/refs/heads/main.tar.gz \
+    -o "$devcade_archive"
+  sudo tar -xzf "$devcade_archive" --strip-components=1 \
+    --exclude='*/.env' --no-same-owner -C /opt/devcade
+  rm -f "$devcade_archive"
+  cd packaging/leaderboard
+  sudo bash setup-analytics.sh
+  sudo docker compose -p devcade -f compose.yml up -d --build leaderboard
+  sudo docker compose -p devcade -f compose.yml ps
+)
 curl --fail --show-error https://devcade.cinesdigital.com/healthz
 curl --fail --show-error https://devcade.cinesdigital.com/v1/leaderboards/snake
+curl -I https://devcade.cinesdigital.com/admin/
 ```
 
 The setup script preserves the existing `.env` and hostname, sets permissions
 to 600, and generates an administrator password only when one is absent. It
-does not print secrets. The existing score volume and Caddy service are retained;
-do not use `down -v`. If `/opt/devcade` has local Git modifications, inspect
-them and resolve the fast-forward refusal before continuing.
+does not print secrets. Existing scores, measurements and Caddy volumes remain
+on the persistent volumes. A newly recreated service may take a moment to
+become ready; use `compose ps -a` and `compose logs --tail=50 leaderboard` if
+health stays unavailable. A short admin password prevents startup.
 
 View your generated password privately on the VM (do not post this output):
 
 ```sh
-sed -n 's/^DEVCADE_ADMIN_PASSWORD=//p' .env
+sudo sed -n 's/^DEVCADE_ADMIN_PASSWORD=//p' .env
 ```
+
+To use a memorable password, edit the existing admin line in `.env` through
+`sudo nano .env`, keeping at least 16 characters. Use single quotes around the
+value to avoid Compose `$` interpolation. Install an editor if it is missing.
+Apply the changed environment with `sudo docker compose -p devcade -f compose.yml
+up -d --force-recreate leaderboard`; `restart` alone does not reload `.env`.
+A browser password manager can remember the credential. Update its stored
+password or use a fresh browser session if old Basic credentials remain cached.
 
 Open **https://devcade.cinesdigital.com/admin/** in your browser. The login is
 `admin` and that password. Basic authentication is safe only through HTTPS

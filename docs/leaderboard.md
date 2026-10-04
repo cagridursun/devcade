@@ -99,6 +99,10 @@ go run ./tools/release -version 1.0.0-rc.1 -out dist/release \
 | `PUT /v1/best` with `{"game":"snake","score":100}` and bearer token | Authenticated max-only update |
 | `GET /v1/leaderboards/snake?player=<id>` | Top 20 and optional own row; the player ID is public, the token is private |
 
+The public `GET /v1/leaderboards/<game>` routes support read-only browser CORS
+for `DEVCADE_SITE_ORIGIN` (default `https://cagridursun.github.io`). Registration,
+score writes and administrator routes do not receive these CORS headers.
+
 Accepted games are snake, blockdrop, mazechase and blastgrid. Bodies are
 limited to 4 KiB and unknown/trailing fields are rejected. Score bounds reject
 negative/overflow values, and Snake also enforces its 10-point increments and

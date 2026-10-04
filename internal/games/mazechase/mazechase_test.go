@@ -548,7 +548,7 @@ func TestWin(t *testing.T) {
 	onlyItem(g, point{6, 3})
 	g.player, g.dir = point{5, 3}, right
 	g.Update(time.Second)
-	if g.state != won || !g.Finished() || g.score != pelletPoints || g.now != 140*ms {
+	if g.state != won || !g.Finished() || g.Score() != pelletPoints || g.now != 140*ms {
 		t.Fatalf("state %v score %d now %v", g.state, g.score, g.now)
 	}
 	frozen := *g
@@ -574,7 +574,7 @@ func TestLoseAndRestart(t *testing.T) {
 	g.player = point{5, 3}
 	g.chasers[0] = chaser{pos: point{6, 3}, dir: left, next: chaserStep}
 	g.Update(time.Second)
-	if g.state != lost || g.lives != 0 || !g.Finished() {
+	if g.state != lost || g.lives != 0 || !g.Finished() || g.Score() != 70 {
 		t.Fatalf("state %v lives %d", g.state, g.lives)
 	}
 	out := renderStrict(t, g, 80, 24)

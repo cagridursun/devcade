@@ -1,4 +1,5 @@
-import { cleanSnapshot, gameNames, isStale } from './data.mjs';
+import { loadBoards } from './leaderboards.mjs';
+import { gameNames, isStale } from './data.mjs';
 import { initSnakePreview } from './snake-preview.mjs';
 import { initUsage } from './usage.mjs';
 
@@ -21,8 +22,8 @@ const messages = {
     copy: 'Copy', copied: 'Copied!', copyFail: 'Could not copy. Select and copy the commands.', brewsetup: 'First time using Homebrew?', scoopsetup: 'First time using Scoop?', setup: 'Set it up here ↗',
     version: 'Current release: v1.0.0-rc.1', size: 'An interactive terminal of at least 80 × 24.', scores: 'The community scoreboard', highscores: 'A little friendly competition.', refresh: 'Refresh',
     leaderintro: "Each player's personal best, ranked separately for every game. Pick a game to see the top 20.", boardgame: 'Leaderboard game', loading: 'Loading scores…', rank: 'Rank', player: 'Player', score: 'Best score',
-    periodic: 'Scores refresh periodically, usually about every 15 minutes.', personal: 'Personal bests per game', share: "Want to join the board? Choose a username and turn on global score sharing in DevCade's Settings. Sharing is off by default.",
-    empty: 'No scores yet. Set the first high score!', error: 'Scores are temporarily unavailable. Please try Refresh in a moment.', stale: 'The latest update is delayed. Showing the last available scores.', updated: 'Updated',
+    periodic: 'Scores load when the page opens or you press Refresh. If the service is unavailable, the last available copy is shown.', personal: 'Personal bests per game', share: "Want to join the board? Choose a username and turn on global score sharing in DevCade's Settings. Sharing is off by default.",
+    empty: 'No scores yet. Set the first high score!', error: 'Scores are temporarily unavailable. Please try Refresh in a moment.', stale: 'Live scores could not be refreshed. Showing the last available scores.', updated: 'Updated',
     built: 'Built by cagridursun', creator: 'Small games. Good breaks.', creatorcopy: "I'm Çağrı Dursun. I built DevCade for the little pauses in a developer's day. Follow along for new games and project updates.",
     follow: 'Follow me on X / Twitter', footer: 'Made for developers. MIT licensed.', feedback: 'Feedback & ideas ↗',
   },
@@ -44,8 +45,8 @@ const messages = {
     copy: 'Kopyala', copied: 'Kopyalandı!', copyFail: 'Kopyalanamadı. Komutları seçip kopyalayabilirsin.', brewsetup: 'Homebrew ilk kez mi kullanıyorsun?', scoopsetup: 'Scoop ilk kez mi kullanıyorsun?', setup: 'Buradan kurabilirsin ↗',
     version: 'Güncel sürüm: v1.0.0-rc.1', size: 'En az 80 × 24 boyutunda etkileşimli bir terminal.', scores: 'Topluluğun skor tablosu', highscores: 'Biraz tatlı rekabet.', refresh: 'Yenile',
     leaderintro: 'Her oyuncunun en yüksek skoru, her oyun için ayrı bir tabloda. İlk 20 oyuncuyu görmek için oyun seç.', boardgame: 'Skor tablosu oyunu', loading: 'Skorlar yükleniyor…', rank: 'Sıra', player: 'Oyuncu', score: 'En yüksek skor',
-    periodic: 'Skorlar genellikle yaklaşık 15 dakikada bir güncellenir.', personal: 'Her oyun için kişisel rekorlar', share: "Tabloda yer almak ister misin? DevCade'in Ayarlar menüsünde kullanıcı adını seç ve global skor paylaşımını aç. Paylaşım varsayılan olarak kapalıdır.",
-    empty: 'Henüz skor yok. İlk rekoru sen kır!', error: 'Skorlara şu anda ulaşılamıyor. Biraz sonra Yenile ile tekrar deneyebilirsin.', stale: 'Son güncelleme gecikti. Erişilebilen son skorlar gösteriliyor.', updated: 'Güncelleme',
+    periodic: 'Skorlar sayfa açıldığında veya Yenile ile alınır. Servise ulaşılamazsa son erişilen kopya gösterilir.', personal: 'Her oyun için kişisel rekorlar', share: "Tabloda yer almak ister misin? DevCade'in Ayarlar menüsünde kullanıcı adını seç ve global skor paylaşımını aç. Paylaşım varsayılan olarak kapalıdır.",
+    empty: 'Henüz skor yok. İlk rekoru sen kır!', error: 'Skorlara şu anda ulaşılamıyor. Biraz sonra Yenile ile tekrar deneyebilirsin.', stale: 'Güncel skorlar alınamadı. Erişilebilen son skorlar gösteriliyor.', updated: 'Güncelleme',
     built: 'cagridursun tarafından geliştirildi', creator: 'Küçük oyunlar. Güzel molalar.', creatorcopy: "Ben Çağrı Dursun. DevCade'i, bir yazılımcının günündeki kısa molalar için geliştirdim. Yeni oyunlar ve projeden haberler için beni takip edebilirsin.",
     follow: "X / Twitter'da takip et", footer: 'Yazılımcılar için geliştirildi. MIT lisanslı.', feedback: 'Görüş ve fikirlerini paylaş ↗',
   },
@@ -122,11 +123,8 @@ async function loadScores() {
   document.querySelector('#refresh').disabled = true;
   renderBoard();
   try {
-    const response = await fetch(new URL('./leaderboards.json', import.meta.url), { cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(10000) });
-    if (!response.ok) throw new Error('Unavailable');
-    const text = await response.text();
-    if (text.length > 32768) throw new Error('Response too large');
-    snapshot = cleanSnapshot(JSON.parse(text));
+    snapshot = await loadBoards({ endpoint: 'https://devcade.cinesdigital.com', previous: snapshot,
+      snapshotURL: new URL('./leaderboards.json', import.meta.url) });
     state = 'ready';
   } catch { state = 'error'; }
   finally {

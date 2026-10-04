@@ -173,6 +173,9 @@ func (g *Game) Resize(width, height int) { g.width, g.height = width, height }
 // Finished reports whether the run has ended (all lives lost or maze cleared).
 func (g *Game) Finished() bool { return g.state != playing }
 
+// Score exposes the run's points to personal-best and leaderboard tracking.
+func (g *Game) Score() int { return g.score }
+
 func (g *Game) vulnerable() bool { return g.now < g.powerUntil }
 
 func (g *Game) chaserInterval() time.Duration {
