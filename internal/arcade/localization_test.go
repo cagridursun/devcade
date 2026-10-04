@@ -37,7 +37,11 @@ func TestEveryGameHUDAndMenusFitAllFiveLanguages(t *testing.T) {
 				a.launch(a.entry().New)
 				c := boundedCanvas{newGrid(80, 24), t}
 				a.Render(c)
-				if !strings.Contains(c.String(), ui.Translate(lang, "PLAYING")) {
+				wantStatus := ui.Translate(lang, "PLAYING")
+				if a.entry().ID == "terminalfc" {
+					wantStatus = ui.Translate(lang, "KICKOFF")
+				}
+				if !strings.Contains(c.String(), wantStatus) {
 					t.Fatal("status not localized", c.String())
 				}
 				a.active = nil
