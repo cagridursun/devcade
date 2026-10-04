@@ -189,7 +189,12 @@ fixture releases built in a temporary directory (no network):
   Build, Docker/service checks, native verification on all three OSes and
   publication succeeded. Future publication runs need a new version and
   matching release notes; existing versions are never overwritten.
-- Homebrew tap and Scoop bucket are not created. The generated manifests are
-  ready for separate repositories after public release downloads work.
+- Package-manager distribution uses `cagridursun/homebrew-devcade` and
+  `cagridursun/scoop-devcade`. After each new release, update
+  `Formula/devcade.rb` and `bucket/devcade.json` from that release workflow
+  artifact. These manifests must use the published archives and their actual
+  checksums, never a local rebuild. Each distribution repository runs native
+  installation checks; wait for green checks before advertising the update.
+  See [distribution bootstrap](../packaging/distribution/README.md).
 - Signing/notarization remain optional follow-up work requiring the owner's
   certificates. No certificate or account is required for the unsigned RC.
