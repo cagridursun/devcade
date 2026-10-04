@@ -694,5 +694,11 @@
     "Mover: flechas/WASD  Auto-disparo  Z: especial  Pausa: Space",
     "Bewegen: pijlen/WASD  Auto-vuur  Z: speciaal  Pauze: Space",
     "Bouger: flèches/WASD  Tir auto  Z: spécial  Pause: Space"
+  ],
+  "SPECIAL ATTACK": [
+    "ÖZEL SALDIRI",
+    "ATAQUE ESPECIAL",
+    "SPECIALE AANVAL",
+    "ATTAQUE SPÉCIALE"
   ]
 }

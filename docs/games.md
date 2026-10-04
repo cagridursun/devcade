@@ -150,9 +150,13 @@ Brick Breaker is developed separately; existing menu entries retain their order.
 
 - Arrows/WASD move one cell within the bottom four rows; movement accepts at
   most one press per 70 ms of active time. Fire is automatic every 240 ms.
-- Z uses a special charge, clearing hostile bullets and dealing three damage
-  to each enemy. One initial charge; a boss clear grants one, capped at two.
-  Activations are separated by at least 750 ms. Space pauses; Enter restarts
+- Z uses a special charge, clearing hostile bullets globally and hitting a seven-cell-wide
+  vertical corridor centered on the ship: one damage to ordinary enemies,
+  three to a boss whose hitbox overlaps the corridor. One initial charge; a boss clear grants one, capped at two.
+  Activations are separated by at least 750 ms. A full-width line sweeps
+  upward across the arena for 600 ms, with `==` marking the damaging corridor
+  and `--` outside it. Damage occurs once at activation; the sweep is visual,
+  follows gameplay time and freezes during suspension. Space pauses; Enter restarts
   after game over; Q/Esc return; Ctrl+C exits.
 - Three lives; losing one resets position and removes hostile threats within
   three cells of the previous/reset position. Protection lasts 1.5 s, shown

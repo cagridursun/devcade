@@ -22,6 +22,8 @@ const (
 	ShieldProtection  = 500 * time.Millisecond
 	EffectDuration    = 8 * time.Second
 	SpecialCooldown   = 750 * time.Millisecond
+	SpecialRadius     = 3 // Seven-cell vertical corridor centered on the ship.
+	ShockDuration     = 600 * time.Millisecond
 	ScoutInterval     = 400 * time.Millisecond
 	DiverInterval     = 300 * time.Millisecond
 	GunnerInterval    = 600 * time.Millisecond
@@ -64,6 +66,8 @@ type Game struct {
 	bullets                                                   []projectile
 	pickups                                                   []pickup
 	nextID                                                    uint64
+	shockX                                                    int
+	shock                                                     time.Duration
 	x, y, oldX, oldY                                          int
 	score, wave, lives, charges                               int
 	elapsed, prep, movement, fire, protection, rapid, special time.Duration
@@ -327,7 +331,7 @@ func (g *Game) damage() {
 func (g *Game) step() {
 	// Stable order: timers; movement/spawn; special/projectile contacts and
 	// kills; pickups and coalesced player damage; fatality; surviving clear.
-	for _, timer := range []*time.Duration{&g.movement, &g.protection, &g.rapid, &g.special} {
+	for _, timer := range []*time.Duration{&g.movement, &g.protection, &g.rapid, &g.special, &g.shock} {
 		*timer = max(0, *timer-Step)
 	}
 	if g.prep > 0 {
@@ -354,6 +358,7 @@ func (g *Game) step() {
 		g.pending = false
 		g.charges--
 		g.special = SpecialCooldown
+		g.shock, g.shockX = ShockDuration, g.x
 		for i := range g.bullets {
 			if g.bullets[i].hostile {
 				g.bullets[i].dead = true
@@ -361,8 +366,12 @@ func (g *Game) step() {
 		}
 		for i := range g.enemies {
 			e := &g.enemies[i]
-			if e.hp > 0 {
-				e.hp -= 3
+			if e.hp > 0 && e.x <= g.shockX+SpecialRadius && e.x+width(*e)-1 >= g.shockX-SpecialRadius {
+				damage := 1
+				if e.kind == boss {
+					damage = 3
+				}
+				e.hp -= damage
 				if e.hp <= 0 {
 					g.kill(e)
 				}
@@ -529,6 +538,20 @@ func (g *Game) Render(c engine.Canvas) {
 			c.Text(bx+1+x*2, by+1+y, s, color)
 		}
 	}
+	// Render the full-width sweep behind actors. The stronger corridor marks
+	// where enemy damage was applied at activation; rendering has no side effects.
+	if g.shock > 0 {
+		row := Rows - 1 - int((ShockDuration-g.shock)*time.Duration(Rows)/ShockDuration)
+		for x := 0; x < Cols; x++ {
+			glyph := "--"
+			color := engine.Default
+			if x >= g.shockX-SpecialRadius && x <= g.shockX+SpecialRadius {
+				glyph = "=="
+				color = engine.Warning
+			}
+			cell(x, row, glyph, color)
+		}
+	}
 	for _, e := range g.enemies {
 		glyph := []string{"><", "VV", "[]", "<<[==]>>  "}[e.kind]
 		if e.warning > 0 {
@@ -572,6 +595,9 @@ func (g *Game) Render(c engine.Canvas) {
 	}
 	if g.protection > 0 {
 		status = "Protected"
+	}
+	if g.shock > 0 {
+		status = "SPECIAL ATTACK"
 	}
 	if g.ended {
 		status = "GAME OVER"

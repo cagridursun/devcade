@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Limit Space Shooter special damage to a seven-cell vertical corridor
+  (ordinary enemies: 1, boss: 3) and add a 600 ms upward sweep visual.
+
 - Add Space Shooter: endless waves, three enemy types, fifth-wave bosses,
   shields, rapid fire and a limited special attack.
 - Integrate completed best scores, opt-in analytics, all five UI languages,

@@ -14,8 +14,8 @@ an overlap when the sixth game is added.
 
 No AGENTS.md was found in the available workspace/repository. No new dependencies,
 production score submissions, production analytics, releases or deployments
-were used. Development and verification are local; no PR or remote push has
-been performed.
+were used. The initial implementation was verified locally; it was subsequently published
+as PR #13. This report also includes the requested special-attack follow-up.
 
 ## SS1 — core
 
@@ -74,7 +74,7 @@ been performed.
 |---|---|
 | Arrows / WASD | Move one cell in bottom four rows, 70 ms cooldown |
 | Automatic | Fire every 240 ms, or 120 ms with rapid fire |
-| Z | Special: clear hostile bullets, three damage per living enemy |
+| Z | Special: clear hostile bullets; seven-cell corridor, ordinary damage 1 / boss 3 |
 | Space | Shared engine pause |
 | Enter | Restart from game over |
 | Q / Esc | Shared menu return |
@@ -88,6 +88,7 @@ been performed.
 | Shield | One charge; 500 ms protection after absorption |
 | Rapid fire / pickup lifetime | 8 seconds; refresh, no speed stacking |
 | Special inventory / cooldown | Start 1, boss clear +1, cap 2; 750 ms minimum |
+| Special damage / visual | Seven-cell corridor centered on ship; full-width upward sweep for 600 ms |
 | Scout / boss movement | 400 ms base |
 | Diver movement / start | 300 ms base; 1.2 s then 400 ms telegraph |
 | Gunner movement | 600 ms base |
@@ -109,7 +110,8 @@ or reset player position, without awarding kill points for removed bodies.
 Per-tick precedence:
 
 1. Expire timers; move/spawn enemies and automatic bullets.
-2. Consume a queued special; clear hostile bullets and damage living enemies.
+2. Consume a queued special; clear hostile bullets, apply corridor damage once
+   (ordinary 1, boss 3) and start the 600 ms visual sweep.
 3. Move bullets; resolve swept opposing bullet contacts, then enemy hits.
 4. Request player damage for fire/body/escape contacts; collect pickups.
 5. Apply at most one damage event; cull entities.
@@ -195,3 +197,30 @@ backend first; preserve datastore/profile files and identities. Then publish
 the client and website. An older backend rejects `spaceshooter` even if the
 new local game works. Coordinate with Brick Breaker before merging both game
 branches so registrations and smoke lists retain both IDs.
+
+## Special-attack follow-up (PR #13)
+
+Normal enemies have 1-2 HP, so the original three-damage global special
+instantly cleared an ordinary wave. At the user's request, enemy damage now
+affects only a seven-cell vertical corridor centered on the ship. Ordinary
+enemies take one damage; bosses take three if any hitbox cell overlaps it.
+Hostile bullets are still cleared across the arena. One-charge/cooldown/scoring
+behavior remains shared with the previous implementation.
+
+A full-width ASCII line moves from the bottom to the top in 600 ms. The corridor
+uses `==`, the remainder `--`; actors draw over the line for readability, and
+all five locales show a translated SPECIAL ATTACK status. The visual consumes
+no randomness, produces no additional damage, stays anchored to the activation
+column and freezes on pause/undersize. It expires even during the next wave's
+preparation, and restart removes it.
+
+Regression tests cover near/far targets, both corridor edges, boss hitbox
+overlap, Gunner survival, one-time points, first-wave preservation across 100
+seeds, the moving line's lifetime, read-only rendering, boundary layout,
+suspension and reset.
+
+Follow-up verification passed: `go vet ./...`, full Go tests, full race tests,
+native client build, clean gofmt/diff checks, and a real Turkish/Mono PTY
+special activation. The latter observed the sweep at arena rows 16 and 9,
+verified pause freeze, expiry, wave-one preservation and TTY restoration.
+The captured midpoint is `docs/screenshots/spaceshooter-special.png`.

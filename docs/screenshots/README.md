@@ -27,3 +27,9 @@ TTY restoration passed; the English run also exercised game over and restart.
 The captures use pyte/Pillow with DejaVu Sans Mono. Boss behavior is covered
 by controlled tests, not an extended interactive human playtest. These images
 do not imply Windows/macOS human acceptance.
+
+`spaceshooter-special.png` and its text grid show the requested upward special
+sweep in a Turkish/Mono 80x24 PTY on 2026-10-05. The actual client was built
+from the special-attack fix, with both service endpoints disabled. PTY checks
+confirmed the line moving upward, holding on pause, expiring and preserving
+wave one; Ctrl+C restored the terminal attributes.

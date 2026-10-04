@@ -147,6 +147,7 @@ func TestWaveCompositionBossClearAndScore(t *testing.T) {
 	g := arena()
 	g.wave = 5
 	g.enemies[0].hp = 3
+	g.x = g.enemies[0].x + 2
 	g.charges = 1
 	g.HandleInput(engine.KeyAction)
 	g.HandleInput(engine.KeyAction)
@@ -185,6 +186,7 @@ func TestEscapeSpecialAndCaps(t *testing.T) {
 		t.Fatal("bullet cap")
 	}
 	g.charges = 2
+	g.x = g.enemies[0].x + 2
 	g.HandleInput(engine.KeyAction)
 	g.step()
 	g.HandleInput(engine.KeyAction)
@@ -231,7 +233,7 @@ func TestPickupsRefreshExpireAndResizeReset(t *testing.T) {
 	}
 	g.ended = true
 	g.HandleInput(engine.KeySelect)
-	if g.ended || g.score != 0 || g.wave != 1 || g.lives != 3 || g.charges != 1 || g.elapsed != 0 || g.shield || g.rapid > 0 || g.pending || len(g.enemies)+len(g.bullets)+len(g.pickups) > 0 {
+	if g.ended || g.score != 0 || g.wave != 1 || g.lives != 3 || g.charges != 1 || g.elapsed != 0 || g.shield || g.rapid > 0 || g.pending || g.shock > 0 || len(g.enemies)+len(g.bullets)+len(g.pickups) > 0 {
 		t.Fatal("unclean reset", g)
 	}
 	g.Update(Preparation)
@@ -475,5 +477,102 @@ func TestTraversedTargetOrderAndStableTies(t *testing.T) {
 	g.step()
 	if len(g.bullets) != 1 || g.bullets[0].id != g.nextID-1 {
 		t.Fatal("near contact must consume crossing projectile first", g.bullets)
+	}
+}
+
+func TestSpecialCorridorDamageAndEarlyWaveNotSkipped(t *testing.T) {
+	g := arena()
+	g.x = 18
+	g.enemies = []enemy{
+		{id: 1, kind: scout, hp: 1, x: 15, y: 3, ox: 15, oy: 3, dir: 1},
+		{id: 2, kind: gunner, hp: 2, x: 21, y: 3, ox: 21, oy: 3, dir: 1},
+		{id: 3, kind: scout, hp: 1, x: 22, y: 3, ox: 22, oy: 3, dir: 1},
+		{id: 4, kind: boss, hp: 12, x: 11, y: 5, ox: 11, oy: 5, dir: 1}, // edge of five-cell hitbox in corridor
+	}
+	g.HandleInput(engine.KeyAction)
+	g.step()
+	if g.score != 10 || len(g.enemies) != 3 || g.enemies[0].hp != 1 || g.enemies[1].hp != 1 || g.enemies[2].hp != 9 || g.wave != 1 || g.charges != 0 {
+		t.Fatal("corridor rules", g.enemies, g.score, g.wave)
+	}
+	for seed := uint64(0); seed < 100; seed++ {
+		h := NewWithSource(rand.NewPCG(seed, 19))
+		h.Update(Preparation)
+		h.HandleInput(engine.KeyAction)
+		h.step()
+		if h.wave != 1 || len(h.enemies) == 0 {
+			t.Fatal("first wave skipped by special", seed)
+		}
+	}
+	for _, x := range []int{0, Cols - 1} {
+		h := arena()
+		h.x = x
+		h.HandleInput(engine.KeyAction)
+		h.step()
+		h.Render(&canvas{t: t})
+	}
+}
+func TestSpecialSweepAnimationLifetimeFreezeAndReset(t *testing.T) {
+	g := arena()
+	g.HandleInput(engine.KeyAction)
+	g.step()
+	if g.shock != ShockDuration || g.shockX != Cols/2 {
+		t.Fatal("no activation visual")
+	}
+	c := &canvas{t: t}
+	g.Render(c)
+	// Board origin (3,2); interior begins at (4,3), bottom arena row is 20.
+	if c.rows[20][4] != '-' || c.rows[20][4+g.shockX*2] != '=' {
+		t.Fatal("sweep does not span arena")
+	}
+	before := g.shock
+	g.Render(&canvas{t: t})
+	if g.shock != before {
+		t.Fatal("render advances effect")
+	}
+	g.Update(ShockDuration / 2)
+	c = &canvas{t: t}
+	g.Render(c)
+	if c.rows[11][4] != '-' {
+		t.Fatal("sweep did not travel upwards")
+	}
+	g.Resize(120, 40)
+	if g.shock != ShockDuration/2 {
+		t.Fatal("resize changes animation")
+	}
+	g.Update(ShockDuration / 2)
+	if g.shock != 0 {
+		t.Fatal("effect never expires")
+	}
+	g.charges = 1
+	g.special = 0
+	g.HandleInput(engine.KeyAction)
+	g.step()
+	g.ended = true
+	g.HandleInput(engine.KeySelect)
+	if g.shock != 0 || g.shockX != 0 {
+		t.Fatal("restart retains visual")
+	}
+	h := arena()
+	e := engine.New(h)
+	e.Resize(80, 24)
+	e.Advance(Step)
+	h.prep = 0
+	h.enemies = []enemy{{id: 1, kind: boss, hp: 12, x: 3, y: 1, ox: 3, oy: 1, dir: 1}}
+	e.Input(engine.Event{Key: engine.KeyAction})
+	e.Advance(Step)
+	before = h.shock
+	e.Input(engine.Event{Key: engine.KeyPause})
+	e.Advance(time.Second)
+	e.Resize(40, 12)
+	e.Advance(time.Second)
+	e.Resize(80, 24)
+	if h.shock != before || before == 0 {
+		t.Fatal("suspension advanced special animation")
+	}
+	for _, lang := range ui.Languages {
+		h.Render(ui.Canvas{Canvas: &canvas{t: t}, Language: lang})
+		if lang != "en" && ui.Translate(lang, "SPECIAL ATTACK") == "SPECIAL ATTACK" {
+			t.Fatal("missing special translation", lang)
+		}
 	}
 }
