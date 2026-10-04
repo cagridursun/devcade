@@ -73,10 +73,10 @@ func TestPassReleasesIndependentBallAndKickerGrace(t *testing.T) {
 
 func TestSweptGoalAndOwnGoal(t *testing.T) {
 	for _, tt := range []struct {
-		name      string
-		start     vec
-		vel       vec
-		lastTouch int
+		name       string
+		start      vec
+		vel        vec
+		lastTouch  int
 		home, away int
 	}{
 		{"home shot", vec{35.2, 9}, vec{20, 0}, 1, 1, 0},
