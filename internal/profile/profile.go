@@ -37,7 +37,7 @@ var username = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
 
 func ValidUsername(s string) bool { return username.MatchString(s) }
 func ValidGame(s string) bool {
-	return s == "snake" || s == "blockdrop" || s == "mazechase" || s == "blastgrid"
+	return s == "snake" || s == "blockdrop" || s == "mazechase" || s == "blastgrid" || s == "terminalfc"
 }
 func ValidScore(game string, n int) bool {
 	if !ValidGame(game) || n < 0 || n > 1000000000 {
@@ -45,6 +45,9 @@ func ValidScore(game string, n int) bool {
 	}
 	if game == "snake" {
 		return n <= 6450 && n%10 == 0
+	}
+	if game == "terminalfc" {
+		return n <= 1750
 	}
 	return true
 }
