@@ -116,8 +116,9 @@ branches share the frozen baseline.
 
 The merge, public visibility and publishing steps were completed in the
 publication follow-up below. Remaining: anonymous browser/download acceptance
-and human macOS/Linux emulator acceptance. Homebrew/Scoop repositories and
-signing are deferred; cross-builds are not manual platform acceptance.
+and human macOS/Linux emulator acceptance. Homebrew/Scoop publication is
+recorded below; signing is deferred; cross-builds are not manual platform
+acceptance.
 
 ## Settings and global rankings follow-up (2026-10-04)
 
@@ -156,3 +157,25 @@ this follow-up.
 - Windows real gameplay and server restart persistence were verified by the
   owner before publication. Remaining human platform checks stay in
   [terminal-checklist.md](terminal-checklist.md); this is an RC, not stable v1.0.
+
+## Homebrew and Scoop publication (2026-10-04)
+
+- Created public distribution repositories:
+  [Homebrew tap](https://github.com/cagridursun/homebrew-devcade) and
+  [Scoop bucket](https://github.com/cagridursun/scoop-devcade).
+- Published v1.0.0-rc.1 manifests with all six hashes verified against the
+  exact released archives. Neither manager builds the game or requires Go.
+- [Homebrew run 37203964301](https://github.com/cagridursun/homebrew-devcade/actions/runs/37203964301)
+  installed the actual released binaries on macOS and Linux; version, game
+  catalog, license notice, formula test and uninstall all passed.
+- The first Scoop CI attempt rejected a local Windows path as a Git URL;
+  registration now uses the public bucket URL and the checked-out manifest
+  is copied into the registered test bucket to cover PR changes too.
+- [Scoop run 37204195987](https://github.com/cagridursun/scoop-devcade/actions/runs/37204195987)
+  registered the public bucket, installed the released Windows binary,
+  checked its version/catalog/license and uninstalled it successfully.
+- README highlights only package-manager installation. Optional source
+  checkout, builds, release tooling and developer checks live in docs/install.md.
+  Uninstall instructions now correctly state that the player profile remains.
+- These package-manager CI results do not replace remaining human terminal
+  acceptance or native ARM64 Windows/Linux and Intel macOS acceptance.

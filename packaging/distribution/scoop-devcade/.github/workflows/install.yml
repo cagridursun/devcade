@@ -23,8 +23,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          scoop bucket add devcade $env:GITHUB_WORKSPACE
+          scoop bucket add devcade https://github.com/cagridursun/scoop-devcade
           if ($LASTEXITCODE -ne 0) { throw 'Bucket registration failed' }
+          Copy-Item -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'bucket/devcade.json') -Destination "$env:USERPROFILE\scoop\buckets\devcade\bucket\devcade.json" -Force
           scoop install devcade/devcade
           if ($LASTEXITCODE -ne 0) { throw 'Scoop install failed' }
           $version = (Get-Content (Join-Path $env:GITHUB_WORKSPACE 'bucket/devcade.json') -Raw | ConvertFrom-Json).version
