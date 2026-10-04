@@ -54,3 +54,31 @@ Omit `--offline` to read the real public service. `PAGES_PREVIOUS_URL` can
 override the previous published snapshot URL for a future custom domain.
 Screenshots are copied from `docs/screenshots/` into the published assets.
 Update the release label on the page when package-manager versions change.
+
+## Animated Snake preview
+
+The hero plays a 24-second recording of real Snake `Game.Render` output on
+an 80 × 24 canvas. `tools/pages/capture-snake` drives the existing Go game
+through normal directional inputs, records its ASCII cells and colour roles,
+and saves `site/assets/snake-demo.json`. The website replays those captured
+frames at their original movement intervals; it does not implement a second
+Snake engine or submit demonstration scores to the leaderboard. The font
+and terminal colours are rendered by the browser, so they can differ from
+the PNG captures and a user's terminal.
+
+Pause/play is available in both page languages. Playback stops when the
+preview leaves the viewport or the browser tab becomes hidden. A reduced
+motion preference disables autoplay; visitors can explicitly start playback.
+If the recording cannot load, the original screenshot remains visible.
+The four game-gallery screenshots remain static.
+
+To intentionally capture a new clip after changing the Snake game:
+
+```sh
+go run ./tools/pages/capture-snake > site/assets/snake-demo.json
+node --test tools/pages/*.test.mjs
+```
+
+Initial food placement uses the real game's random source, so regeneration
+produces a different valid run. Scheduled Pages refreshes reuse the committed
+recording and do not need Go or any extra frontend dependencies.

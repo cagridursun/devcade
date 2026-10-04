@@ -12,6 +12,7 @@
   <title>DevCade — A little arcade in your terminal</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./animation.css">
   <script type="module" src="./app.mjs"></script>
 </head>
 <body>
@@ -42,7 +43,11 @@
       </div>
       <figure class="terminal hero-terminal">
         <div class="terminal-bar"><span class="terminal-dots" aria-hidden="true">● ● ●</span><span>devcade / snake</span><span class="frame-tag">80 × 24</span></div>
-        <img src="./assets/snake.png" alt="Snake running inside an 80 by 24 terminal" data-i18n-alt="snakeAlt" width="1000" height="664" fetchpriority="high">
+        <div class="terminal-preview">
+          <img id="snake-poster" src="./assets/snake.png" alt="Snake running inside an 80 by 24 terminal" data-i18n-alt="snakeAlt" width="1000" height="664" fetchpriority="high">
+          <canvas id="snake-preview" width="1000" height="664" role="img" aria-label="Animated replay of Snake gameplay" hidden></canvas>
+          <button id="animation-toggle" class="animation-toggle" type="button" hidden>Pause animation</button>
+        </div>
         <figcaption><span class="status-dot" aria-hidden="true"></span><span data-i18n="realframe">Actual gameplay. Right in your terminal.</span></figcaption>
       </figure>
     </section>

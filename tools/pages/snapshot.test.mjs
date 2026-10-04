@@ -93,8 +93,8 @@ test('site has working install commands, both languages, social links and safe t
   assert.ok(html.includes('data-language="en"') && html.includes('data-language="tr"'));
   assert.ok(script.includes("td.textContent = value"));
   assert.ok(!script.includes('innerHTML'));
-  const dictionary = script.slice(script.indexOf('const messages = ') + 17, script.indexOf('\n\nlet language'));
-  const messages = Function(`return (${dictionary.replace(/;\s*$/, '')})`)();
+  const dictionary = script.match(/const messages = (\{[\s\S]*?\n\});/)[1];
+  const messages = Function(`return (${dictionary})`)();
   assert.deepEqual(Object.keys(messages.en).sort(), Object.keys(messages.tr).sort());
   for (const key of [...html.matchAll(/data-i18n(?:-alt|-aria)?="([^"]+)"/g)].map(m => m[1])) {
     assert.ok(messages.en[key], `Missing English: ${key}`);
