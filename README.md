@@ -1,30 +1,42 @@
-# DevCade
+<p align="center">
+  <img src="docs/assets/devcade-four-games.gif" alt="DevCade — Snake, Block Drop, Maze Chase and Blast Grid running in the terminal" width="900">
+</p>
 
-Arcade games that run in your terminal, for the minutes spent waiting on a
-build, a test run or an AI response.
+<p align="center">
+  <img src="site/favicon.svg" alt="DevCade logo" width="72" height="72">
+</p>
 
-DevCade is a non-commercial terminal arcade collection for developers. Open
-another terminal, run `devcade`, pick a game and play without leaving the
-terminal: no browser, no graphical window, and no language runtime needed for
-the distributed binaries. It runs on Windows, macOS and Linux.
+<h1 align="center">DevCade</h1>
 
-<table>
-  <tr>
-    <td><strong>Snake</strong><br><img src="docs/screenshots/snake.png" alt="Snake running in an 80 by 24 terminal" width="480"></td>
-    <td><strong>Block Drop</strong><br><img src="docs/screenshots/blockdrop.png" alt="Block Drop with a falling piece, stack and next-piece preview" width="480"></td>
-  </tr>
-  <tr>
-    <td><strong>Maze Chase</strong><br><img src="docs/screenshots/mazechase.png" alt="Maze Chase with pellets, four chasers and the player" width="480"></td>
-    <td><strong>Blast Grid</strong><br><img src="docs/screenshots/blastgrid.png" alt="Blast Grid with bombs, crates and three bots" width="480"></td>
-  </tr>
-</table>
+<p align="center">
+  Terminal arcade games for the little gaps between builds, tests and AI responses.
+</p>
 
-Captured from the running Linux binary through an 80×24 pseudo-terminal;
-using the Colorful palette; these are actual game frames, not mockups. See [capture details](docs/screenshots/README.md).
+<p align="center">
 
-[Website / Türkçe & English](https://cagridursun.github.io/devcade/) ·
-[Release downloads](https://github.com/cagridursun/devcade/releases) ·
-[Installation](docs/install.md) · [Game rules](docs/games.md) · [Settings](docs/settings.md)
+[![CI](https://github.com/cagridursun/devcade/actions/workflows/ci.yml/badge.svg)](https://github.com/cagridursun/devcade/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Go 1.26](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
+[![Release](https://img.shields.io/badge/release-v1.0.0--rc.2-b8f878.svg)](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-8a9490.svg)](docs/install.md)
+
+</p>
+
+<p align="center">
+  <a href="https://cagridursun.github.io/devcade/">Website</a> ·
+  <a href="INSTALLATION.md">Installation</a> ·
+  <a href="docs/games.md">Game rules</a> ·
+  <a href="https://cagridursun.github.io/devcade/#leaderboard">Leaderboard</a> ·
+  <a href="https://github.com/cagridursun/devcade/releases">Releases</a>
+</p>
+
+DevCade is a free, open-source terminal arcade collection built for developers. Open another terminal, run `devcade`, pick a game and play without leaving the command line. No browser, graphical window or language runtime is required for the distributed binaries.
+
+The current release candidate includes **Snake**, **Block Drop**, **Maze Chase** and **Blast Grid**, with persistent personal bests, optional global leaderboards, five UI languages and three colour palettes.
+
+> **Current release:** [v1.0.0-rc.2](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2)  
+> **Website:** [cagridursun.github.io/devcade](https://cagridursun.github.io/devcade/)  
+> **Requirements:** an interactive terminal of at least **80 × 24**
 
 ## Install and play
 
@@ -249,6 +261,10 @@ HTTPS service is deployed. An optional, private [usage statistics panel](docs/an
 is available for operators; both game and website usage sharing default to Off.
 Usage tracking is available starting with v1.0.0-rc.2; older clients do not send events. Verified accounts,
 multiplayer and plugins remain out of scope for v1.
+
+## Contributing and security
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Community participation is covered by the [Code of Conduct](CODE_OF_CONDUCT.md), and security issues should be reported privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
