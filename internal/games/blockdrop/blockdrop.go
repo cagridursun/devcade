@@ -146,6 +146,17 @@ const (
 // is held at zero and lockTime accumulates toward the 400 ms lock delay.
 // Update walks both deadlines in time order, so how elapsed time is split
 // into frames never changes the outcome.
+//
+// Lock delay rules, per piece (all reset on spawn):
+//   - a successful move or rotation of a grounded piece restarts the lock
+//     delay, at most maxResets times; failed actions change nothing;
+//   - leaving support clears the grounded time but never refunds resets;
+//   - the game tracks the deepest row (the piece's lowest cell) at which the
+//     piece has been grounded. Once the budget is spent, a touchdown strictly
+//     below that row grants a fresh 400 ms window (still without resets),
+//     while a touchdown on the same or a higher row locks at once. Rows are
+//     bounded, so moves and up-kicks cannot postpone the lock forever, yet a
+//     piece that slides into a deep well still gets a normal lock delay.
 type Game struct {
 	rng *rand.Rand
 
@@ -159,11 +170,10 @@ type Game struct {
 	fall     time.Duration // airborne time not yet spent on a gravity step
 	lockTime time.Duration // grounded time toward the lock delay
 	resets   int           // lock-delay resets used by the current piece
-	// touchdownLocks is set once the reset budget is spent and the piece
-	// leaves its support: it then locks as soon as it is grounded again, so
-	// moves and up-kicks cannot postpone the lock forever.
-	touchdownLocks bool
-	state          state
+	airborne bool          // the piece was airborne at its last position change
+	deepest  int           // lowest cell row at which the piece was grounded, -1 if never
+	lockNow  bool          // exhausted touchdown at or above deepest: lock immediately
+	state    state
 
 	width, height int // screen size, for layout only
 }
@@ -235,10 +245,43 @@ func (g *Game) draw() kind {
 func (g *Game) spawn() {
 	g.cur = spawnPiece(g.next)
 	g.next = g.draw()
-	g.fall, g.lockTime, g.resets, g.touchdownLocks = 0, 0, 0, false
+	g.fall, g.lockTime, g.resets = 0, 0, 0
+	g.airborne, g.deepest, g.lockNow = true, -1, false
 	if !g.fits(g.cur) {
 		g.state = lost
+		return
 	}
+	g.settle()
+}
+
+// bottom is the row of the piece's lowest cell.
+func (p piece) bottom() int {
+	b := 0
+	for _, c := range p.cells() {
+		b = max(b, c.y)
+	}
+	return b
+}
+
+// settle records where the current piece stands after it moved: an airborne
+// piece loses its grounded time, and a touchdown with the reset budget spent
+// either opens a fresh lock window (strictly below the deepest row it was
+// grounded on) or arms an immediate lock. See the Game comment.
+func (g *Game) settle() {
+	if !g.grounded() {
+		g.lockTime = 0
+		g.airborne = true
+		g.lockNow = false // decided again at the next touchdown
+		return
+	}
+	b := g.cur.bottom()
+	if g.airborne {
+		g.airborne = false
+		if g.resets == maxResets && b <= g.deepest {
+			g.lockNow = true
+		}
+	}
+	g.deepest = max(g.deepest, b)
 }
 
 // fits reports whether p lies inside the board (hidden rows included) and
@@ -296,11 +339,9 @@ func (g *Game) HandleInput(k engine.Key) {
 	}
 }
 
-// move makes p current if it fits and applies the lock-delay rules:
-//   - a successful move of a grounded piece restarts the lock delay, at most
-//     maxResets times per piece; failed moves change nothing;
-//   - a piece that ends up airborne loses its grounded time, but the budget
-//     is never refunded; once it is spent, the next touchdown locks at once.
+// move makes p current if it fits and applies the lock-delay rules described
+// on Game: a successful move of a grounded piece spends one reset while the
+// budget lasts; failed moves change nothing.
 func (g *Game) move(p piece) bool {
 	if !g.fits(p) {
 		return false
@@ -311,12 +352,7 @@ func (g *Game) move(p piece) bool {
 		g.resets++
 		g.lockTime = 0
 	}
-	if !g.grounded() {
-		g.lockTime = 0
-		if g.resets == maxResets {
-			g.touchdownLocks = true
-		}
-	}
+	g.settle()
 	return true
 }
 
@@ -370,7 +406,8 @@ func (g *Game) hardDrop() {
 // carries on with the next piece; nothing advances once the run ends.
 //
 // A deadline that falls exactly at the end of dt is processed in this call,
-// including an immediate touchdown lock (zero delay) right after a step.
+// including an immediate lock (zero delay) right after an exhausted
+// touchdown.
 func (g *Game) Update(dt time.Duration) {
 	if dt <= 0 {
 		return
@@ -379,7 +416,7 @@ func (g *Game) Update(dt time.Duration) {
 		if g.grounded() {
 			g.fall = 0
 			left := lockDelay - g.lockTime
-			if g.touchdownLocks {
+			if g.lockNow {
 				left = 0
 			}
 			if dt < left {
@@ -399,6 +436,7 @@ func (g *Game) Update(dt time.Duration) {
 		dt -= left
 		g.fall = 0
 		g.cur.y++
+		g.settle()
 	}
 }
 
@@ -465,6 +503,7 @@ const (
 	layoutW = panelX + len(controlsLine)
 
 	controlsLine = "Pause: Space   Leave: Q / Esc   Exit: Ctrl+C"
+	legendLine   = "Piece <>   Landing ::   Stack []"
 )
 
 func (g *Game) Render(c engine.Canvas) {
@@ -504,8 +543,10 @@ func (g *Game) Render(c engine.Canvas) {
 		for _, p := range g.landing().cells() {
 			cell(p, "::", engine.Default)
 		}
+		// The falling piece has its own glyph, so it never blends into the
+		// stack on a monochrome terminal (color is only decorative).
 		for _, p := range g.cur.cells() {
-			cell(p, "[]", engine.Player)
+			cell(p, "<>", engine.Player)
 		}
 	}
 
@@ -545,6 +586,8 @@ func (g *Game) Render(c engine.Canvas) {
 		"Down           soft drop",
 		"Enter          hard drop",
 		controlsLine,
+		"",
+		legendLine,
 	} {
 		c.Text(px, y0+13+i, line, engine.Default)
 	}

@@ -30,10 +30,13 @@ func seededWith(a, b uint64) (*Game, *countingSource) {
 
 func seeded() (*Game, *countingSource) { return seededWith(1, 2) }
 
-// put replaces the current piece with fresh per-piece timers, as a spawn would.
+// put replaces the current piece with fresh per-piece timers, as a spawn
+// would. Set up the board first: put records whether the piece is grounded.
 func (g *Game) put(k kind, rot, x, y int) {
 	g.cur = piece{kind: k, rot: rot, x: x, y: y}
-	g.fall, g.lockTime, g.resets, g.touchdownLocks = 0, 0, 0, false
+	g.fall, g.lockTime, g.resets = 0, 0, 0
+	g.airborne, g.deepest, g.lockNow = true, -1, false
+	g.settle()
 }
 
 // fill sets the bottom rows of the board from pictures, top to bottom:
@@ -77,9 +80,9 @@ func (g *Game) settled() int {
 
 // snapshot captures every piece of gameplay state for equality checks.
 func snapshot(g *Game) string {
-	return fmt.Sprintf("%v|%+v|%v|%v|%d|%d|%d|%v|%v|%d|%v|%v",
+	return fmt.Sprintf("%v|%+v|%v|%v|%d|%d|%d|%v|%v|%d|%v|%d|%v|%v",
 		g.board, g.cur, g.next, g.bag, g.bagLeft, g.score, g.lines,
-		g.fall, g.lockTime, g.resets, g.touchdownLocks, g.state)
+		g.fall, g.lockTime, g.resets, g.airborne, g.deepest, g.lockNow, g.state)
 }
 
 func TestStartState(t *testing.T) {
@@ -345,7 +348,7 @@ func TestProjectionAndHardDrop(t *testing.T) {
 	if land != (piece{pieceT, 0, 3, 17}) {
 		t.Fatalf("landing %+v", land)
 	}
-	out := renderStrict(t, g, 80, 24)
+	out := boardArea(t, renderStrict(t, g, 80, 24))
 	if n := strings.Count(out, "::"); n != 4 {
 		t.Fatalf("projection cells %d, want 4:\n%s", n, out)
 	}
@@ -373,7 +376,7 @@ func TestProjectionAndHardDrop(t *testing.T) {
 func TestProjectionHiddenWhenGrounded(t *testing.T) {
 	g, _ := seeded()
 	g.put(pieceO, 0, 4, 20)
-	if out := renderStrict(t, g, 80, 24); strings.Contains(out, "::") {
+	if out := boardArea(t, renderStrict(t, g, 80, 24)); strings.Contains(out, "::") {
 		t.Fatalf("projection drawn under a grounded piece:\n%s", out)
 	}
 }
@@ -557,7 +560,7 @@ func TestLeavingSupportClearsGroundedTimeButNotTheBudget(t *testing.T) {
 	}
 	g.Update(300 * ms)
 	g.HandleInput(engine.KeyRight) // columns 6,7: off the ledge
-	if g.resets != 2 || g.lockTime != 0 || g.grounded() || g.touchdownLocks {
+	if g.resets != 2 || g.lockTime != 0 || g.grounded() || g.lockNow {
 		t.Fatalf("off the ledge: resets %d lock %v", g.resets, g.lockTime)
 	}
 	g.Update(700 * ms) // one gravity step lands it on the floor
@@ -574,11 +577,11 @@ func TestLeavingSupportClearsGroundedTimeButNotTheBudget(t *testing.T) {
 	}
 }
 
-func TestExhaustedPieceLocksOnTouchdown(t *testing.T) {
-	g, _ := seeded()
-	g.fill("xxxxxx....")
-	g.put(pieceO, 0, 4, 19)
-	for i := range maxResets { // shuffle along the ledge: 4,5 <-> 3,4
+// exhaust spends the whole reset budget with grounded Left/Right shuffles,
+// ending where it started.
+func exhaust(t *testing.T, g *Game) {
+	t.Helper()
+	for i := range maxResets {
 		key := engine.KeyLeft
 		if i%2 == 1 {
 			key = engine.KeyRight
@@ -586,21 +589,73 @@ func TestExhaustedPieceLocksOnTouchdown(t *testing.T) {
 		g.HandleInput(key)
 		g.Update(100 * ms)
 	}
-	if g.resets != maxResets || !g.grounded() {
-		t.Fatalf("setup: resets %d", g.resets)
+	if g.resets != maxResets || !g.grounded() || g.lockTime != 100*ms {
+		t.Fatalf("setup: resets %d grounded %v lock %v", g.resets, g.grounded(), g.lockTime)
 	}
-	g.HandleInput(engine.KeyRight)
-	g.HandleInput(engine.KeyRight) // off the ledge with no budget left
-	if !g.touchdownLocks || g.grounded() {
-		t.Fatal("leaving support with no budget did not arm the touchdown lock")
+}
+
+func TestExhaustedTouchdownOnTheSameRowLocksAtOnce(t *testing.T) {
+	// A vertical I on the floor (deepest row 21) turns flat one row up,
+	// which leaves it airborne; gravity puts it back on row 21.
+	g, _ := seeded()
+	g.put(pieceI, 1, 2, 18)
+	exhaust(t, g)
+	g.HandleInput(engine.KeyUp)
+	if g.cur != (piece{pieceI, 2, 2, 18}) || g.grounded() || g.resets != maxResets || g.deepest != 21 {
+		t.Fatalf("after rotating: %+v grounded %v resets %d deepest %d", g.cur, g.grounded(), g.resets, g.deepest)
 	}
 	g.Update(699 * ms)
-	if g.cur.y != 19 {
-		t.Fatal("fell early")
+	if g.cur.y != 18 || g.settled() != 0 {
+		t.Fatal("fell or locked early")
 	}
-	g.Update(ms) // lands and locks at the same instant
-	if g.rowString(21) != "xxxxxxxx.." || g.rowString(20) != "......xx.." {
+	g.Update(ms) // lands on row 21 again and locks at the same instant
+	if g.rowString(21) != "..xxxx...." || g.settled() != 4 {
+		t.Fatalf("bottom row %s", g.rowString(21))
+	}
+}
+
+func TestExhaustedTouchdownOnALowerRowGetsAFreshDelay(t *testing.T) {
+	// An O shuffles on a ledge (deepest row 20) until the budget is spent,
+	// then slides off and falls to the floor, one row lower.
+	setup := func() *Game {
+		g, _ := seeded()
+		g.fill("xxxxxx....")
+		g.put(pieceO, 0, 4, 19)
+		exhaust(t, g)
+		g.HandleInput(engine.KeyRight) // columns 5,6: still on the ledge, no reset
+		g.HandleInput(engine.KeyRight) // columns 6,7: off the ledge
+		if g.grounded() || g.resets != maxResets || g.lockTime != 0 || g.deepest != 20 {
+			t.Fatalf("setup: grounded %v resets %d lock %v deepest %d", g.grounded(), g.resets, g.lockTime, g.deepest)
+		}
+		return g
+	}
+	g := setup()
+	g.Update(700 * ms) // lands on the floor
+	if g.cur.y != 20 || g.lockNow || g.lockTime != 0 || g.settled() != 6 || g.deepest != 21 {
+		t.Fatalf("landed: %+v lockNow %v lock %v settled %d", g.cur, g.lockNow, g.lockTime, g.settled())
+	}
+	g.Update(200 * ms)
+	g.HandleInput(engine.KeyRight) // grounded, but the budget is spent: no reset
+	if g.cur.x != 7 || g.resets != maxResets || g.lockTime != 200*ms {
+		t.Fatalf("move after touchdown: %+v resets %d lock %v", g.cur, g.resets, g.lockTime)
+	}
+	g.Update(199 * ms)
+	if g.settled() != 6 {
+		t.Fatal("locked before the fresh 400 ms window ended")
+	}
+	g.Update(ms)
+	if g.rowString(21) != "xxxxxx.xx." || g.rowString(20) != ".......xx." {
 		t.Fatalf("rows:\n%s\n%s", g.rowString(20), g.rowString(21))
+	}
+
+	// Without the move, frame chunking does not change when it locks.
+	whole, chunked := setup(), setup()
+	whole.Update(1100 * ms)
+	for range 11 {
+		chunked.Update(100 * ms)
+	}
+	if snapshot(whole) != snapshot(chunked) || whole.settled() != 10 {
+		t.Fatalf("chunking diverged:\n%s\n%s", snapshot(whole), snapshot(chunked))
 	}
 }
 
@@ -747,10 +802,11 @@ func TestEnterRestartsAFreshRun(t *testing.T) {
 	if !g.Finished() {
 		t.Fatal("setup: run did not end")
 	}
-	g.touchdownLocks, g.resets, g.lockTime, g.fall = true, 5, 100*ms, 200*ms
+	g.lockNow, g.deepest, g.airborne = true, 21, false
+	g.resets, g.lockTime, g.fall = 5, 100*ms, 200*ms
 	g.HandleInput(engine.KeySelect)
 	if g.Finished() || g.Score() != 0 || g.Lines() != 0 || g.Level() != 1 || g.settled() != 0 ||
-		g.fall != 0 || g.lockTime != 0 || g.resets != 0 || g.touchdownLocks {
+		g.fall != 0 || g.lockTime != 0 || g.resets != 0 || g.lockNow || g.deepest != -1 || !g.airborne {
 		t.Fatalf("after restart: %s", snapshot(g))
 	}
 	// A fresh bag: current, preview and the five left form one full bag.
@@ -825,15 +881,16 @@ func TestRenderFitsAndShowsHUD(t *testing.T) {
 		g.Resize(size[0], size[1])
 		g.fill("xxxxx.....")
 		out := renderStrict(t, g, size[0], size[1])
-		// Five settled cells, the current piece and the preview.
-		if n := strings.Count(out, "[]"); n != 5+4+4 {
-			t.Errorf("%v: %d block glyphs, want 13:\n%s", size, n, out)
+		board := boardArea(t, out)
+		if strings.Count(board, "[]") != 5 || strings.Count(board, "<>") != 4 || strings.Count(board, "::") != 4 {
+			t.Errorf("%v: want 5 settled cells, 4 piece cells, 4 projection cells:\n%s", size, board)
 		}
-		if strings.Count(out, "::") != 4 {
-			t.Errorf("%v: projection missing:\n%s", size, out)
+		if n := strings.Count(out, "[]"); n != 5+4+1 { // board, preview, legend
+			t.Errorf("%v: %d [] glyphs on screen, want 10:\n%s", size, n, out)
 		}
 		for _, want := range []string{"BLOCK DROP", "Score  0", "Lines  0", "Level  1", "Next",
-			"rotate cw / ccw", "hard drop", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C"} {
+			"rotate cw / ccw", "hard drop", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C",
+			"Piece <>   Landing ::   Stack []"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("%v: HUD lacks %q", size, want)
 			}
@@ -847,9 +904,41 @@ func TestRenderFitsAndShowsHUD(t *testing.T) {
 func TestRenderHidesCellsInHiddenRows(t *testing.T) {
 	g, _ := seeded()
 	g.put(pieceI, 1, 3, 0) // column 5, rows 0..3: two cells hidden
-	out := renderStrict(t, g, 80, 24)
-	if n := strings.Count(out, "[]"); n != 2+4 {
-		t.Fatalf("%d block glyphs, want 2 visible piece cells and the preview:\n%s", n, out)
+	board := boardArea(t, renderStrict(t, g, 80, 24))
+	if n := strings.Count(board, "<>"); n != 2 {
+		t.Fatalf("%d piece glyphs, want 2 visible piece cells:\n%s", n, board)
+	}
+}
+
+// boardArea returns the 20 visible board rows inside the border.
+func boardArea(t *testing.T, screen string) string {
+	t.Helper()
+	lines := strings.Split(screen, "\n")
+	at := position(screen, "+--------------------+")
+	if at[1] < 0 || at[1]+21 >= len(lines) {
+		t.Fatalf("no board border:\n%s", screen)
+	}
+	rows := make([]string, VisibleRows)
+	for i := range rows {
+		rows[i] = lines[at[1]+1+i][at[0]+1 : at[0]+1+Cols*2]
+	}
+	return strings.Join(rows, "\n")
+}
+
+func TestGroundedPieceIsDistinctFromTheStackWithoutColor(t *testing.T) {
+	// An O resting on the floor fills the gap in two otherwise full rows:
+	// the projection is hidden under it, so only its glyph sets it apart.
+	g, _ := seeded()
+	g.fill("xxxx..xxxx", "xxxx..xxxx")
+	g.put(pieceO, 0, 4, 20)
+	board := strings.Split(boardArea(t, renderStrict(t, g, 80, 24)), "\n")
+	for _, row := range board[VisibleRows-2:] {
+		if row != "[][][][]<><>[][][][]" {
+			t.Fatalf("bottom rows render as %q, want the piece as <>", board[VisibleRows-2:])
+		}
+	}
+	if strings.Contains(strings.Join(board, ""), "::") {
+		t.Fatal("projection drawn under a grounded piece")
 	}
 }
 
