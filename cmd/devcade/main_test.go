@@ -34,6 +34,8 @@ type hooks struct {
 
 func stub(t *testing.T, termErr error, playErr error) *hooks {
 	t.Helper()
+	t.Setenv("DEVCADE_CONFIG_DIR", t.TempDir())
+	t.Setenv("DEVCADE_LEADERBOARD_URL", "")
 	h := &hooks{}
 	oldPlay, oldReq, oldCat := play, requireTerminal, catalog
 	t.Cleanup(func() { play, requireTerminal, catalog = oldPlay, oldReq, oldCat })
@@ -171,14 +173,16 @@ func TestSnakeLaunchesDirectlyThroughCatalog(t *testing.T) {
 	if code, _, errOut := runArgs("snake"); code != exitOK {
 		t.Fatalf("code=%d stderr=%q", code, errOut)
 	}
-	e, ok := h.program.(*engine.Engine)
+	e, ok := h.program.(*arcade.App)
 	if !ok || h.checks != 1 || h.plays != 1 {
 		t.Fatalf("devcade snake played %T (%+v)", h.program, *h)
 	}
-	// Started directly, Q/Esc end the game and DevCade with it.
+	// Direct IDs open the same game menu, after optional username entry.
 	e.Resize(80, 24)
-	if !e.Input(engine.Event{Key: engine.KeyBack, Char: 'q'}) {
-		t.Fatal("Q did not end direct Snake")
+	e.Input(engine.Event{Key: engine.KeyBack})
+	e.Input(engine.Event{Key: engine.KeySelect})
+	if e.Input(engine.Event{Key: engine.KeyBack}) {
+		t.Fatal("Q should return to game menu")
 	}
 }
 
@@ -187,7 +191,7 @@ func TestDiagnosticFlagStartsDiagnosticDirectly(t *testing.T) {
 	if code, _, errOut := runArgs("--diagnostic"); code != exitOK {
 		t.Fatalf("code=%d stderr=%q", code, errOut)
 	}
-	e, ok := h.program.(*engine.Engine)
+	e, ok := h.program.(diagnosticProgram)
 	if !ok || h.checks != 1 {
 		t.Fatalf("--diagnostic played %T (%+v)", h.program, *h)
 	}
@@ -214,10 +218,17 @@ func TestAvailableGameLaunchesByIDThroughCatalog(t *testing.T) {
 	if code, _, errOut := runArgs("testgame"); code != exitOK {
 		t.Fatalf("code=%d stderr=%q", code, errOut)
 	}
-	if _, ok := h.program.(*engine.Engine); !ok || calls != 1 || strings.Join(order, ",") != "check,play" {
+	if _, ok := h.program.(*arcade.App); !ok || calls != 0 || strings.Join(order, ",") != "check,play" {
 		t.Fatalf("program=%T factory calls=%d order=%v", h.program, calls, order)
 	}
 
+	app := h.program.(*arcade.App)
+	app.Resize(80, 24)
+	app.Input(engine.Event{Key: engine.KeyBack})
+	app.Input(engine.Event{Key: engine.KeySelect})
+	if calls != 1 {
+		t.Fatal("confirmation did not construct game")
+	}
 	// A failed terminal check constructs nothing.
 	calls = 0
 	requireTerminal = func() error { return terminal.ErrNotInteractive }

@@ -5,12 +5,13 @@ All four games share these rules:
   printable ASCII, and never use color alone to tell objects apart.
 - Boards have a fixed logical size: resizing the window only re-centers them.
 - `Space` pauses (except on an end screen) and `Enter` on a game over or win
-  screen starts a fresh run. `Q`/`Esc` return to the menu (or quit when the
-  game was started directly) and `Ctrl+C` quits.
+  screen starts a fresh run. `Q`/`Esc` return to the game submenu, then the
+  main menu; `Ctrl+C` quits. A direct game ID uses the same submenu.
 - Time only advances while the game is visible and running. Pauses, small
   windows, the menu and end screens never add time, and a single frame
   advances at most 100 ms.
-- Scores are for the current run only; nothing is saved.
+- Completed runs update a saved personal best per game; unfinished quits do not.
+  Optional global sharing syncs those bests; see [settings](settings.md).
 - Every game processes its timers in time order, so the outcome doesn't
   depend on how time is split into frames.
 

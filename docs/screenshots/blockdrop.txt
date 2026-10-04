@@ -1,0 +1,24 @@
+     +--------------------+   BLOCK DROP                                        
+     | . . . . . . . . . .|                                                     
+     | . . .<><><><> . . .|   Score  72                                         
+     | . . . . . . . . . .|   Lines  0                                          
+     | . . . . . . . . . .|   Level  1                                          
+     | . . . . . . . . . .|   PLAYING                                           
+     | . . . . . . . . . .|                                                     
+     | . . . . . . . . . .|   Next                                              
+     | . . . . . . . . . .|                                                     
+     | . . . . . . . . . .|       []                                            
+     | . . . . . . . . . .|     [][][]                                          
+     | . . . . . . . . . .|                                                     
+     | . . . . . . . . . .|                                                     
+     | . . . . . . . . . .|   Left / Right   move                               
+     | . . . . . . . . . .|   Up / Z         rotate cw / ccw                    
+     | . . . . . . . . . .|   Down           soft drop                          
+     | . . . . . . . . . .|   Enter          hard drop                          
+     | . . . . . . . . . .|   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C      
+     | . . .:::::::: . . .|                                                     
+     | . .[][] . .[] . . .|   Piece <>   Landing ::   Stack []                  
+     | .[][] .[][][] . . .|                                                     
+     +--------------------+                                                     
+                                                                                
+ Q / Esc: back to game menu   Ctrl+C: quit DevCade                              

@@ -238,7 +238,7 @@ func (g *Game) Render(c engine.Canvas) {
 	case won:
 		status = "BOARD COMPLETE"
 	}
-	c.Text(x0, y0, fmt.Sprintf("SNAKE   Score %-5d Level %-3d Length %-4d %s", g.Score(), g.Level(), len(g.body), status), engine.Accent)
+	c.Text(x0, y0, engine.Format(c, "SNAKE   Score %-5d Level %-3d Length %-4d %s", g.Score(), g.Level(), len(g.body), engine.Format(c, status)), engine.Accent)
 	c.Text(x0, y0+1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
 
 	bx, by := x0, y0+hudH
@@ -271,15 +271,15 @@ func (g *Game) Render(c engine.Canvas) {
 			title = "BOARD COMPLETE - YOU WIN"
 		}
 		// A blank-padded box centered on the board, above the footer row.
-		box := []string{"", title, fmt.Sprintf("Final score %d   Level %d", g.Score(), g.Level()), "Enter: play again", ""}
+		box := []string{"", title, engine.Format(c, "Final score %d   Level %d", g.Score(), g.Level()), "Enter: play again", ""}
 		top := by + (boardH-len(box))/2
 		for i, line := range box {
-			c.Text(bx+(boardW-32)/2, top+i, "  "+center(line, 28)+"  ", engine.Warning)
+			c.Text(bx+(boardW-32)/2, top+i, "  "+center(engine.Format(c, line), 28)+"  ", engine.Warning)
 		}
 	}
 }
 
 func center(s string, width int) string {
-	pad := max(0, width-len(s))
+	pad := max(0, width-len([]rune(s)))
 	return fmt.Sprintf("%*s%s%*s", pad/2, "", s, pad-pad/2, "")
 }

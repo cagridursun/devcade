@@ -84,7 +84,9 @@ func TestEveryAvailableGameThroughTheArcade(t *testing.T) {
 			}
 			s.waitFor(t, " > "+entry.Name)
 			s.InjectKey(tcell.KeyEnter, 0, 0)
-			s.waitFor(t, "Q / Esc: back to menu")
+			s.waitFor(t, "New game")
+			s.InjectKey(tcell.KeyEnter, 0, 0)
+			s.waitFor(t, "Q / Esc: back to game menu")
 
 			// Pause survives shrink and enlarge.
 			s.InjectKey(tcell.KeyRune, ' ', 0)
@@ -101,7 +103,7 @@ func TestEveryAvailableGameThroughTheArcade(t *testing.T) {
 			for {
 				select {
 				case frame := <-s.shown:
-					if strings.Contains(frame, "Q / Esc: back to menu") && !strings.Contains(frame, "PAUSED") {
+					if strings.Contains(frame, "Q / Esc: back to game menu") && !strings.Contains(frame, "PAUSED") {
 						break unpause
 					}
 				case <-unpauseDeadline:
@@ -123,6 +125,8 @@ func TestEveryAvailableGameThroughTheArcade(t *testing.T) {
 				t.Fatalf("restart left the game paused:\n%s", h.last)
 			}
 
+			s.InjectKey(tcell.KeyEscape, 0, 0)
+			s.waitFor(t, "New game")
 			s.InjectKey(tcell.KeyEscape, 0, 0)
 			s.waitFor(t, " > "+entry.Name) // selection kept
 			s.InjectKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)

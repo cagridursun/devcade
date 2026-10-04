@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -74,6 +73,7 @@ func (e *Engine) Input(ev Event) (done bool) {
 		e.updateRunning()
 	case !e.paused:
 		e.game.HandleInput(key)
+		e.updateRunning() // input can end a run or restart it
 	}
 	return false
 }
@@ -83,6 +83,7 @@ func (e *Engine) Input(ev Event) (done bool) {
 // (it may span the suspended period), and each frame is capped at
 // MaxFrameStep.
 func (e *Engine) Advance(dt time.Duration) {
+	e.updateRunning()
 	if !e.running || dt <= 0 {
 		return
 	}
@@ -91,10 +92,14 @@ func (e *Engine) Advance(dt time.Duration) {
 		return
 	}
 	e.game.Update(min(dt, MaxFrameStep))
+	e.updateRunning() // a gameplay step can finish the run
 }
 
 func (e *Engine) updateRunning() {
 	running := e.Ready() && !e.paused
+	if f, ok := e.game.(Finisher); ok && f.Finished() {
+		running = false
+	}
 	if running && !e.running {
 		e.discardNext = true
 	}
@@ -110,9 +115,9 @@ func (e *Engine) Render(c Canvas) {
 	}
 	e.game.Render(c)
 	if e.paused {
-		const banner = "[ PAUSED - press Space to resume ]"
+		banner := Format(c, "[ PAUSED - press Space to resume ]")
 		w, h := c.Size()
-		c.Text((w-len(banner))/2, h/2, banner, Warning)
+		c.Text((w-len([]rune(banner)))/2, h/2, banner, Warning)
 	}
 }
 
@@ -120,6 +125,6 @@ func (e *Engine) Render(c Canvas) {
 // Lines are short so they stay readable when clipped on a tiny terminal.
 func RenderTooSmall(c Canvas, minW, minH, width, height int) {
 	c.Text(0, 0, "DevCade: window too small", Warning)
-	c.Text(0, 1, fmt.Sprintf("Need %dx%d, have %dx%d", minW, minH, width, height), Default)
+	c.Text(0, 1, Format(c, "Need %dx%d, have %dx%d", minW, minH, width, height), Default)
 	c.Text(0, 2, "Enlarge it, or press Q", Default)
 }

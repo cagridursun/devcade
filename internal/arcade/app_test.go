@@ -95,6 +95,7 @@ func newFixture(t *testing.T) *fixture {
 		f.diags = append(f.diags, g)
 		return g
 	})
+	t.Cleanup(f.app.Close)
 	f.app.Resize(80, 24)
 	return f
 }
@@ -117,7 +118,7 @@ func TestMenuShowsCatalogWithoutConstructingGames(t *testing.T) {
 	out := render(a, 80, 24)
 	for _, want := range []string{"DEVCADE", " > Snake        Available", "   Block Drop   Available",
 		"   Maze Chase   Available", "   Blast Grid   Available",
-		"Steer a growing snake", "D  Terminal diagnostic", "Enter: play", "Q / Esc: quit"} {
+		"Steer a growing snake", "D  Terminal diagnostic", "Enter: open", "Q / Esc: quit"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("menu lacks %q:\n%s", want, out)
 		}
@@ -138,11 +139,11 @@ func TestMenuShowsCatalogWithoutConstructingGames(t *testing.T) {
 
 func TestMenuSelectionWrapsAndDescribesHighlightedGame(t *testing.T) {
 	f := newFixture(t)
-	f.press(t, key(engine.KeyUp)) // wraps from first to last
+	f.press(t, key(engine.KeyUp), key(engine.KeyUp), key(engine.KeyUp)) // cross creator and Settings to the last game
 	if f.app.selected != 2 || !strings.Contains(render(f.app, 80, 24), " > Later Game") {
 		t.Fatalf("Up from first selected %d", f.app.selected)
 	}
-	f.press(t, key(engine.KeyDown)) // wraps from last to first
+	f.press(t, key(engine.KeyDown), key(engine.KeyDown), key(engine.KeyDown)) // cross Settings and creator to first
 	if f.app.selected != 0 {
 		t.Fatalf("Down from last selected %d", f.app.selected)
 	}
@@ -241,7 +242,7 @@ func TestUndersizedMenuIgnoresNavigationButQuits(t *testing.T) {
 func TestAvailableGameIsRoutedOnlyWhileActive(t *testing.T) {
 	f := newFixture(t)
 	f.app.Advance(time.Minute) // menu time
-	f.press(t, key(engine.KeyDown), key(engine.KeySelect))
+	f.press(t, key(engine.KeyDown), key(engine.KeySelect), key(engine.KeySelect))
 	if len(f.games) != 1 || f.app.active == nil {
 		t.Fatalf("launch built %d games", len(f.games))
 	}
@@ -273,7 +274,7 @@ func TestAvailableGameIsRoutedOnlyWhileActive(t *testing.T) {
 
 func TestRelaunchBuildsFreshUnpausedGame(t *testing.T) {
 	f := newFixture(t)
-	f.press(t, key(engine.KeyDown), key(engine.KeySelect))
+	f.press(t, key(engine.KeyDown), key(engine.KeySelect), key(engine.KeySelect))
 	first := f.app.active
 	f.press(t, key(engine.KeyPause))
 	if !first.Paused() {
@@ -294,13 +295,14 @@ func TestRelaunchBuildsFreshUnpausedGame(t *testing.T) {
 
 func TestLaunchWhileOnlyGameIsUndersizedWaitsForRoom(t *testing.T) {
 	f := newFixture(t)
-	f.press(t, key(engine.KeyDown), key(engine.KeySelect))
+	f.press(t, key(engine.KeyDown), key(engine.KeySelect), key(engine.KeySelect))
 	f.app.Resize(50, 10)
 	f.app.Advance(time.Second)
 	out := render(f.app, 50, 10)
 	if !strings.Contains(out, "Need 80x24") || strings.Contains(out, "back to menu") {
 		t.Fatalf("undersized activity:\n%s", out)
 	}
+	t.Cleanup(f.app.Close)
 	f.app.Resize(80, 24)
 	f.app.Advance(time.Second) // dropped: spans the undersized period
 	if len(f.games[0].updates) != 0 {
@@ -308,14 +310,18 @@ func TestLaunchWhileOnlyGameIsUndersizedWaitsForRoom(t *testing.T) {
 	}
 }
 
-func TestFooterOffersPlayOnlyForAvailableGames(t *testing.T) {
+func TestGameMenuRequiresNewGameConfirmation(t *testing.T) {
 	f := newFixture(t)
-	if out := render(f.app, 80, 24); !strings.Contains(out, "Enter: details") || strings.Contains(out, "Enter: play") {
-		t.Fatalf("coming-soon footer:\n%s", out)
+	f.press(t, key(engine.KeyDown), key(engine.KeySelect))
+	if f.app.state != gameMenu || f.app.active != nil || len(f.games) != 0 {
+		t.Fatal("game started before New game confirmation")
 	}
-	f.press(t, key(engine.KeyDown))
-	if out := render(f.app, 80, 24); !strings.Contains(out, "Enter: play") {
-		t.Fatalf("available footer:\n%s", out)
+	if out := render(f.app, 80, 24); !strings.Contains(out, "New game") || !strings.Contains(out, "Leaderboard") {
+		t.Fatal(out)
+	}
+	f.press(t, key(engine.KeySelect))
+	if len(f.games) != 1 {
+		t.Fatal("New game did not start")
 	}
 }
 
@@ -325,7 +331,7 @@ func TestActionKeyIsIgnoredByMenuAndRoutedToGames(t *testing.T) {
 	if f.app.active != nil || f.app.selected != 0 {
 		t.Fatal("Z changed the menu")
 	}
-	f.press(t, key(engine.KeyDown), key(engine.KeySelect), engine.Event{Key: engine.KeyAction, Char: 'z'})
+	f.press(t, key(engine.KeyDown), key(engine.KeySelect), key(engine.KeySelect), engine.Event{Key: engine.KeyAction, Char: 'z'})
 	if g := f.games[0]; fmt.Sprint(g.inputs) != fmt.Sprint([]engine.Key{engine.KeyAction}) {
 		t.Fatalf("game inputs %v", g.inputs)
 	}

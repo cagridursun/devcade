@@ -559,9 +559,9 @@ func (g *Game) Render(c engine.Canvas) {
 	for i, line := range []string{
 		"BLOCK DROP",
 		"",
-		fmt.Sprintf("Score  %d", g.score),
-		fmt.Sprintf("Lines  %d", g.lines),
-		fmt.Sprintf("Level  %d", g.Level()),
+		engine.Format(c, "Score  %d", g.score),
+		engine.Format(c, "Lines  %d", g.lines),
+		engine.Format(c, "Level  %d", g.Level()),
 		status,
 		"",
 		"Next",
@@ -594,16 +594,16 @@ func (g *Game) Render(c engine.Canvas) {
 
 	if g.state != playing {
 		// A blank-padded box centered on the board, above the footer row.
-		box := []string{"", "GAME OVER", fmt.Sprintf("Final score %d", g.score),
-			fmt.Sprintf("Lines %d   Level %d", g.lines, g.Level()), "Enter: play again", ""}
+		box := []string{"", "GAME OVER", engine.Format(c, "Final score %d", g.score),
+			engine.Format(c, "Lines %d   Level %d", g.lines, g.Level()), "Enter: play again", ""}
 		top := y0 + (boardH-len(box))/2
 		for i, line := range box {
-			c.Text(x0+(boardW-26)/2, top+i, " "+center(line, 24)+" ", engine.Warning)
+			c.Text(x0+(boardW-26)/2, top+i, " "+center(engine.Format(c, line), 24)+" ", engine.Warning)
 		}
 	}
 }
 
 func center(s string, width int) string {
-	pad := max(0, width-len(s))
+	pad := max(0, width-len([]rune(s)))
 	return fmt.Sprintf("%*s%s%*s", pad/2, "", s, pad-pad/2, "")
 }

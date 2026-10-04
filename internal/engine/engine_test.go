@@ -210,7 +210,7 @@ func TestUndersizedMessageReportsSizesAndClipsSafely(t *testing.T) {
 }
 
 func TestPrintable(t *testing.T) {
-	for r, want := range map[rune]rune{'a': 'a', ' ': ' ', '~': '~', '\t': '?', 0x7f: '?', 'é': '?', '界': '?'} {
+	for r, want := range map[rune]rune{'a': 'a', ' ': ' ', '~': '~', '\t': '?', 0x7f: '?', 'é': 'é', 'ş': 'ş', 'œ': 'œ', 'ı': 'ı', 'İ': 'İ', 'ñ': 'ñ', '\u0301': '?', '\u202e': '?', '界': '?'} {
 		if got := Printable(r); got != want {
 			t.Errorf("Printable(%q) = %q, want %q", r, got, want)
 		}
@@ -224,6 +224,35 @@ type finishingGame struct {
 }
 
 func (g *finishingGame) Finished() bool { return g.finished }
+
+func (g *finishingGame) HandleInput(k Key) {
+	g.fakeGame.HandleInput(k)
+	if k == KeySelect {
+		g.finished = false
+	}
+}
+
+func TestFinishedTimeIsNotDeliveredToRestartedRun(t *testing.T) {
+	g := &finishingGame{}
+	e := New(g)
+	e.Resize(80, 24)
+	e.Advance(frame)
+	e.Advance(frame)
+	g.finished = true
+	e.Advance(time.Minute)
+	if len(g.updates) != 1 {
+		t.Fatal("finished game received gameplay time")
+	}
+	e.Input(Event{Key: KeySelect})
+	e.Advance(time.Minute) // spans the end screen: discard it entirely
+	if len(g.updates) != 1 {
+		t.Fatal("restart replayed time from the finished run")
+	}
+	e.Advance(frame)
+	if fmt.Sprint(g.updates) != fmt.Sprint([]time.Duration{frame, frame}) {
+		t.Fatalf("updates = %v", g.updates)
+	}
+}
 
 func TestPauseIsIgnoredWhileGameIsFinished(t *testing.T) {
 	g := &finishingGame{}

@@ -1,16 +1,33 @@
 name: Release candidate
 
-# Builds the release-candidate artifacts and uploads them as a workflow
-# artifact. It never creates a tag, never publishes a GitHub release and
-# uses no secrets; publishing is a separate, manual owner decision
-# (see docs/releasing.md).
-
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - 'tools/release/**'
+      - 'cmd/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'packaging/**'
+      - 'LICENSE'
+      - 'THIRD_PARTY_NOTICES.txt'
+      - 'README.md'
+      - 'docs/**'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version without a leading "v", for example 1.0.0-rc.1'
+        description: 'Version without v (first release: 1.0.0-rc.1)'
         required: true
+        default: '1.0.0-rc.1'
+        type: string
+      publish:
+        description: 'Publish after all checks (main branch, public repo only)'
+        default: false
+        type: boolean
+      leaderboard_url:
+        description: 'Shared HTTPS leaderboard endpoint (required to publish)'
+        default: 'https://devcade.cinesdigital.com'
         type: string
 
 permissions:
@@ -21,20 +38,18 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  GO_VERSION: '1.26.x'
+  GO_VERSION: '1.26.8'
   GOFLAGS: -mod=readonly
+  VERSION: ${{ inputs.version || '1.0.0-rc.1' }}
+  LEADERBOARD_URL: ${{ inputs.leaderboard_url || 'https://devcade.cinesdigital.com' }}
 
 jobs:
   build:
-    name: build ${{ inputs.version }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
       run:
         shell: bash
-    env:
-      # Passed through the environment, never interpolated into scripts.
-      VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -42,42 +57,158 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
-
-      - name: Verify modules
-        run: go mod verify
-
-      - name: Test the release tooling and installers
-        run: go test -count=1 -timeout 120s ./tools/...
-
-      - name: Build archives, SHA256SUMS and manifests
-        run: go run ./tools/release -version "$VERSION" -out dist/release
-
-      - name: Verify checksums
+      - name: Verify source and modules
+        run: |
+          go mod verify
+          go mod tidy -diff
+          test -z "$(gofmt -l .)"
+          go vet ./...
+          go test -count=1 -timeout 120s ./...
+      - name: Build all six archives
+        run: go run ./tools/release -version "$VERSION" -leaderboard-url "$LEADERBOARD_URL" -out dist/release
+      - name: Build and smoke-test the leaderboard container
+        run: |
+          docker build -f packaging/leaderboard/Dockerfile -t devcade-leaderboard:test .
+          docker run -d --name devcade-leaderboard-test -p 127.0.0.1:18080:8080 devcade-leaderboard:test
+          trap 'docker logs devcade-leaderboard-test; docker rm -f devcade-leaderboard-test' EXIT
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:18080/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:18080/v1/leaderboards/snake
+          docker stop devcade-leaderboard-test
+          docker start devcade-leaderboard-test
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:18080/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:18080/healthz
+      - name: Require an online leaderboard before publishing
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        run: |
+          test -n "$LEADERBOARD_URL" || { echo 'Deploy the shared leaderboard and supply its HTTPS URL before publishing'; exit 1; }
+          curl --fail --silent --show-error --max-time 10 --proto '=https' "${LEADERBOARD_URL%/}/healthz"
+          for id in snake blockdrop mazechase blastgrid; do
+            curl --fail --silent --show-error --max-time 10 --proto '=https' "${LEADERBOARD_URL%/}/v1/leaderboards/$id" \
+              | python3 -c 'import json,sys; b=json.load(sys.stdin); assert isinstance(b["rows"],list) and len(b["rows"])<=20'
+          done
+      - name: Verify checksums and archive permissions
         working-directory: dist/release
-        run: sha256sum --strict -c SHA256SUMS
-
-      - name: Smoke-test linux/amd64
         run: |
-          archive="dist/release/devcade_${VERSION}_linux_amd64.tar.gz"
-          tar -tvzf "$archive"
-          tar -tvzf "$archive" | grep -Eq '^-rwxr-xr-x 0/0 .* devcade$'
-          x="$RUNNER_TEMP/smoke"
-          mkdir -p "$x"
-          tar -xzf "$archive" -C "$x"
-          test "$("$x/devcade" --version)" = "devcade $VERSION"
-          "$x/devcade" --help >/dev/null
-          "$x/devcade" list | grep -q "snake"
-
-      - name: Install with install.sh from the built files
-        run: |
-          sh packaging/install/install.sh --version "$VERSION" \
-            --base-url "$PWD/dist/release" --install-dir "$RUNNER_TEMP/bin"
-          test "$("$RUNNER_TEMP/bin/devcade" --version)" = "devcade $VERSION"
-
-      - name: Upload artifacts
+          sha256sum --strict -c SHA256SUMS
+          tar -tvzf "devcade_${VERSION}_linux_amd64.tar.gz" | grep -Eq '^-rwxr-xr-x 0/0 .* devcade$'
+      - name: Upload exact release files
         uses: actions/upload-artifact@v7
         with:
-          name: devcade-${{ inputs.version }}
+          name: devcade-release
           path: dist/release/
           if-no-files-found: error
           retention-days: 30
+
+  verify:
+    name: verify packaged binary (${{ matrix.os }})
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: devcade-release
+          path: dist/release
+      - name: Native tests including race detection
+        run: go test -race -count=1 -timeout 120s ./...
+      - name: Verify and install packaged binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          (cd dist/release && shasum -a 256 -c SHA256SUMS)
+          sh dist/release/install.sh --version "$VERSION" \
+            --base-url "$PWD/dist/release" --install-dir "$RUNNER_TEMP/devcade-bin"
+          binary="$RUNNER_TEMP/devcade-bin/devcade"
+          test "$("$binary" --version)" = "devcade $VERSION"
+          "$binary" --help >/dev/null
+          for id in snake blockdrop mazechase blastgrid; do
+            "$binary" list | grep -q "^$id .*Available"
+          done
+          set +e
+          "$binary" snake </dev/null >/dev/null 2>&1
+          status=$?
+          set -e
+          test "$status" -eq 1
+      - name: Verify and install packaged binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($line in Get-Content dist/release/SHA256SUMS) {
+            $hash, $file = $line -split '  ', 2
+            $actual = (Get-FileHash (Join-Path dist/release $file) -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($actual -ne $hash) { throw "Checksum mismatch for $file" }
+          }
+          $target = Join-Path $env:RUNNER_TEMP 'devcade-bin'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File dist/release/install.ps1 -Version $env:VERSION -BaseUrl "$PWD/dist/release" -InstallDir $target
+          if ($LASTEXITCODE -ne 0) { throw 'Installer failed' }
+          $binary = Join-Path $target 'devcade.exe'
+          if ((& $binary --version) -ne "devcade $env:VERSION") { throw 'Wrong version' }
+          & $binary --help
+          if ($LASTEXITCODE -ne 0) { throw 'Help failed' }
+          $games = & $binary list
+          foreach ($id in 'snake','blockdrop','mazechase','blastgrid') {
+            if (-not ($games -match "^$id .*Available")) { throw "$id missing" }
+          }
+          if (-not (Select-String -Path (Join-Path $target 'LICENSE-NOTICE.txt') -Pattern 'MIT License')) { throw 'License missing' }
+          '' | & $binary snake
+          if ($LASTEXITCODE -ne 1) { throw 'Redirected stdin not rejected' }
+          # The expected non-TTY refusal is not a job failure.
+          exit 0
+
+  publish:
+    needs: [build, verify]
+    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: devcade-release
+          path: dist/release
+      - name: Publish the verified files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          test "$GITHUB_REF" = refs/heads/main || { echo 'Publish from main only'; exit 1; }
+          test "$REPOSITORY_PRIVATE" = false || { echo 'Make the repository public before publishing'; exit 1; }
+          (cd dist/release && sha256sum --strict -c SHA256SUMS)
+          notes="docs/releases/${VERSION}.md"
+          test -f "$notes" || { echo "Missing release notes: $notes"; exit 1; }
+          # Refuse existing releases/tags; never replace published assets.
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'Release already exists'; exit 1
+          fi
+          if git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY.git" "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo 'Tag already exists'; exit 1
+          fi
+          flags=()
+          if [[ "$VERSION" == *-* ]]; then flags+=(--prerelease); fi
+          gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "DevCade $VERSION" \
+            --notes-file "$notes" "${flags[@]}" \
+            dist/release/*.tar.gz dist/release/*.zip \
+            dist/release/SHA256SUMS dist/release/install.sh dist/release/install.ps1

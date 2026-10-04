@@ -8,6 +8,23 @@ another terminal, run `devcade`, pick a game and play without leaving the
 terminal: no browser, no graphical window, and no language runtime needed for
 the distributed binaries. It runs on Windows, macOS and Linux.
 
+<table>
+  <tr>
+    <td><strong>Snake</strong><br><img src="docs/screenshots/snake.png" alt="Snake running in an 80 by 24 terminal" width="480"></td>
+    <td><strong>Block Drop</strong><br><img src="docs/screenshots/blockdrop.png" alt="Block Drop with a falling piece, stack and next-piece preview" width="480"></td>
+  </tr>
+  <tr>
+    <td><strong>Maze Chase</strong><br><img src="docs/screenshots/mazechase.png" alt="Maze Chase with pellets, four chasers and the player" width="480"></td>
+    <td><strong>Blast Grid</strong><br><img src="docs/screenshots/blastgrid.png" alt="Blast Grid with bombs, crates and three bots" width="480"></td>
+  </tr>
+</table>
+
+Captured from the running Linux binary through an 80×24 pseudo-terminal;
+using the Colorful palette; these are actual game frames, not mockups. See [capture details](docs/screenshots/README.md).
+
+[Release downloads](https://github.com/cagridursun/devcade/releases) ·
+[Installation](docs/install.md) · [Game rules](docs/games.md) · [Settings](docs/settings.md)
+
 ## Status: v1 release candidate
 
 **All four v1 games are playable.** Running `devcade` opens the arcade menu:
@@ -26,13 +43,29 @@ resize and terminal restoration.
 
 | Area | Status |
 | --- | --- |
-| Code: four games, menu, CLI, terminal core | Complete on the v1 integration branch, with automated tests (see [CI](.github/workflows/ci.yml)) |
+| Code: four games, menu, CLI, terminal core | Merged into main, with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
 | Distribution | **Not published.** No GitHub release, tap or bucket exists yet, and the repository is private. See [docs/install.md](docs/install.md) |
+| Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
+| Global leaderboard | Live at `https://devcade.cinesdigital.com`; Windows score submission and server restart persistence verified ([service](docs/leaderboard.md)) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
-| License | Not chosen yet (see below) |
+| License | MIT; dependency notices included in binary archives |
 
 `brew install devcade` and `scoop install devcade` do **not** work yet.
+
+## Settings and scores
+
+![Settings in Turkish with the Midnight palette](docs/screenshots/settings.png)
+
+Select a game, then **New game** or **Leaderboard**. First launch asks for an
+unverified username; Esc continues as guest. **Settings** (or O in the main
+menu) changes English (default), Turkish, Spanish, Dutch or French, and
+Black / white (default), Midnight or Colorful. Preferences and completed-run
+personal bests survive restarts. Global sharing defaults to Off; it publishes
+your alias and bests when enabled. Source builds and official release packages
+use `https://devcade.cinesdigital.com` by default; local play works offline.
+The creator profile opens from the main menu. New games are coming soon.
+See [player settings](docs/settings.md) and [global leaderboard deployment](docs/leaderboard.md).
 
 ## Install
 
@@ -52,7 +85,7 @@ latest 1.26.x) and an interactive terminal of at least **80 × 24**.
 
 ```sh
 go run ./cmd/devcade                  # open the arcade menu
-go run ./cmd/devcade snake            # start a game directly: snake, blockdrop, mazechase, blastgrid
+go run ./cmd/devcade snake            # open the game submenu: snake, blockdrop, mazechase, blastgrid
 go run ./cmd/devcade list             # list the games (no terminal needed)
 go run ./cmd/devcade --diagnostic     # start the terminal diagnostic directly
 go run ./cmd/devcade --help
@@ -101,24 +134,27 @@ hold a key or press Enter to send it.
 
 | Screen | Keys |
 | --- | --- |
-| Menu | `Up`/`Down` or `W`/`S` select (wraps), `Enter` play, `D` terminal diagnostic, `Q`/`Esc`/`Ctrl+C` quit |
-| Every game | `Space` pause/resume, `Enter` play again after game over or a win, `Q`/`Esc` back to the menu, `Ctrl+C` quit DevCade |
+| Menu | `Up`/`Down` or `W`/`S` select (wraps), `Enter` open, `O` Settings, `D` terminal diagnostic, `Q`/`Esc`/`Ctrl+C` quit |
+| Game submenu | `Up`/`Down` select New game or Leaderboard, `Enter` confirm, `Q`/`Esc` main menu |
+| Settings | `Up`/`Down` select, `Left`/`Right`/`Enter` change, `Q`/`Esc` back |
+| Leaderboard | `R` refresh, `Up`/`Down` scroll, `Q`/`Esc` game submenu |
+| Every game | `Space` pause/resume, `Enter` play again after game over or a win, `Q`/`Esc` back to the game submenu, `Ctrl+C` quit DevCade |
 | Snake | arrows/WASD turn (up to two quick turns are queued) |
 | Block Drop | `Left`/`Right` (`A`/`D`) move, `Up` (`W`) rotate clockwise, `Z` rotate counterclockwise, `Down` (`S`) soft drop, `Enter` hard drop |
 | Maze Chase | arrows/WASD steer; a turn waits until the passage opens |
 | Blast Grid | arrows/WASD move one cell, `Z` place a bomb |
 | Terminal diagnostic | arrows/WASD change direction, `Space` pause |
 
-A game started directly (`devcade snake`, `devcade --diagnostic`) has no menu
-to return to, so `Q`/`Esc` quit there.
+`devcade <game>` opens the same submenu. Only the direct diagnostic
+(`devcade --diagnostic`) quits on Q/Esc without revealing a menu.
 
 ## Behavior shared by every screen
 
 - **One terminal session.** Moving between the menu and a game never
   restarts the screen; it is restored once, when DevCade exits.
 - **Fresh runs.** Each launch, and each Enter on an end screen, starts a new
-  unpaused run. Leaving a game discards it. Nothing is saved: scores are for
-  the current run only.
+  unpaused run. Leaving discards an unfinished run. Completed runs record a
+  personal best per game locally, and optionally sync to the global service.
 - **Pause** freezes the game under a `PAUSED` banner. On a game over or win
   screen Space does nothing, so Enter always restarts.
 - **Resize.** Boards have a fixed size, so a larger window only re-centers
@@ -147,7 +183,11 @@ to return to, so `Q`/`Esc` quit there.
 
 ```
 cmd/devcade/              CLI: commands, flags, signals, exit codes, error reporting
-internal/arcade/          Built-in game catalog; menu and menu/game navigation
+internal/arcade/          Catalog, menus, settings, profile and async score coordination
+internal/ui/              Localization catalog and localized canvas
+internal/profile/         Atomic preferences and personal-best storage
+internal/leaderboard/     Optional HTTP API/client, authenticated bests and persisted server
+cmd/devcade-leaderboard/  Standalone community leaderboard server
 internal/engine/          Game, Canvas, Finisher and key contracts; pause, resize and timing policy
 internal/terminal/        tcell adapter: screen lifecycle, event reader, key mapping, canvas
 internal/games/snake/     Snake
@@ -169,14 +209,14 @@ signals, start goroutines or touch files or the network.
 first time the screen is big enough; resets the run), `Resize` (layout only),
 `HandleInput` (normalized keys), `Update(dt)` (gameplay time, capped at
 100 ms and never sent while paused or undersized) and `Render(Canvas)`. Games
-draw printable ASCII only, two terminal columns per board cell, and never the
+draw ASCII board glyphs and localized Latin UI text, two columns per board cell, and never the
 last row (the arcade's navigation footer). A game that can end implements
 `engine.Finisher` (`Finished() bool`); while it reports true the engine
 ignores the pause key, and Enter reaches the game to restart it.
 
 **Input.** The terminal adapter turns each key press into an `engine.Event`:
 a normalized `Key` (`Up`, `Down`, `Left`, `Right`, `Pause`, `Select`, `Back`,
-`Exit`, `Action`) plus the lower-case letter typed, if any. Space is always
+`Exit`, `Action`, `Erase`) plus a lower-case ASCII letter, digit or underscore. Space is always
 the engine's pause, Enter is `Select`, Z is `Action`, Q/Esc are `Back`
 ("leave this screen") and Ctrl+C is `Exit` ("leave DevCade"). Games only
 receive `Key` values. The menu also reads the letter, which is how `D` opens
@@ -195,7 +235,9 @@ and does all rendering. A reader goroutine forwards backend events through a
 64-event buffer; when it is full, backpressure reaches tcell's own bounded
 queue, so floods of input cannot grow memory. The reader keeps draining
 tcell's queue until `Fini` returns, because tcell's goroutines post with a
-blocking send and `Fini` waits for them.
+blocking send and `Fini` waits for them. Network/browser workers use immutable
+profile snapshots and bounded result channels; only the UI loop applies results.
+They are cancelled and joined on exit.
 
 **Dependency choice.** [tcell](https://github.com/gdamore/tcell) v2.13.10
 handles terminal input, colors, the alternate screen and diff-based rendering
@@ -208,11 +250,11 @@ used for the interactive-terminal check.
 
 | Target | Native tests | Cross-build (CGO_ENABLED=0) | Interactive terminal |
 | --- | --- | --- | --- |
-| Windows amd64 | Local (Windows 11) + CI | Yes | Owner-reported: M1 diagnostic input in Windows Terminal; Snake "works without problems" (environment not recorded). Block Drop, Maze Chase, Blast Grid pending |
+| Windows amd64 | Local (Windows 11) + CI | Yes | Owner-reported successful gameplay of all four games (2026-10-04); detailed terminal/checklist data not recorded |
 | Windows arm64 | — | Yes | Untested |
 | macOS arm64 (Apple Silicon) | CI (`macos-latest`) | Yes | Pending |
 | macOS amd64 | — | Yes | Untested |
-| Linux amd64 | CI (`ubuntu-latest`) | Yes | M1 diagnostic PTY smoke test (reported earlier). Games pending |
+| Linux amd64 | CI (`ubuntu-latest`) | Yes | All four games: PTY startup, gameplay input, normal quit and TTY restoration verified (2026-10-04). Human emulator acceptance pending |
 | Linux arm64 | — | Yes | Untested |
 
 Automated tests run every game through the real terminal loop on tcell's
@@ -228,17 +270,20 @@ use Windows Terminal, or run `winpty devcade` there.
 | M0/M1 | Bootstrap and terminal core | Merged; manual compatibility checks tracked |
 | M2 | Arcade menu, catalog and built-in selection | Merged |
 | M3 | Snake | Merged |
-| M4 | Block Drop | Done on the v1 integration branch |
-| M5 | Maze Chase | Done on the v1 integration branch |
-| M6 | Blast Grid | Done on the v1 integration branch |
-| M7 | Packaging, distribution and installers | Tooling done; publication pending owner decisions |
+| M4 | Block Drop | Merged |
+| M5 | Maze Chase | Merged |
+| M6 | Blast Grid | Merged |
+| M7 | Packaging, distribution and installers | Archives, installers and gated publishing workflow ready; public release pending |
 | M8 | Four-game v1.0 | Release candidate; manual acceptance and publication pending |
 
 See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.md).
-Accounts, multiplayer, online leaderboards, analytics and plugins are out of
-scope for v1.
+Anonymous community leaderboards are included in this candidate; the shared
+HTTPS service is deployed. Verified accounts, multiplayer,
+analytics and plugins are out of scope for v1.
 
 ## License
 
-The license has not been chosen yet. Until the owner picks one, no license is
-granted. Release archives include `LICENSE-NOTICE.txt` saying so.
+MIT — see [LICENSE](LICENSE). DevCade is a free hobby project; MIT permits
+commercial use as well. Dependencies retain their own licenses. Binary
+archives include the complete MIT license and third-party license texts in
+`LICENSE-NOTICE.txt`; see [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt).

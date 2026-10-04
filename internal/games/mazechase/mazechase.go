@@ -438,10 +438,10 @@ func (g *Game) Render(c engine.Canvas) {
 	}
 	powerText := "Power  -- "
 	if g.vulnerable() {
-		powerText = fmt.Sprintf("Power %4.1fs", (g.powerUntil - g.now).Seconds())
+		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil - g.now).Seconds())
 	}
-	c.Text(x0, y0, fmt.Sprintf("MAZE CHASE   Score %-6d Lives %d   %s   Left %-4d %s",
-		g.score, g.lives, powerText, g.remaining, status), engine.Accent)
+	c.Text(x0, y0, engine.Format(c, "MAZE CHASE   Score %-6d Lives %d   %s   Left %-4d %s",
+		g.score, g.lives, powerText, g.remaining, engine.Format(c, status)), engine.Accent)
 	c.Text(x0, y0+1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
 
 	bx, by := x0+(blockW-boardW)/2, y0+hudH
@@ -484,15 +484,15 @@ func (g *Game) Render(c engine.Canvas) {
 		if g.state == won {
 			title = "MAZE CLEARED - YOU WIN"
 		}
-		box := []string{"", title, fmt.Sprintf("Final score %d", g.score), "Enter: play again", ""}
+		box := []string{"", title, engine.Format(c, "Final score %d", g.score), "Enter: play again", ""}
 		top := by + (Rows-len(box))/2
 		for i, line := range box {
-			c.Text(bx+(boardW-32)/2, top+i, "  "+center(line, 28)+"  ", engine.Warning)
+			c.Text(bx+(boardW-32)/2, top+i, "  "+center(engine.Format(c, line), 28)+"  ", engine.Warning)
 		}
 	}
 }
 
 func center(s string, width int) string {
-	pad := max(0, width-len(s))
+	pad := max(0, width-len([]rune(s)))
 	return fmt.Sprintf("%*s%s%*s", pad/2, "", s, pad-pad/2, "")
 }

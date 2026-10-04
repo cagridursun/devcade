@@ -4,6 +4,14 @@
 
 First four-game release candidate.
 
+### Settings, profile and community rankings
+- Five UI languages; English is the default. Three palettes; black/white is the default.
+- Username onboarding with guest play and opt-in anonymous score sharing.
+- Game-specific New game / Leaderboard submenus, persistent completed-run bests.
+- Shared HTTP leaderboard server/client with max-only per-game updates and own rank.
+- Creator attribution/profile launcher and new-games notice in the main menu.
+- Public HTTPS service deployment is a launch prerequisite; container/proxy files are included.
+
 ### Games
 - **Snake**: fixed 36×18 board, two-turn input queue, speed rises every five
   foods, wins on a full board.
@@ -25,6 +33,14 @@ First four-game release candidate.
   Blast Grid places a bomb. Space stays pause everywhere and Enter restarts
   every end screen.
 
+### Release preparation
+- MIT project license and complete dependency license texts in every archive.
+- Four real terminal captures at the top of the README.
+- Restart discards the first frame spanning a finished run, preventing old
+  elapsed time from being delivered to the new run.
+- Release workflow verifies packaged binaries and installation on Linux,
+  macOS and Windows before optional publication.
+
 ### Release tooling
 - `go run ./tools/release -version <v>` builds reproducible `CGO_ENABLED=0`
   archives for Windows, macOS and Linux (amd64 and arm64), writes
@@ -38,7 +54,7 @@ First four-game release candidate.
 - No GitHub release, tag, Homebrew tap or Scoop bucket has been published, and
   the repository is private.
 - Binaries are not signed or notarized.
-- No license has been chosen.
+- The project is licensed under MIT.
 - Real-terminal acceptance is incomplete; see `docs/terminal-checklist.md`.
 
 ## Earlier milestones

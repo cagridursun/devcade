@@ -1,0 +1,24 @@
+ DEVCADE >_  terminal oyun salonu                                               
+ Build, test veya AI yanıtını beklerken kısa bir oyun molası.                   
+--------------------------------------------------------------------------------
+                                                                                
+  Ayarlar                                                                       
+                                                                                
+     Dil: Türkçe                                                                
+   > Renk paleti: Midnight                                                      
+     Kullanıcı adı: demo_player                                                 
+     Global skor paylaşımı: Kapalı                                              
+                                                                                
+                                                                                
+  Paylaşım adını ve rekorlarını yayınlar. Önceki kayıtlar herkese açık kalır.   
+                                                                                
+                                                                                
+  Ad değişimi yeni çevrimiçi kimlik oluşturur; eski kayıtlar açık kalır.        
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+ Yukarı/Aşağı: seç  Sol/Sağ/Enter: değiştir  Q / Esc: geri                      
