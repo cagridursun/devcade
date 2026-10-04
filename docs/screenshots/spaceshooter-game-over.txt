@@ -1,0 +1,24 @@
+   SPACE SHOOTER  Score 590 Wave 4 Lives 0 Z 1                                  
+   Move: arrows/WASD  Auto-fire  Z: special  Pause: Space                       
+   |------------------------------------------------------------------------|   
+   |                                                                        |   
+   |                                                                        |   
+   |                                    SH                            []    |   
+   |                                                                        |   
+   |                                                                  []    |   
+   |                                                                .       |   
+   |                   GAME OVER                                      []    |   
+   |                   Final score 590                                      |   
+   |                   Highest wave 4                                       |   
+   |                   Enter: play again                          . .       |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                    |                                   |   
+   |                                                                        |   
+   |                                    |                                   |   
+   |                                                          .             |   
+   |                                    {}                    VV            |   
+   |                          .                                             |   
+   |------------------------------------------------------------------------|   
+   GAME OVER                                                                    
+ Q / Esc: back to game menu   Ctrl+C: quit DevCade                              

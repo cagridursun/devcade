@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Add Space Shooter: endless waves, three enemy types, fifth-wave bosses,
+  shields, rapid fire and a limited special attack.
+- Integrate completed best scores, opt-in analytics, all five UI languages,
+  terminal/website leaderboards and platform smoke checks.
+- Validate persisted server bests by recognized IDs instead of a fixed four-game
+  map limit; preserve existing data and identities.
+
+
 ## 1.0.0-rc.2 (published 2026-10-04)
 
 - Fix Maze Chase exposing no score to the shared personal-best/leaderboard path.

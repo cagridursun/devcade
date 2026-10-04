@@ -49,10 +49,10 @@ func (a *App) Render(raw engine.Canvas) {
 			}
 			text(5+i, fmt.Sprintf("%s%-12s %s", marker, e.Name, ui.Translate(a.profile.Language, e.Status())), color)
 		}
-		option(10, "Settings", a.selected == a.catalog.Len())
-		option(11, "Open creator profile", a.selected == a.catalog.Len()+1)
+		option(5+a.catalog.Len(), "Settings", a.selected == a.catalog.Len())
+		option(6+a.catalog.Len(), "Open creator profile", a.selected == a.catalog.Len()+1)
 		if a.selected < a.catalog.Len() {
-			text(13, ui.Translate(a.profile.Language, a.entry().Description), engine.Default)
+			text(max(13, 7+a.catalog.Len()), ui.Translate(a.profile.Language, a.entry().Description), engine.Default)
 		}
 		text(15, "New games coming soon", engine.Accent)
 		text(17, "TOOLS", engine.Accent)

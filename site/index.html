@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#111512">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self' https://devcade.cinesdigital.com; object-src 'none'; base-uri 'self'">
   <meta property="og:title" content="DevCade — A little arcade in your terminal">
-  <meta property="og:description" content="Four games. One terminal. Install with Homebrew or Scoop, take a break and chase a new high score.">
+  <meta property="og:description" content="Five games. One terminal. Install with Homebrew or Scoop, take a break and chase a new high score.">
   <meta property="og:type" content="website">
   <title>DevCade — A little arcade in your terminal</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
@@ -34,7 +34,7 @@
       <div class="hero-copy">
         <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span><span data-i18n="eyebrow">A small break between builds</span></p>
         <h1 data-i18n="headline">Your terminal.<br>Your next high score.</h1>
-        <p class="intro" data-i18n="intro">Waiting on a build, a test run or an AI response? Open another terminal and play. DevCade brings four arcade games to the place you already work.</p>
+        <p class="intro" data-i18n="intro">Waiting on a build, a test run or an AI response? Open another terminal and play. DevCade brings five arcade games to the place you already work.</p>
         <div class="hero-actions">
           <a class="button primary" href="#install"><span data-i18n="get">Install DevCade</span><span aria-hidden="true">↗</span></a>
           <a class="button secondary" href="https://github.com/cagridursun/devcade" target="_blank" rel="noopener noreferrer"><span data-i18n="github">View on GitHub</span><span aria-hidden="true">↗</span></a>
@@ -52,7 +52,7 @@
       </figure>
     </section>
     <div class="feature-strip wrap">
-      <span><strong>04</strong><span data-i18n="four">arcade games</span></span>
+      <span><strong>05</strong><span data-i18n="four">arcade games</span></span>
       <span><strong>05</strong><span data-i18n="five">in-game languages</span></span>
       <span><strong>03</strong><span data-i18n="three">colour palettes</span></span>
       <span><strong>∞</strong><span data-i18n="offline">offline play</span></span>
@@ -64,6 +64,7 @@
         <article class="game-card"><div class="game-top"><span class="game-no">02 /</span><h3>Block Drop</h3><span class="game-icon" aria-hidden="true">▦</span></div><img src="./assets/blockdrop.png" alt="Block Drop gameplay" data-i18n-alt="blockAlt" loading="lazy" width="1000" height="664"><p data-i18n="block">Rotate falling pieces, clear rows and find room for just one more block.</p><div class="game-bottom"><code>devcade blockdrop</code><span data-i18n="rotate">Move / rotate / drop</span></div></article>
         <article class="game-card"><div class="game-top"><span class="game-no">03 /</span><h3>Maze Chase</h3><span class="game-icon" aria-hidden="true">⊙</span></div><img src="./assets/mazechase.png" alt="Maze Chase gameplay" data-i18n-alt="mazeAlt" loading="lazy" width="1000" height="664"><p data-i18n="maze">Clear the maze, dodge four chasers and turn the tables with a power pellet.</p><div class="game-bottom"><code>devcade mazechase</code><span data-i18n="arrows">Arrows / WASD</span></div></article>
         <article class="game-card"><div class="game-top"><span class="game-no">04 /</span><h3>Blast Grid</h3><span class="game-icon" aria-hidden="true">✳</span></div><img src="./assets/blastgrid.png" alt="Blast Grid gameplay" data-i18n-alt="blastAlt" loading="lazy" width="1000" height="664"><p data-i18n="blast">Place bombs, break crates and outlast three bots. Leave yourself an escape route.</p><div class="game-bottom"><code>devcade blastgrid</code><span data-i18n="bomb">Move / Z to bomb</span></div></article>
+        <article class="game-card"><div class="game-top"><span class="game-no">06 /</span><h3>Space Shooter</h3><span class="game-icon" aria-hidden="true">^</span></div><img src="./assets/spaceshooter.png" alt="Space Shooter waves and spaceship" data-i18n-alt="spaceAlt" loading="lazy" width="1000" height="664"><p data-i18n="space">Dodge enemy fire, clear endless waves and defeat bosses. Catch shields and rapid fire.</p><div class="game-bottom"><code>devcade spaceshooter</code><span data-i18n="spaceControls">Arrows / WASD · Z for special</span></div></article>
       </div>
     </section>
     <section id="install" class="section install-section">
@@ -84,7 +85,7 @@ devcade</code></pre><button class="copy" type="button" data-copy="scoop-command"
       <div class="section-heading"><div><p class="eyebrow" data-i18n="scores">The community scoreboard</p><h2 data-i18n="highscores">A little friendly competition.</h2></div><button class="button secondary compact" id="refresh" type="button"><span data-i18n="refresh">Refresh</span><span aria-hidden="true">↻</span></button></div>
       <p class="section-intro" data-i18n="leaderintro">Each player's personal best, ranked separately for every game. Pick a game to see the top 20.</p>
       <div class="board">
-        <div class="game-tabs" role="group" aria-label="Leaderboard game" data-i18n-aria="boardgame"><button type="button" data-game="snake" aria-pressed="true">Snake</button><button type="button" data-game="blockdrop" aria-pressed="false">Block Drop</button><button type="button" data-game="mazechase" aria-pressed="false">Maze Chase</button><button type="button" data-game="blastgrid" aria-pressed="false">Blast Grid</button></div>
+        <div class="game-tabs" role="group" aria-label="Leaderboard game" data-i18n-aria="boardgame"><button type="button" data-game="snake" aria-pressed="true">Snake</button><button type="button" data-game="blockdrop" aria-pressed="false">Block Drop</button><button type="button" data-game="mazechase" aria-pressed="false">Maze Chase</button><button type="button" data-game="blastgrid" aria-pressed="false">Blast Grid</button><button type="button" data-game="spaceshooter" aria-pressed="false">Space Shooter</button></div>
         <div class="board-info"><span id="board-title">Snake</span><span id="updated" class="muted"></span></div>
         <p id="board-status" class="board-status" role="status" aria-live="polite" data-i18n="loading">Loading scores…</p>
         <div class="table-scroll" id="table-wrap" hidden><table><caption id="board-caption" class="sr-only">Snake leaderboard</caption><thead><tr><th scope="col" data-i18n="rank">Rank</th><th scope="col" data-i18n="player">Player</th><th scope="col" class="score" data-i18n="score">Best score</th></tr></thead><tbody id="rows"></tbody></table></div>

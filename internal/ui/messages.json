@@ -640,5 +640,59 @@
     "Comparte un ID aleatorio, juego, puntos, duración, resultado, versión y plataforma.",
     "Deelt een willekeurige ID, spel, score, duur, resultaat, versie en platform.",
     "Partage un ID aléatoire, jeu, score, durée, résultat, version et plateforme."
+  ],
+  "Dodge enemy fire, clear waves and defeat bosses with your spaceship.": [
+    "Uzay geminle ateşten kaç, dalgaları temizle ve bossları yen.",
+    "Esquiva disparos, supera oleadas y derrota jefes con tu nave.",
+    "Ontwijk vuur, versla golven en bazen met je ruimteschip.",
+    "Esquivez les tirs, les vagues et les boss avec votre vaisseau."
+  ],
+  "Wave %d ready: %d": [
+    "Dalga %d hazırlık: %d",
+    "Oleada %d lista: %d",
+    "Golf %d klaar: %d",
+    "Vague %d prête: %d"
+  ],
+  "Highest wave %d": [
+    "En yüksek dalga %d",
+    "Mayor oleada %d",
+    "Hoogste golf %d",
+    "Vague maximale %d"
+  ],
+  "Boss HP %d": [
+    "Boss canı %d",
+    "Jefe PV %d",
+    "Baas HP %d",
+    "Boss PV %d"
+  ],
+  "Rapid fire": [
+    "Hızlı ateş",
+    "Disparo rápido",
+    "Snelvuur",
+    "Tir rapide"
+  ],
+  "Shield": [
+    "Kalkan",
+    "Escudo",
+    "Schild",
+    "Bouclier"
+  ],
+  "Protected": [
+    "Koruma",
+    "Protegido",
+    "Beschermd",
+    "Protégé"
+  ],
+  "SPACE SHOOTER  Score %d Wave %d Lives %d Z %d": [
+    "SPACE SHOOTER  Puan %d Dalga %d Can %d Z %d",
+    "SPACE SHOOTER  Puntos %d Oleada %d Vidas %d Z %d",
+    "SPACE SHOOTER  Score %d Golf %d Levens %d Z %d",
+    "SPACE SHOOTER  Score %d Vague %d Vies %d Z %d"
+  ],
+  "Move: arrows/WASD  Auto-fire  Z: special  Pause: Space": [
+    "Hareket: oklar/WASD  Oto ateş  Z: özel  Duraklat: Space",
+    "Mover: flechas/WASD  Auto-disparo  Z: especial  Pausa: Space",
+    "Bewegen: pijlen/WASD  Auto-vuur  Z: speciaal  Pauze: Space",
+    "Bouger: flèches/WASD  Tir auto  Z: spécial  Pause: Space"
   ]
 }

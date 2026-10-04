@@ -17,3 +17,13 @@ image generator. Each session quit normally and restored TTY attributes.
 The adjacent `.txt` files preserve the captured character grid.
 
 Screenshots document appearance; they are not full manual platform acceptance.
+
+Space Shooter captures were made on 2026-10-05 from the local feature-branch
+Linux amd64 CLI in isolated 80x24 PTYs. `spaceshooter.png` uses English and
+Colorful; `spaceshooter-tr-mono.png` uses Turkish and Mono;
+`spaceshooter-game-over.png` shows a completed real idle run. Both external
+endpoints were explicitly disabled. Move/pause/shrink/enlarge/menu return and
+TTY restoration passed; the English run also exercised game over and restart.
+The captures use pyte/Pillow with DejaVu Sans Mono. Boss behavior is covered
+by controlled tests, not an extended interactive human playtest. These images
+do not imply Windows/macOS human acceptance.
