@@ -176,7 +176,7 @@ func TestArenaIsValid(t *testing.T) {
 		// actor moves.
 		nb := &bomb{pos: a.pos, owner: i, explodeAt: fuseTime}
 		dm := g.danger(nb)
-		first, ok := g.plan(i, nb, dm, append(dirs[:], stay), 3, func(p point, at time.Duration) bool { return !dm.threatened(p, at) })
+		first, ok := g.plan(i, nb, dm, append(dirs[:], stay), 3, false, func(p point, at time.Duration) bool { return !dm.threatened(p, at) })
 		if !ok || first == a.pos {
 			t.Fatalf("spawn %d: no escape from a bomb on the spawn", i)
 		}
@@ -885,5 +885,65 @@ func checkInvariants(t *testing.T, g *Game) {
 			t.Fatalf("actor %d on a bomb it does not hold", i)
 		}
 		cells[a.pos] = true
+	}
+}
+
+// TestSafeBotStaysOffItsOwnPendingRay: bot 1 at 10,3 is safe, but its bomb
+// at 11,2 will burn 11,1 and 11,3..11,5, which lie between it and the
+// player. It must never step onto that ray while the bomb is pending, even
+// though the blast is still far off when it would pass.
+func TestSafeBotStaysOffItsOwnPendingRay(t *testing.T) {
+	g := soloBot(map[point]rune{{10, 3}: '1', {15, 3}: 'P'})
+	addBomb(g, point{11, 2}, 1, 2*time.Second)
+	ray := []point{{11, 1}, {11, 2}, {11, 3}, {11, 4}, {11, 5}}
+	for g.now < 2*time.Second {
+		g.Update(botInterval)
+		if pos := g.actors[1].pos; len(g.bombs) > 0 && slices.Contains(ray, pos) {
+			t.Fatalf("at %v the bot stepped onto its pending ray at %v", g.now, pos)
+		}
+	}
+	if !g.actors[1].alive || len(g.bombs) != 0 {
+		t.Fatalf("bot alive=%v bombs=%d", g.actors[1].alive, len(g.bombs))
+	}
+}
+
+// TestUnthreatenedBotsNeverStepIntoDanger replays seeded games tick by tick
+// (Update up to the tick, then each bot's decision in index order, as
+// Update itself orders them) and checks every move by a bot that was safe
+// and did not just place a bomb: it must never land on a cell its danger
+// map marks as threatened at that moment. Only step 3 (place, then flee
+// along a verified escape) may cross a blast line.
+func TestUnthreatenedBotsNeverStepIntoDanger(t *testing.T) {
+	moves := 0
+	for seed := range uint64(20) {
+		g := newGame(rand.New(rand.NewPCG(seed, 8)))
+		g.Start(80, 24)
+		g.nextThink = time.Hour // the loop below drives the bots
+		for range 600 {
+			if g.Finished() {
+				g.HandleInput(engine.KeySelect)
+				g.nextThink = time.Hour
+			}
+			g.Update(botInterval)
+			for i := 1; i < numActors && g.state == playing; i++ {
+				if !g.actors[i].alive {
+					continue
+				}
+				dm := g.danger(nil)
+				pos := g.actors[i].pos
+				safe, seq := !dm.threatened(pos, g.now), g.nextSeq
+				g.think(i)
+				g.checkEnd()
+				if next := g.actors[i].pos; safe && seq == g.nextSeq && next != pos {
+					moves++
+					if dm.threatened(next, g.now) {
+						t.Errorf("seed %d at %v: safe bot %d moved %v -> %v onto a threatened cell", seed, g.now, i, pos, next)
+					}
+				}
+			}
+		}
+	}
+	if moves < 1000 {
+		t.Fatalf("only %d safe moves checked: the replay is not exercising the bots", moves)
 	}
 }
