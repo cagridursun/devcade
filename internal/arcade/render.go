@@ -41,6 +41,10 @@ func (a *App) Render(raw engine.Canvas) {
 	switch a.state {
 	case mainMenu:
 		text(4, "GAMES", engine.Accent)
+		optionY := max(10, 6+a.catalog.Len())
+		creatorY := optionY + 1
+		descriptionY := creatorY + 2
+		toolsY := max(17, descriptionY+2)
 		for i := range a.catalog.Len() {
 			e := a.catalog.Entry(i)
 			marker, color := "   ", engine.Default
@@ -49,14 +53,13 @@ func (a *App) Render(raw engine.Canvas) {
 			}
 			text(5+i, fmt.Sprintf("%s%-12s %s", marker, e.Name, ui.Translate(a.profile.Language, e.Status())), color)
 		}
-		option(10, "Settings", a.selected == a.catalog.Len())
-		option(11, "Open creator profile", a.selected == a.catalog.Len()+1)
+		option(optionY, "Settings", a.selected == a.catalog.Len())
+		option(creatorY, "Open creator profile", a.selected == a.catalog.Len()+1)
 		if a.selected < a.catalog.Len() {
-			text(13, ui.Translate(a.profile.Language, a.entry().Description), engine.Default)
+			text(descriptionY, ui.Translate(a.profile.Language, a.entry().Description), engine.Default)
 		}
-		text(15, "New games coming soon", engine.Accent)
-		text(17, "TOOLS", engine.Accent)
-		text(18, "   D  Terminal diagnostic: moving @ to check input, timing and resize", engine.Default)
+		text(toolsY, "TOOLS", engine.Accent)
+		text(toolsY+1, "   D  Terminal diagnostic: moving @ to check input, timing and resize", engine.Default)
 		text(20, "Built by cagridursun (Twitter: c__dursun)", engine.Accent)
 		text(21, TwitterURL, engine.Default)
 		c.Text(0, h-1, menuFooterPlay, engine.Accent)
