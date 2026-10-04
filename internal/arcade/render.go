@@ -58,6 +58,9 @@ func (a *App) Render(raw engine.Canvas) {
 		if a.selected < a.catalog.Len() {
 			text(descriptionY, ui.Translate(a.profile.Language, a.entry().Description), engine.Default)
 		}
+		if descriptionY < 15 {
+			text(15, "New games coming soon", engine.Accent)
+		}
 		text(toolsY, "TOOLS", engine.Accent)
 		text(toolsY+1, "   D  Terminal diagnostic: moving @ to check input, timing and resize", engine.Default)
 		text(20, "Built by cagridursun (Twitter: c__dursun)", engine.Accent)
