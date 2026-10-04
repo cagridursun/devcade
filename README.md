@@ -22,6 +22,7 @@ the distributed binaries. It runs on Windows, macOS and Linux.
 Captured from the running Linux binary through an 80×24 pseudo-terminal;
 using the Colorful palette; these are actual game frames, not mockups. See [capture details](docs/screenshots/README.md).
 
+[Website / Türkçe & English](https://cagridursun.github.io/devcade/) ·
 [Release downloads](https://github.com/cagridursun/devcade/releases) ·
 [Installation](docs/install.md) · [Game rules](docs/games.md) · [Settings](docs/settings.md)
 

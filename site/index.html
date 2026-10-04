@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A little arcade in your terminal. Play Snake, Block Drop, Maze Chase and Blast Grid on macOS, Linux and Windows. Install with Homebrew or Scoop.">
+  <meta name="theme-color" content="#111512">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'">
+  <meta property="og:title" content="DevCade — A little arcade in your terminal">
+  <meta property="og:description" content="Four games. One terminal. Install with Homebrew or Scoop, take a break and chase a new high score.">
+  <meta property="og:type" content="website">
+  <title>DevCade — A little arcade in your terminal</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+  <header class="header wrap">
+    <a class="wordmark" href="./" aria-label="DevCade home"><span class="logo" aria-hidden="true">&gt;_</span> devcade<span class="cursor" aria-hidden="true">_</span></a>
+    <nav aria-label="Main navigation" data-i18n-aria="nav">
+      <a href="#games" data-i18n="games">Games</a>
+      <a href="#install" data-i18n="install">Install</a>
+      <a href="#leaderboard" data-i18n="leaderboard">Leaderboard</a>
+    </nav>
+    <div class="languages" role="group" aria-label="Page language" data-i18n-aria="language">
+      <button type="button" data-language="en" aria-pressed="true" lang="en">EN</button>
+      <button type="button" data-language="tr" aria-pressed="false" lang="tr">TR</button>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span><span data-i18n="eyebrow">A small break between builds</span></p>
+        <h1 data-i18n="headline">Your terminal.<br>Your next high score.</h1>
+        <p class="intro" data-i18n="intro">Waiting on a build, a test run or an AI response? Open another terminal and play. DevCade brings four arcade games to the place you already work.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#install"><span data-i18n="get">Install DevCade</span><span aria-hidden="true">↗</span></a>
+          <a class="button secondary" href="https://github.com/cagridursun/devcade" target="_blank" rel="noopener noreferrer"><span data-i18n="github">View on GitHub</span><span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="platforms">macOS <span> / </span> Linux <span> / </span> Windows <span class="sep">·</span> <span data-i18n="open">Free &amp; open source</span></p>
+      </div>
+      <figure class="terminal hero-terminal">
+        <div class="terminal-bar"><span class="terminal-dots" aria-hidden="true">● ● ●</span><span>devcade / snake</span><span class="frame-tag">80 × 24</span></div>
+        <img src="./assets/snake.png" alt="Snake running inside an 80 by 24 terminal" data-i18n-alt="snakeAlt" width="1000" height="664" fetchpriority="high">
+        <figcaption><span class="status-dot" aria-hidden="true"></span><span data-i18n="realframe">Actual gameplay. Right in your terminal.</span></figcaption>
+      </figure>
+    </section>
+    <div class="feature-strip wrap">
+      <span><strong>04</strong><span data-i18n="four">arcade games</span></span>
+      <span><strong>05</strong><span data-i18n="five">in-game languages</span></span>
+      <span><strong>03</strong><span data-i18n="three">colour palettes</span></span>
+      <span><strong>∞</strong><span data-i18n="offline">offline play</span></span>
+    </div>
+    <section id="games" class="section wrap">
+      <div class="section-heading"><div><p class="eyebrow" data-i18n="collection">The collection</p><h2 data-i18n="pick">Pick your next break.</h2></div><span class="small-note" data-i18n="coming">New games coming soon.</span></div>
+      <div class="game-grid">
+        <article class="game-card"><div class="game-top"><span class="game-no">01 /</span><h3>Snake</h3><span class="game-icon" aria-hidden="true">↳</span></div><img src="./assets/snake.png" alt="Snake gameplay" data-i18n-alt="snakeAlt" loading="lazy" width="1000" height="664"><p data-i18n="snake">Eat, grow, turn. Try to beat your best without running into yourself.</p><div class="game-bottom"><code>devcade snake</code><span data-i18n="arrows">Arrows / WASD</span></div></article>
+        <article class="game-card"><div class="game-top"><span class="game-no">02 /</span><h3>Block Drop</h3><span class="game-icon" aria-hidden="true">▦</span></div><img src="./assets/blockdrop.png" alt="Block Drop gameplay" data-i18n-alt="blockAlt" loading="lazy" width="1000" height="664"><p data-i18n="block">Rotate falling pieces, clear rows and find room for just one more block.</p><div class="game-bottom"><code>devcade blockdrop</code><span data-i18n="rotate">Move / rotate / drop</span></div></article>
+        <article class="game-card"><div class="game-top"><span class="game-no">03 /</span><h3>Maze Chase</h3><span class="game-icon" aria-hidden="true">⊙</span></div><img src="./assets/mazechase.png" alt="Maze Chase gameplay" data-i18n-alt="mazeAlt" loading="lazy" width="1000" height="664"><p data-i18n="maze">Clear the maze, dodge four chasers and turn the tables with a power pellet.</p><div class="game-bottom"><code>devcade mazechase</code><span data-i18n="arrows">Arrows / WASD</span></div></article>
+        <article class="game-card"><div class="game-top"><span class="game-no">04 /</span><h3>Blast Grid</h3><span class="game-icon" aria-hidden="true">✳</span></div><img src="./assets/blastgrid.png" alt="Blast Grid gameplay" data-i18n-alt="blastAlt" loading="lazy" width="1000" height="664"><p data-i18n="blast">Place bombs, break crates and outlast three bots. Leave yourself an escape route.</p><div class="game-bottom"><code>devcade blastgrid</code><span data-i18n="bomb">Move / Z to bomb</span></div></article>
+      </div>
+    </section>
+    <section id="install" class="section install-section">
+      <div class="wrap"><div class="section-heading"><div><p class="eyebrow" data-i18n="start">Ready when you are</p><h2 data-i18n="onecommand">A couple of commands. Then play.</h2></div><a class="text-link" href="https://github.com/cagridursun/devcade/blob/main/docs/install.md" target="_blank" rel="noopener noreferrer"><span data-i18n="guide">Full installation guide</span> ↗</a></div>
+      <p class="section-intro" data-i18n="nogo">Ready-to-play binaries. No Go installation, source checkout or build required.</p>
+      <div class="install-grid">
+        <article class="install-card"><div class="install-card-heading"><div><span class="eyebrow">macOS / Linux</span><h3>Homebrew</h3></div><span class="package-symbol" aria-hidden="true">$</span></div><div class="code-box"><pre><code id="brew-command">brew install cagridursun/devcade/devcade
+devcade</code></pre><button class="copy" type="button" data-copy="brew-command" data-i18n="copy">Copy</button></div><p><span data-i18n="brewsetup">First time using Homebrew?</span> <a href="https://brew.sh" target="_blank" rel="noopener noreferrer" data-i18n="setup">Set it up here ↗</a></p></article>
+        <article class="install-card"><div class="install-card-heading"><div><span class="eyebrow">Windows / PowerShell</span><h3>Scoop</h3></div><span class="package-symbol" aria-hidden="true">&gt;</span></div><div class="code-box"><pre><code id="scoop-command">scoop bucket add devcade https://github.com/cagridursun/scoop-devcade
+scoop install devcade
+devcade</code></pre><button class="copy" type="button" data-copy="scoop-command" data-i18n="copy">Copy</button></div><p><span data-i18n="scoopsetup">First time using Scoop?</span> <a href="https://scoop.sh" target="_blank" rel="noopener noreferrer" data-i18n="setup">Set it up here ↗</a></p></article>
+      </div>
+      <div class="install-meta"><span><span class="status-dot" aria-hidden="true"></span><span data-i18n="version">Current release: v1.0.0-rc.1</span></span><span data-i18n="size">An interactive terminal of at least 80 × 24.</span></div>
+      <p id="copy-status" class="sr-only" role="status"></p>
+      </div>
+    </section>
+    <section id="leaderboard" class="section wrap">
+      <div class="section-heading"><div><p class="eyebrow" data-i18n="scores">The community scoreboard</p><h2 data-i18n="highscores">A little friendly competition.</h2></div><button class="button secondary compact" id="refresh" type="button"><span data-i18n="refresh">Refresh</span><span aria-hidden="true">↻</span></button></div>
+      <p class="section-intro" data-i18n="leaderintro">Each player's personal best, ranked separately for every game. Pick a game to see the top 20.</p>
+      <div class="board">
+        <div class="game-tabs" role="group" aria-label="Leaderboard game" data-i18n-aria="boardgame"><button type="button" data-game="snake" aria-pressed="true">Snake</button><button type="button" data-game="blockdrop" aria-pressed="false">Block Drop</button><button type="button" data-game="mazechase" aria-pressed="false">Maze Chase</button><button type="button" data-game="blastgrid" aria-pressed="false">Blast Grid</button></div>
+        <div class="board-info"><span id="board-title">Snake</span><span id="updated" class="muted"></span></div>
+        <p id="board-status" class="board-status" role="status" aria-live="polite" data-i18n="loading">Loading scores…</p>
+        <div class="table-scroll" id="table-wrap" hidden><table><caption id="board-caption" class="sr-only">Snake leaderboard</caption><thead><tr><th scope="col" data-i18n="rank">Rank</th><th scope="col" data-i18n="player">Player</th><th scope="col" class="score" data-i18n="score">Best score</th></tr></thead><tbody id="rows"></tbody></table></div>
+        <div class="board-footer"><span data-i18n="periodic">Scores refresh periodically, usually about every 15 minutes.</span><span data-i18n="personal">Personal bests per game</span></div>
+      </div>
+      <p class="sharing-note" data-i18n="share">Want to join the board? Choose a username and turn on global score sharing in DevCade's Settings. Sharing is off by default.</p>
+      <noscript><p>Please enable JavaScript to view the leaderboard and change the page language. Installation commands work without JavaScript.</p></noscript>
+    </section>
+    <section class="creator-section wrap"><div><p class="eyebrow" data-i18n="built">Built by cagridursun</p><h2 data-i18n="creator">Small games. Good breaks.</h2><p data-i18n="creatorcopy">I'm Çağrı Dursun. I built DevCade for the little pauses in a developer's day. Follow along for new games and project updates.</p></div><div class="creator-actions"><a class="button primary" href="https://x.com/c__dursun" target="_blank" rel="noopener noreferrer"><span data-i18n="follow">Follow me on X / Twitter</span><span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/cagridursun" target="_blank" rel="noopener noreferrer">@cagridursun on GitHub ↗</a></div></section>
+  </main>
+  <footer class="footer wrap"><span class="wordmark">&gt;_ devcade</span><span data-i18n="footer">Made for developers. MIT licensed.</span><div><a href="https://github.com/cagridursun/devcade/issues" target="_blank" rel="noopener noreferrer" data-i18n="feedback">Feedback &amp; ideas ↗</a><a href="https://x.com/c__dursun" target="_blank" rel="noopener noreferrer">@c__dursun ↗</a></div></footer>
+</body>
+</html>
