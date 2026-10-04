@@ -142,3 +142,85 @@ it, and scores only once.
 
 **Arena:** the layout keeps every floor cell connected once crates are gone,
 and every spawn can escape its own bomb. Tests check both.
+
+
+## Terminal FC (`terminalfc`)
+
+Terminal FC is a three-minute 5v5 arcade football match on a fixed **36 × 18**
+logical pitch. Each logical cell is two terminal columns wide. Home always
+attacks right and Away always attacks left. Each side has one goalkeeper,
+one defender, two midfielders and one forward. You control one Home outfield
+player at a time; the other nine players are bots.
+
+| Rule | Value |
+| --- | --- |
+| Live match time | 180 s |
+| Simulation step | 20 ms fixed step |
+| Bot decision interval | 120 ms |
+| Human movement | One logical cell per accepted press; 80 ms cooldown |
+| Pass / shot cooldown | 300 ms |
+| Tackle cooldown | 700 ms |
+| Manual player switch | 250 ms |
+| Pass speed | 12 logical cells/s |
+| Shot speed | 20 logical cells/s |
+| Free-ball deceleration | 4 logical cells/s² |
+| Kicker reclaim grace | 150 ms |
+| Ownership-change protection | 250 ms |
+| Goal overlay | 1.5 s |
+| Kickoff / other restart | 1 s |
+| Goalkeeper hold | At most 2 s |
+
+**Controls:** arrows or WASD move the selected player and update facing.
+`Z` passes while in possession and attempts a tackle while defending.
+`Enter` shoots while in possession. `X` switches to another Home outfield
+player. Space uses the shared pause behavior; Q/Esc leaves the match.
+
+**Ball and contacts:** passes and shots release one independent ball rather
+than teleporting possession. Ball contacts and boundary crossings are swept
+along the movement segment. The earliest event wins; an exact goal-line
+contact/crossing tie goes to the boundary crossing. A goal is therefore
+decided by the actual crossing point inside the six-row goal mouth. Fast
+shots are deflected by outfield contacts rather than instantly controlled;
+goalkeepers may control a valid contact. Stable player IDs break geometric
+ties.
+
+**Selection:** a Home outfield player receiving possession becomes selected.
+When Away gains possession, the nearest Home outfield player is selected once.
+`X` explicitly switches according to ball ownership and distance. The
+selected player is never moved by teammate bot logic.
+
+**Restarts:** a goal shows a short GOAL overlay, then the conceding side takes
+the next kickoff. Touchline exits become throw-ins for the team opposite the
+last touch. End-line exits outside the goal become either a goal kick or a
+corner. Restarts use a deterministic one-second phase and an automatic short
+release.
+
+**Clock:** only live play consumes the 180-second clock. Kickoff countdowns,
+goal overlays, restarts, shared pause and undersized-window suspension do not.
+At full time the match freezes immediately; no contact or goal after the
+deadline is accepted. Enter then creates a completely fresh match.
+
+**Leaderboard score:** football goals are separate from the DevCade arcade
+score. On a completed match:
+
+```text
+resultPoints     = 1000 win, 500 draw, 0 loss
+goalPoints       = 50 × min(10, homeGoals)
+differencePoints = 25 × min(10, max(0, homeGoals - awayGoals))
+arcadeScore      = resultPoints + goalPoints + differencePoints
+```
+
+The valid range is **0–1750** and only the best single completed match is
+stored. Leaving early records no completed result. A completed zero-point
+match still follows the same personal-best and sharing policy.
+
+**Bot policy:** both teams use the same movement/action limits. The current
+policy keeps role-based home zones, chooses a primary presser or free-ball
+chaser, lets carriers dribble/pass/shoot, and bounds goalkeepers to their own
+area while tracking the ball and distributing within two seconds.
+
+**Current limitations:** there is one balanced standard match. There is no
+online/local two-player mode, season mode, licensed club content, offside,
+fouls/cards, stamina, substitutions, charged shots or audio. The first
+version deliberately favors a compact readable terminal match over a full
+football simulation.
