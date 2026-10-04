@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add Brick Breaker as the fifth game: ten levels, durable/steel bricks,
+  progressive speed, three lives, paddle-angle physics and six power-ups.
+- Add combo scoring, clear/win bonuses, local/global scores and optional run
+  summaries. Extend leaderboard persistence, CLI, menus, usage dashboard and
+  Pages boards to five games; localize the new terminal UI in all five languages.
+
+
 ## 1.0.0-rc.2 (published 2026-10-04)
 
 - Fix Maze Chase exposing no score to the shared personal-best/leaderboard path.

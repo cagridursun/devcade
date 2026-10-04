@@ -31,7 +31,7 @@ Usage:
   devcade --help          show this help
   devcade --version       show the version
 
-Games (IDs for "devcade <game>"): snake, blockdrop, mazechase, blastgrid.
+Games (IDs for "devcade <game>"): snake, blockdrop, mazechase, blastgrid, brickbreaker.
 The terminal diagnostic moves an '@' around a box to check input, timing,
 resize and terminal restoration. Everything interactive needs a terminal of
 at least 80x24.

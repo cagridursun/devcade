@@ -206,6 +206,11 @@ func (g *TrackedGame) End(outcome string) {
 	}
 	g.ended = true
 	if g.run != "" {
-		g.client.Emit(Event{Kind: "run_end", Game: g.name, Run: g.run, DurationMS: g.duration.Milliseconds(), Score: g.Score(), Outcome: outcome})
+		e := Event{Kind: "run_end", Game: g.name, Run: g.run, DurationMS: g.duration.Milliseconds(), Score: g.Score(), Outcome: outcome}
+		if game, ok := g.Game.(interface{ Statistics() engine.RunStats }); ok {
+			s := game.Statistics()
+			e.Statistics = &s
+		}
+		g.client.Emit(e)
 	}
 }

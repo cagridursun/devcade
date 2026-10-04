@@ -93,7 +93,7 @@ func (g *scoreGame) HandleInput(k engine.Key) {
 	}
 }
 func TestFinishedRunsSaveOnceAndRestartNeverLowersBest(t *testing.T) {
-	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid"} {
+	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker"} {
 		t.Run(id, func(t *testing.T) {
 			g := &scoreGame{score: 100}
 			c, _ := NewCatalog(Entry{ID: id, Name: id, Description: "Test game.", New: func() engine.Game { return g }})

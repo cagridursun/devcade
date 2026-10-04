@@ -17,3 +17,8 @@ image generator. Each session quit normally and restored TTY attributes.
 The adjacent `.txt` files preserve the captured character grid.
 
 Screenshots document appearance; they are not full manual platform acceptance.
+
+Brick Breaker was captured on 2026-10-05 from the feature branch build using
+the same 80×24 PTY, Colorful palette, pyte/Pillow workflow and font. It uses
+an isolated local profile with score/usage sharing disabled. The session
+launched through the normal game menu, exited normally and restored TTY attributes.
