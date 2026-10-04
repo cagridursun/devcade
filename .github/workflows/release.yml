@@ -96,7 +96,7 @@ jobs:
         working-directory: dist/release
         run: |
           sha256sum --strict -c SHA256SUMS
-          tar -tvzf "devcade_${VERSION}_linux_amd64.tar.gz" | grep -Eq '^-rwxr-xr-x 0/0 .* devcade$'
+          tar -tvzf "devcade_${VERSION}_linux_amd64.tar.gz" | grep -E '^-rwxr-xr-x 0/0 .* devcade$' >/dev/null
       - name: Upload exact release files
         uses: actions/upload-artifact@v7
         with:
@@ -140,7 +140,7 @@ jobs:
           test "$("$binary" --version)" = "devcade $VERSION"
           "$binary" --help >/dev/null
           for id in snake blockdrop mazechase blastgrid; do
-            "$binary" list | grep -q "^$id .*Available"
+            "$binary" list | grep "^$id .*Available" >/dev/null
           done
           set +e
           "$binary" snake </dev/null >/dev/null 2>&1

@@ -1,0 +1,40 @@
+name: Scoop install
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  install:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Scoop
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = Join-Path $env:RUNNER_TEMP 'install-scoop.ps1'
+          Invoke-WebRequest https://get.scoop.sh -OutFile $installer
+          & $installer -RunAsAdmin
+          if (-not (Test-Path "$env:USERPROFILE\scoop\shims\scoop.ps1")) { throw 'Scoop was not installed' }
+          "$env:USERPROFILE\scoop\shims" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Install released binary through this bucket
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          scoop bucket add devcade https://github.com/cagridursun/scoop-devcade
+          if ($LASTEXITCODE -ne 0) { throw 'Bucket registration failed' }
+          Copy-Item -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'bucket/devcade.json') -Destination "$env:USERPROFILE\scoop\buckets\devcade\bucket\devcade.json" -Force
+          scoop install devcade/devcade
+          if ($LASTEXITCODE -ne 0) { throw 'Scoop install failed' }
+          $version = (Get-Content (Join-Path $env:GITHUB_WORKSPACE 'bucket/devcade.json') -Raw | ConvertFrom-Json).version
+          if ((devcade --version) -ne "devcade $version") { throw 'Wrong DevCade version' }
+          $games = devcade list
+          if ($LASTEXITCODE -ne 0) { throw 'Game listing failed' }
+          foreach ($id in @('snake', 'blockdrop', 'mazechase', 'blastgrid')) {
+            if (-not ($games | Where-Object { $_ -match "^$id .*Available" })) { throw "Missing game: $id" }
+          }
+          if (-not (Test-Path "$env:USERPROFILE\scoop\apps\devcade\current\LICENSE-NOTICE.txt")) { throw 'Missing license notice' }
+          scoop uninstall devcade
+          if ($LASTEXITCODE -ne 0) { throw 'Scoop uninstall failed' }

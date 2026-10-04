@@ -1,0 +1,18 @@
+{
+    "version": "1.0.0-rc.1",
+    "description": "Arcade games that run in your terminal.",
+    "homepage": "https://github.com/cagridursun/devcade",
+    "license": "MIT",
+    "notes": "The binary is not code-signed. LICENSE-NOTICE.txt includes the project license and third-party notices.",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/cagridursun/devcade/releases/download/v1.0.0-rc.1/devcade_1.0.0-rc.1_windows_amd64.zip",
+            "hash": "fb5359b6ac7a7c8b189afcd5a41111f1e6ae9cdc72faed357b6e1d4bfdd3c1c5"
+        },
+        "arm64": {
+            "url": "https://github.com/cagridursun/devcade/releases/download/v1.0.0-rc.1/devcade_1.0.0-rc.1_windows_arm64.zip",
+            "hash": "1ce90fbdb0c390dc68771e6e2a81e5280e5130e2c13c4207555ae81d0588c586"
+        }
+    },
+    "bin": "devcade.exe"
+}

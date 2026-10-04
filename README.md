@@ -25,6 +25,34 @@ using the Colorful palette; these are actual game frames, not mockups. See [capt
 [Release downloads](https://github.com/cagridursun/devcade/releases) ·
 [Installation](docs/install.md) · [Game rules](docs/games.md) · [Settings](docs/settings.md)
 
+## Install and play
+
+**No Go installation, source checkout or build needed.** The package manager
+installs the ready-to-play binary and makes `devcade` available in your terminal.
+
+### macOS and Linux — Homebrew
+
+```sh
+brew install cagridursun/devcade/devcade
+devcade
+```
+
+### Windows — Scoop
+
+Add the DevCade bucket once, then install and play:
+
+```powershell
+scoop bucket add devcade https://github.com/cagridursun/scoop-devcade
+scoop install devcade
+devcade
+```
+
+Requires [Homebrew](https://brew.sh) or [Scoop](https://scoop.sh) and an
+interactive terminal of at least **80 × 24**. The current version is
+**1.0.0-rc.1**. [Installation guide](docs/install.md) covers package-manager
+setup, updates, uninstalling, direct downloads, installers and optional
+source builds.
+
 ## Status: v1 release candidate
 
 **All four v1 games are playable.** Running `devcade` opens the arcade menu:
@@ -45,13 +73,11 @@ resize and terminal restoration.
 | --- | --- |
 | Code: four games, menu, CLI, terminal core | Merged into main, with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
-| Distribution | **Public release candidate:** [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1), with Linux, macOS and Windows archives, checksums and installers. See [docs/install.md](docs/install.md) |
+| Distribution | Public [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
 | Global leaderboard | Live at `https://devcade.cinesdigital.com`; Windows score submission and server restart persistence verified ([service](docs/leaderboard.md)) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
 | License | MIT; dependency notices included in binary archives |
-
-`brew install devcade` and `scoop install devcade` do **not** work yet.
 
 ## Settings and scores
 
@@ -66,68 +92,6 @@ your alias and bests when enabled. Source builds and official release packages
 use `https://devcade.cinesdigital.com` by default; local play works offline.
 The creator profile opens from the main menu. New games are coming soon.
 See [player settings](docs/settings.md) and [global leaderboard deployment](docs/leaderboard.md).
-
-## Install
-
-Download [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
-for Linux, macOS or Windows; release binaries do not require Go.
-[docs/install.md](docs/install.md) describes:
-
-- downloading an archive directly and checking it against `SHA256SUMS`;
-- the checksum-verifying user-local installers (`install.sh`, `install.ps1`);
-- the planned Homebrew tap and Scoop bucket.
-
-Release binaries are not signed or notarized; that document explains what
-macOS Gatekeeper and Windows SmartScreen will show.
-
-## Run, build and test
-
-Requires Go **1.26** or newer (`go.mod` declares `go 1.26.0`; CI uses the
-latest 1.26.x) and an interactive terminal of at least **80 × 24**.
-
-```sh
-go run ./cmd/devcade                  # open the arcade menu
-go run ./cmd/devcade snake            # open the game submenu: snake, blockdrop, mazechase, blastgrid
-go run ./cmd/devcade list             # list the games (no terminal needed)
-go run ./cmd/devcade --diagnostic     # start the terminal diagnostic directly
-go run ./cmd/devcade --help
-go run ./cmd/devcade --version
-```
-
-`--help`, `--version` and `list` never open the fullscreen view or touch the
-console, so they work in pipes and scripts. Unknown IDs, extra arguments and
-combinations such as `--diagnostic snake` are usage errors (exit status 2),
-reported before the terminal is touched.
-
-Build a binary (cgo is not required):
-
-```sh
-CGO_ENABLED=0 go build -o bin/devcade ./cmd/devcade        # macOS / Linux
-```
-
-```powershell
-$env:CGO_ENABLED = "0"; go build -o bin\devcade.exe ./cmd/devcade   # Windows PowerShell
-```
-
-Release archives for all six targets:
-
-```sh
-go run ./tools/release -version 1.0.0-rc.1 -out dist/release
-```
-
-Checks (the same ones CI runs):
-
-```sh
-go mod verify
-go mod tidy -diff          # fails if go.mod/go.sum are out of date; edits nothing
-gofmt -l .                 # must print nothing
-go vet ./...
-go test -timeout 60s ./...
-go test -race -timeout 120s ./...   # needs cgo and a C compiler (gcc/clang)
-```
-
-Dependencies are locked in `go.mod` and `go.sum`, which are both committed.
-CI fails rather than repairing them.
 
 ## Controls
 
@@ -275,7 +239,7 @@ use Windows Terminal, or run `winpty devcade` there.
 | M4 | Block Drop | Merged |
 | M5 | Maze Chase | Merged |
 | M6 | Blast Grid | Merged |
-| M7 | Packaging, distribution and installers | Public RC published with six archives, checksums and installers; Homebrew/Scoop repositories deferred |
+| M7 | Packaging, distribution and installers | Public RC with Homebrew/Scoop distribution, six archives, checksums and installers |
 | M8 | Four-game v1.0 | Public release candidate; remaining human macOS/Linux acceptance tracked before stable v1.0 |
 
 See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.md).

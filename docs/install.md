@@ -1,10 +1,77 @@
 # Installing DevCade
 
-> **Public release candidate:** [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
-> was published on 2026-10-04. Download a native archive or use the
-> checksum-verifying installers below. The binaries do not require Go.
-> Homebrew and Scoop manifests are generated, but their tap/bucket
-> repositories are not published yet.
+> **Install and play without Go or a source checkout.**
+> [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
+> is available as a self-contained binary for Windows, macOS and Linux.
+
+## Recommended: Homebrew (macOS and Linux)
+
+If Homebrew is not installed, follow its [official installation guide](https://brew.sh).
+Then run:
+
+```sh
+brew install cagridursun/devcade/devcade
+devcade
+```
+
+Alternatively, add the [DevCade tap](https://github.com/cagridursun/homebrew-devcade)
+once to use the short package name:
+
+```sh
+brew tap cagridursun/devcade
+brew install devcade
+devcade
+```
+
+Homebrew selects the native macOS/Linux archive for Intel or ARM64, verifies
+its SHA-256 and puts the binary on PATH. The first form automatically selects
+our tap; a fresh Homebrew installation does not know bare `devcade` until the
+tap is added. The game does not require Go or a source build.
+
+Update or remove it with:
+
+```sh
+brew update
+brew upgrade devcade
+# To remove the game:
+brew uninstall devcade
+```
+
+## Recommended: Scoop (Windows)
+
+Use a normal PowerShell window. If Scoop is not installed, follow its
+[official installation guide](https://scoop.sh). Scoop needs Git to manage
+custom buckets; if Git is missing, install it with `scoop install git`.
+You never clone or build the DevCade source repository yourself.
+
+Add the [DevCade bucket](https://github.com/cagridursun/scoop-devcade) once:
+
+```powershell
+scoop bucket add devcade https://github.com/cagridursun/scoop-devcade
+scoop install devcade
+devcade
+```
+
+Use `scoop install devcade/devcade` to choose our bucket explicitly if another
+bucket has a package with the same name. Scoop downloads the native x64 or
+ARM64 ZIP, verifies its SHA-256 and creates the `devcade` command on PATH.
+No Go installation or administrator privileges are required for the game.
+
+Update or remove it with:
+
+```powershell
+scoop update
+scoop update devcade
+# To remove the game:
+scoop uninstall devcade
+```
+
+Both managers install the published **1.0.0-rc.1** candidate. Open a terminal
+of at least **80 × 24**; on Windows, Windows Terminal is recommended.
+The managers download prebuilt binaries; the remaining sections are optional
+alternatives for users who prefer direct downloads or source builds.
+
+## Alternative installation methods
 
 In the commands below, use `1.0.0-rc.1` for the first release candidate, or replace it with a later release version. Release
 files live at:
@@ -141,34 +208,65 @@ Windows PowerShell 5.1 and PowerShell 7, installs `devcade.exe`, `README.md`
 and `LICENSE-NOTICE.txt` into `%LOCALAPPDATA%\Programs\devcade`, and supports
 x64 and ARM64 Windows.
 
-## Homebrew (macOS and Linux)
+## Source checkout, build and development
 
-The release tooling generates a formula, `homebrew/devcade.rb`, with the
-download URL and SHA-256 of each macOS/Linux archive filled in from
-`SHA256SUMS`. **No tap exists yet.**
+Requires Go **1.26** or newer (`go.mod` declares `go 1.26.0`; CI uses the
+latest 1.26.x) and an interactive terminal of at least **80 × 24**.
 
-- `brew install cagridursun/devcade/devcade` will work only after the owner
-  creates a public tap repository named `cagridursun/homebrew-devcade`,
-  commits the generated `Formula/devcade.rb` there, and publishes a release
-  whose archives can be downloaded anonymously.
-- Bare `brew install devcade` would additionally require the formula to be
-  accepted into Homebrew core, which has its own requirements (including an
-  open-source license). That has not been requested.
+Install Git and Go 1.26 or newer, then clone the source:
 
-## Scoop (Windows)
-
-The release tooling generates a Scoop manifest, `scoop/devcade.json`
-(`64bit` and `arm64`, with hashes from `SHA256SUMS`). **No bucket exists
-yet.** Once the owner publishes a bucket repository (for
-example `cagridursun/scoop-devcade` containing `bucket/devcade.json`), the
-commands would be:
-
-```powershell
-scoop bucket add devcade https://github.com/cagridursun/scoop-devcade
-scoop install devcade/devcade
+```sh
+git clone https://github.com/cagridursun/devcade.git
+cd devcade
+# Optional: use the exact source of the published candidate.
+git checkout v1.0.0-rc.1
 ```
 
-The generated manifest declares the MIT project license.
+Run from the repository root:
+
+```sh
+go run ./cmd/devcade                  # open the arcade menu
+go run ./cmd/devcade snake            # open the game submenu: snake, blockdrop, mazechase, blastgrid
+go run ./cmd/devcade list             # list the games (no terminal needed)
+go run ./cmd/devcade --diagnostic     # start the terminal diagnostic directly
+go run ./cmd/devcade --help
+go run ./cmd/devcade --version
+```
+
+`--help`, `--version` and `list` never open the fullscreen view or touch the
+console, so they work in pipes and scripts. Unknown IDs, extra arguments and
+combinations such as `--diagnostic snake` are usage errors (exit status 2),
+reported before the terminal is touched.
+
+Build a binary (cgo is not required):
+
+```sh
+CGO_ENABLED=0 go build -o bin/devcade ./cmd/devcade        # macOS / Linux
+```
+
+```powershell
+$env:CGO_ENABLED = "0"; go build -o bin\devcade.exe ./cmd/devcade   # Windows PowerShell
+```
+
+Release archives for all six targets:
+
+```sh
+go run ./tools/release -version 1.0.0-rc.1 -out dist/release
+```
+
+Checks (the same ones CI runs):
+
+```sh
+go mod verify
+go mod tidy -diff          # fails if go.mod/go.sum are out of date; edits nothing
+gofmt -l .                 # must print nothing
+go vet ./...
+go test -timeout 60s ./...
+go test -race -timeout 120s ./...   # needs cgo and a C compiler (gcc/clang)
+```
+
+Dependencies are locked in `go.mod` and `go.sum`, which are both committed.
+CI fails rather than repairing them.
 
 ## Unsigned binaries
 
@@ -190,11 +288,13 @@ The binaries are **not code-signed and not notarized**.
   `Unblock-File .\devcade.exe`. Do not disable SmartScreen or Defender.
 - **Linux:** no signing is involved; verify the checksum.
 
-## Uninstalling
+## Uninstalling direct downloads and installer installations
 
-Delete the binary: `rm ~/.local/bin/devcade` on macOS/Linux, or the
+For Homebrew and Scoop, use the uninstall commands above. For direct downloads
+or installer scripts, delete the binary: `rm ~/.local/bin/devcade` on macOS/Linux, or the
 `%LOCALAPPDATA%\Programs\devcade` folder on Windows (and its `PATH` entry if
-you added one). DevCade stores no settings or save files.
+you added one). Removing the binary leaves preferences, personal bests and
+the online identity intact; see [profile storage](settings.md#storage).
 
 ## First launch and rankings
 
