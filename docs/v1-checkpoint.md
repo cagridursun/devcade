@@ -114,9 +114,9 @@ branches share the frozen baseline.
   and requires public repository visibility.
 - Versioned RC release notes prepared in `docs/releases/1.0.0-rc.1.md`.
 
-Remaining: merge release preparation after green checks, make repo public,
-run the publishing workflow, verify anonymous public downloads, collect
-remaining human macOS/Linux acceptance. Homebrew/Scoop repositories and
+The merge, public visibility and publishing steps were completed in the
+publication follow-up below. Remaining: anonymous browser/download acceptance
+and human macOS/Linux emulator acceptance. Homebrew/Scoop repositories and
 signing are deferred; cross-builds are not manual platform acceptance.
 
 ## Settings and global rankings follow-up (2026-10-04)
@@ -135,3 +135,24 @@ release packages now default to that endpoint; sharing remains opt-in.
 See docs/settings.md and docs/leaderboard.md. Other games/platforms retain their
 automated coverage; the earlier four-game Windows gameplay report predates
 this follow-up.
+
+## Public RC publication (2026-10-04)
+
+- PR #5 merged into main at `251560129eca37657e99faf36201a6ab1eff9c1c`.
+- Repository made public and [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
+  published by [run 37201955505](https://github.com/cagridursun/devcade/actions/runs/37201955505).
+- Build, Docker smoke test, live HTTPS health/four-leaderboard checks,
+  native packaged-binary/installer verification on Linux/macOS/Windows and
+  publication all passed.
+- Nine release assets present: six archives, `SHA256SUMS` and two installers.
+  Downloaded the exact workflow artifact; its SHA-256 matches the GitHub
+  artifact digest. All eight entries in `SHA256SUMS` pass, and each of the
+  nine files matches the corresponding published release asset digest.
+- Installed the actual Linux amd64 archive using its bundled installer from
+  a local artifact directory. Version, game listing, help, embedded community
+  endpoint and non-TTY error behavior verified. Direct anonymous HTTPS binary
+  download from this workspace was not verified because outbound access is
+  restricted; native CI installer coverage is separate from that check.
+- Windows real gameplay and server restart persistence were verified by the
+  owner before publication. Remaining human platform checks stay in
+  [terminal-checklist.md](terminal-checklist.md); this is an RC, not stable v1.0.

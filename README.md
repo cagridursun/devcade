@@ -45,7 +45,7 @@ resize and terminal restoration.
 | --- | --- |
 | Code: four games, menu, CLI, terminal core | Merged into main, with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
-| Distribution | **Not published.** No GitHub release, tap or bucket exists yet, and the repository is private. See [docs/install.md](docs/install.md) |
+| Distribution | **Public release candidate:** [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1), with Linux, macOS and Windows archives, checksums and installers. See [docs/install.md](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
 | Global leaderboard | Live at `https://devcade.cinesdigital.com`; Windows score submission and server restart persistence verified ([service](docs/leaderboard.md)) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
@@ -69,8 +69,10 @@ See [player settings](docs/settings.md) and [global leaderboard deployment](docs
 
 ## Install
 
-Until a release is published, build from source (next section). Once the
-owner publishes a release, [docs/install.md](docs/install.md) describes:
+Download [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
+for Linux, macOS or Windows; release binaries do not require Go.
+[docs/install.md](docs/install.md) describes:
+
 - downloading an archive directly and checking it against `SHA256SUMS`;
 - the checksum-verifying user-local installers (`install.sh`, `install.ps1`);
 - the planned Homebrew tap and Scoop bucket.
@@ -273,8 +275,8 @@ use Windows Terminal, or run `winpty devcade` there.
 | M4 | Block Drop | Merged |
 | M5 | Maze Chase | Merged |
 | M6 | Blast Grid | Merged |
-| M7 | Packaging, distribution and installers | Archives, installers and gated publishing workflow ready; public release pending |
-| M8 | Four-game v1.0 | Release candidate; manual acceptance and publication pending |
+| M7 | Packaging, distribution and installers | Public RC published with six archives, checksums and installers; Homebrew/Scoop repositories deferred |
+| M8 | Four-game v1.0 | Public release candidate; remaining human macOS/Linux acceptance tracked before stable v1.0 |
 
 See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.md).
 Anonymous community leaderboards are included in this candidate; the shared

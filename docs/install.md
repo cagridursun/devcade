@@ -1,13 +1,10 @@
 # Installing DevCade
 
-> **Status: nothing is published yet.** The release tooling, archives,
-> checksums, Homebrew formula, Scoop manifest and installer scripts described
-> here are prepared and tested locally, but no GitHub release, tag, Homebrew
-> tap or Scoop bucket exists. The repository is private, so even after files
-> are attached to a release, anonymous downloads (browser, `curl`, the
-> installer scripts, Homebrew, Scoop) only work once the owner makes the
-> release downloadable publicly. Until then, build from source (see the
-> [README](../README.md)) or use a release-candidate workflow artifact.
+> **Public release candidate:** [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
+> was published on 2026-10-04. Download a native archive or use the
+> checksum-verifying installers below. The binaries do not require Go.
+> Homebrew and Scoop manifests are generated, but their tap/bucket
+> repositories are not published yet.
 
 In the commands below, use `1.0.0-rc.1` for the first release candidate, or replace it with a later release version. Release
 files live at:
@@ -162,7 +159,7 @@ download URL and SHA-256 of each macOS/Linux archive filled in from
 
 The release tooling generates a Scoop manifest, `scoop/devcade.json`
 (`64bit` and `arm64`, with hashes from `SHA256SUMS`). **No bucket exists
-yet.** Once the owner publishes the release and a bucket repository (for
+yet.** Once the owner publishes a bucket repository (for
 example `cagridursun/scoop-devcade` containing `bucket/devcade.json`), the
 commands would be:
 

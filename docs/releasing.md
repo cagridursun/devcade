@@ -183,9 +183,12 @@ fixture releases built in a temporary directory (no network):
 - License: MIT; binary archives carry the project license and complete
   third-party license texts. Update `THIRD_PARTY_NOTICES.txt` and
   `packaging/LICENSE-NOTICE.txt` if dependencies change.
-- Public visibility and the explicit publish run are the remaining launch
-  operations. The available GitHub connector cannot change repository
-  visibility or dispatch a workflow; perform those operations in GitHub.
+- The repository is public. [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
+  was published on 2026-10-04 from `251560129eca37657e99faf36201a6ab1eff9c1c`
+  by [release run 37201955505](https://github.com/cagridursun/devcade/actions/runs/37201955505).
+  Build, Docker/service checks, native verification on all three OSes and
+  publication succeeded. Future publication runs need a new version and
+  matching release notes; existing versions are never overwritten.
 - Homebrew tap and Scoop bucket are not created. The generated manifests are
   ready for separate repositories after public release downloads work.
 - Signing/notarization remain optional follow-up work requiring the owner's
