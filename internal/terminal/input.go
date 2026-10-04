@@ -59,6 +59,8 @@ func keyOf(ev *tcell.EventKey) engine.Event {
 		out.Key = engine.KeyRight
 	case 'z':
 		out.Key = engine.KeyAction
+	case 'x':
+		out.Key = engine.KeySecondary
 	case ' ':
 		out.Key = engine.KeyPause
 	}
