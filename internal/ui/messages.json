@@ -640,5 +640,83 @@
     "Comparte un ID aleatorio, juego, puntos, duración, resultado, versión y plataforma.",
     "Deelt een willekeurige ID, spel, score, duur, resultaat, versie en platform.",
     "Partage un ID aléatoire, jeu, score, durée, résultat, version et plateforme."
+  ],
+  "Play a fast 5v5 football match with passing, tackles and shots.": [
+    "Hızlı bir 5v5 futbol maçında pas, tackle ve şutlarla oyna.",
+    "Juega un partido rápido de fútbol 5v5 con pases, entradas y tiros.",
+    "Speel een snelle 5-tegen-5 voetbalwedstrijd met passes, tackles en schoten.",
+    "Joue un match de football 5 contre 5 avec passes, tacles et tirs."
+  ],
+  "TERMINAL FC   HOME %d-%d AWAY   Time %s   %s": [
+    "TERMINAL FC   EV %d-%d DEP   Süre %s   %s",
+    "TERMINAL FC   LOCAL %d-%d VIS   Tiempo %s   %s",
+    "TERMINAL FC   THUIS %d-%d UIT   Tijd %s   %s",
+    "TERMINAL FC   DOM %d-%d EXT   Temps %s   %s"
+  ],
+  "Selected H%d   Possession %s   Move WASD  Z pass/tackle  Enter shoot  X switch  Pause: Space": [
+    "Seçili H%d   Top %s   WASD hareket  Z pas/tackle  Enter şut  X değiştir  Space duraklat",
+    "H%d seleccionado   Posesión %s   WASD mover  Z pase/entrada  Enter tiro  X cambiar  Space pausa",
+    "Geselecteerd H%d   Bal %s   WASD bewegen  Z pass/tackle  Enter schot  X wissel  Space pauze",
+    "H%d sélectionné   Possession %s   WASD bouger  Z passe/tacle  Enter tir  X changer  Space pause"
+  ],
+  "KICKOFF": [
+    "SANTRA",
+    "SAQUE",
+    "AFTRAP",
+    "COUP D'ENVOI"
+  ],
+  "GOAL": [
+    "GOL",
+    "GOL",
+    "DOELPUNT",
+    "BUT"
+  ],
+  "RESTART": [
+    "YENİDEN BAŞLAT",
+    "REANUDAR",
+    "HERVATTING",
+    "REPRISE"
+  ],
+  "FULL TIME": [
+    "MAÇ BİTTİ",
+    "FINAL",
+    "EINDE",
+    "FIN DU MATCH"
+  ],
+  "KICKOFF  %.1f": [
+    "SANTRA  %.1f",
+    "SAQUE  %.1f",
+    "AFTRAP  %.1f",
+    "COUP D'ENVOI  %.1f"
+  ],
+  "GOAL!": [
+    "GOL!",
+    "¡GOL!",
+    "DOELPUNT!",
+    "BUT !"
+  ],
+  "RESTART  %.1f": [
+    "YENİDEN BAŞLAT  %.1f",
+    "REANUDAR  %.1f",
+    "HERVATTING  %.1f",
+    "REPRISE  %.1f"
+  ],
+  "FULL TIME  %s  %d-%d  Arcade score %d  Enter: play again": [
+    "MAÇ BİTTİ  %s  %d-%d  Arcade skor %d  Enter: tekrar oyna",
+    "FINAL  %s  %d-%d  Puntos arcade %d  Enter: otra vez",
+    "EINDE  %s  %d-%d  Arcadescore %d  Enter: opnieuw",
+    "FIN  %s  %d-%d  Score arcade %d  Enter : rejouer"
+  ],
+  "DRAW": [
+    "BERABERE",
+    "EMPATE",
+    "GELIJKSPEL",
+    "NUL"
+  ],
+  "YOU LOSE": [
+    "KAYBETTİN",
+    "PERDISTE",
+    "VERLOREN",
+    "DÉFAITE"
   ]
 }
