@@ -4,6 +4,9 @@ services:
       context: ../..
       dockerfile: packaging/leaderboard/Dockerfile
     restart: unless-stopped
+    environment:
+      DEVCADE_ADMIN_PASSWORD: ${DEVCADE_ADMIN_PASSWORD:-}
+      DEVCADE_SITE_ORIGIN: ${DEVCADE_SITE_ORIGIN:-https://cagridursun.github.io}
     command: ["-listen", "0.0.0.0:8080", "-data", "/data/leaderboard.json", "-trusted-proxy", "172.31.100.2/32"]
     networks:
       default:

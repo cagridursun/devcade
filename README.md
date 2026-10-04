@@ -245,8 +245,10 @@ use Windows Terminal, or run `winpty devcade` there.
 
 See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.md).
 Anonymous community leaderboards are included in this candidate; the shared
-HTTPS service is deployed. Verified accounts, multiplayer,
-analytics and plugins are out of scope for v1.
+HTTPS service is deployed. An optional, private [usage statistics panel](docs/analytics.md)
+is available for operators; both game and website usage sharing default to Off.
+The published v1.0.0-rc.1 client predates usage tracking. Verified accounts,
+multiplayer and plugins remain out of scope for v1.
 
 ## License
 

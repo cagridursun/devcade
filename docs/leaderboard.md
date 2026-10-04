@@ -112,7 +112,10 @@ persistent volume for **one server instance**, capped at 5,000 identities with
 four bests each. It is intentionally a small community deployment. Horizontal
 replicas require migrating the storage layer to a database; do not share a
 volume between replicas. Name moderation/removal and credential recovery are
-operator tasks for this release. No analytics or client telemetry is added.
+operator tasks for this release. Optional usage tracking and an authenticated
+operator dashboard are documented in [analytics.md](analytics.md). They are
+disabled on the server unless an administrator password is configured, and
+client usage sharing is separate from leaderboard sharing.
 
 Native API tests cover multiple clients, per-game isolation, restart recovery,
 max-only/concurrent updates, own rank outside top 20, validation, authentication,

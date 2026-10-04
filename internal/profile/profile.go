@@ -17,19 +17,22 @@ type Identity struct {
 }
 
 type Profile struct {
-	Version  int            `json:"version"`
-	Language string         `json:"language"`
-	Theme    string         `json:"theme"`
-	Username string         `json:"username,omitempty"`
-	Share    bool           `json:"share_scores"`
-	Identity Identity       `json:"identity,omitempty"`
-	Best     map[string]int `json:"personal_best"`
+	Version   int            `json:"version"`
+	Language  string         `json:"language"`
+	Theme     string         `json:"theme"`
+	Username  string         `json:"username,omitempty"`
+	Share     bool           `json:"share_scores"`
+	Metrics   bool           `json:"share_usage"`
+	MetricsID string         `json:"usage_id,omitempty"`
+	Identity  Identity       `json:"identity,omitempty"`
+	Best      map[string]int `json:"personal_best"`
 }
 
 func Default() Profile {
 	return Profile{Version: 1, Language: "en", Theme: "mono", Best: map[string]int{}}
 }
 
+var usageID = regexp.MustCompile(`^[a-f0-9]{32}$`)
 var username = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
 
 func ValidUsername(s string) bool { return username.MatchString(s) }
@@ -110,6 +113,9 @@ func (s Store) Load() (Profile, error) {
 	}
 	if p.Username != "" && !ValidUsername(p.Username) {
 		return Default(), fmt.Errorf("invalid username")
+	}
+	if p.MetricsID != "" && !usageID.MatchString(p.MetricsID) {
+		p.MetricsID = ""
 	}
 	if p.Best == nil {
 		p.Best = map[string]int{}

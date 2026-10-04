@@ -1,9 +1,11 @@
 import { cleanSnapshot, gameNames, isStale } from './data.mjs';
 import { initSnakePreview } from './snake-preview.mjs';
+import { initUsage } from './usage.mjs';
 
 const messages = {
   en: {
     skip: 'Skip to content', nav: 'Main navigation', language: 'Page language', games: 'Games', install: 'Install', leaderboard: 'Leaderboard',
+    usageOn: 'Site statistics: on', usageOff: 'Site statistics: off', usageNote: 'Optional site statistics count visits and successful command copies using a random session ID. No account or page URL is sent. Off by default.',
     eyebrow: 'A small break between builds', headline: ['Your terminal.', 'Your next high score.'],
     intro: 'Waiting on a build, a test run or an AI response? Open another terminal and play. DevCade brings four arcade games to the place you already work.',
     playAnimation: 'Play animation', pauseAnimation: 'Pause animation', animationAlt: 'Animated replay of actual Snake gameplay',
@@ -26,6 +28,7 @@ const messages = {
   },
   tr: {
     skip: 'İçeriğe geç', nav: 'Ana gezinme', language: 'Sayfa dili', games: 'Oyunlar', install: 'Kurulum', leaderboard: 'Skor tablosu',
+    usageOn: 'Site istatistikleri: açık', usageOff: 'Site istatistikleri: kapalı', usageNote: 'İsteğe bağlı site ölçümü, rastgele oturum kimliğiyle ziyaretleri ve başarılı komut kopyalamalarını sayar. Hesap veya sayfa adresi gönderilmez. Varsayılan olarak kapalıdır.',
     eyebrow: "Build'ler arasında küçük bir mola", headline: ['Terminalin açık.', 'Sıradaki rekor senin.'],
     intro: 'Build, test ya da AI cevabı mı bekliyorsun? Başka bir terminal açıp oyna. DevCade, dört arcade oyununu zaten çalıştığın yere getiriyor.',
     playAnimation: 'Animasyonu oynat', pauseAnimation: 'Animasyonu duraklat', animationAlt: 'Gerçek Snake oyunundan animasyonlu tekrar',
@@ -49,6 +52,7 @@ const messages = {
 };
 
 const preview = initSnakePreview();
+const usage = initUsage();
 
 let language = 'en';
 let selected = 'snake';
@@ -107,6 +111,7 @@ function setLanguage(next) {
   try { localStorage.setItem('devcade-page-language', next); } catch { /* Private browsing may disable storage. */ }
   document.querySelector('#copy-status').textContent = '';
   preview.setLabels({ play: t('playAnimation'), pause: t('pauseAnimation'), alt: t('animationAlt') });
+  usage.setLabels({ on: t('usageOn'), off: t('usageOff') });
   renderBoard();
 }
 
@@ -145,6 +150,7 @@ for (const button of document.querySelectorAll('[data-game]')) button.addEventLi
 for (const button of document.querySelectorAll('[data-copy]')) button.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(document.getElementById(button.dataset.copy).textContent.trim());
+    usage.track('install_copy');
     button.textContent = t('copied');
     document.querySelector('#copy-status').textContent = t('copied');
     setTimeout(() => { button.textContent = t('copy'); }, 1800);
