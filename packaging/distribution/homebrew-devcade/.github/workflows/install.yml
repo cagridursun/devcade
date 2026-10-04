@@ -30,7 +30,7 @@ jobs:
           brew install cagridursun/devcade/devcade
           devcade --version
           for id in snake blockdrop mazechase blastgrid; do
-            devcade list | grep -q "^$id .*Available"
+            devcade list | grep "^$id .*Available" >/dev/null
           done
           test -f "$(brew --prefix devcade)/share/devcade/LICENSE-NOTICE.txt"
           brew test cagridursun/devcade/devcade
