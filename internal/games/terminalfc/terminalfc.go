@@ -968,7 +968,7 @@ func (g *Game) Render(c engine.Canvas) {
 	oy := 2
 
 	// HUD
-	c.Text(max(0, ox), 0, engine.Format(c, "TERMINAL FC   HOME %d-%d AWAY   Time %s   %s", g.homeGoals, g.awayGoals, formatTime(g.liveLeft), g.phaseText()), engine.Accent)
+	c.Text(max(0, ox), 0, engine.Format(c, "TERMINAL FC   HOME %d-%d AWAY   Time %s   %s", g.homeGoals, g.awayGoals, formatTime(g.liveLeft), translate(c, g.phaseText())), engine.Accent)
 	poss := "FREE"
 	if g.ball.owner != noPlayer {
 		if g.players[g.ball.owner].team == homeTeam {
@@ -977,7 +977,8 @@ func (g *Game) Render(c engine.Canvas) {
 			poss = "AWAY"
 		}
 	}
-	c.Text(max(0, ox), 1, engine.Format(c, "Selected H%d   Possession %s   Move WASD  Z pass/tackle  Enter shoot  X switch  Pause: Space", g.active+1, poss), engine.Default)
+	poss = translate(c, poss)
+	c.Text(max(0, ox), 1, engine.Format(c, "H%d  %s  WASD move  Z pass/tackle  Enter shoot  X switch  Sp pause", g.active+1, poss), engine.Default)
 
 	// Border and pitch markings. Exact goal mouth is rows 6..11.
 	c.Text(ox, oy, "+"+repeat("-", 72)+"+", engine.Default)
@@ -1035,6 +1036,13 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 		g.overlay(c, engine.Format(c, "FULL TIME  %s  %d-%d  Arcade score %d  Enter: play again", result, g.homeGoals, g.awayGoals, g.finalScore))
 	}
+}
+
+func translate(c engine.Canvas, s string) string {
+	if t, ok := c.(interface{ Translate(string) string }); ok {
+		return t.Translate(s)
+	}
+	return s
 }
 
 func (g *Game) overlay(c engine.Canvas, s string) {
