@@ -22,12 +22,12 @@ const (
 	KeyLeft
 	KeyRight
 	KeyPause
-	KeySelect // confirm a choice (Enter)
-	KeyBack   // leave the current screen (Q, Escape)
-	KeyExit   // leave the whole application from anywhere (Ctrl+C)
-	KeyAction // the game's primary action (Z): rotate counterclockwise, place a bomb
+	KeySelect    // confirm a choice (Enter)
+	KeyBack      // leave the current screen (Q, Escape)
+	KeyExit      // leave the whole application from anywhere (Ctrl+C)
+	KeyAction    // the game's primary action (Z): rotate counterclockwise, place a bomb
 	KeySecondary // the game's secondary action (X), used by games that need one
-	KeyErase  // Backspace in text entry
+	KeyErase     // Backspace in text entry
 )
 
 func (k Key) String() string {

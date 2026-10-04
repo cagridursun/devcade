@@ -26,10 +26,10 @@ const (
 	restartTime     = time.Second
 	keeperHoldTime  = 2 * time.Second
 
-	moveCooldown   = 80 * time.Millisecond
-	actionCooldown = 300 * time.Millisecond
-	tackleCooldown = 700 * time.Millisecond
-	switchCooldown = 250 * time.Millisecond
+	moveCooldown    = 80 * time.Millisecond
+	actionCooldown  = 300 * time.Millisecond
+	tackleCooldown  = 700 * time.Millisecond
+	switchCooldown  = 250 * time.Millisecond
 	reclaimGrace    = 150 * time.Millisecond
 	ownerProtection = 250 * time.Millisecond
 	botInterval     = 120 * time.Millisecond
@@ -50,10 +50,10 @@ const (
 
 type vec struct{ x, y float64 }
 
-func (a vec) add(b vec) vec { return vec{a.x + b.x, a.y + b.y} }
-func (a vec) sub(b vec) vec { return vec{a.x - b.x, a.y - b.y} }
+func (a vec) add(b vec) vec     { return vec{a.x + b.x, a.y + b.y} }
+func (a vec) sub(b vec) vec     { return vec{a.x - b.x, a.y - b.y} }
 func (a vec) mul(k float64) vec { return vec{a.x * k, a.y * k} }
-func (a vec) len() float64 { return math.Hypot(a.x, a.y) }
+func (a vec) len() float64      { return math.Hypot(a.x, a.y) }
 func (a vec) norm() vec {
 	n := a.len()
 	if n == 0 {
@@ -61,8 +61,8 @@ func (a vec) norm() vec {
 	}
 	return vec{a.x / n, a.y / n}
 }
-func dot(a, b vec) float64 { return a.x*b.x + a.y*b.y }
-func dist(a, b vec) float64 { return a.sub(b).len() }
+func dot(a, b vec) float64            { return a.x*b.x + a.y*b.y }
+func dist(a, b vec) float64           { return a.sub(b).len() }
 func clamp(v, lo, hi float64) float64 { return math.Max(lo, math.Min(hi, v)) }
 
 type role uint8
@@ -172,9 +172,9 @@ func newGame(seed *rand.Rand) *Game {
 }
 
 func (g *Game) MinimumSize() (int, int) { return 80, 24 }
-func (g *Game) Start(w, h int)           { g.width, g.height = w, h; g.reset() }
-func (g *Game) Resize(w, h int)          { g.width, g.height = w, h }
-func (g *Game) Finished() bool           { return g.phase == phaseFullTime }
+func (g *Game) Start(w, h int)          { g.width, g.height = w, h; g.reset() }
+func (g *Game) Resize(w, h int)         { g.width, g.height = w, h }
+func (g *Game) Finished() bool          { return g.phase == phaseFullTime }
 
 // Score returns zero before full time and the finalized leaderboard score
 // afterwards. Football goals remain separate match state.
@@ -199,7 +199,7 @@ func (g *Game) reset() {
 
 func (g *Game) setupFormation() {
 	type spec struct {
-		r role
+		r    role
 		x, y float64
 	}
 	home := [5]spec{
