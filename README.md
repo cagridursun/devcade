@@ -50,7 +50,7 @@ devcade
 
 Requires [Homebrew](https://brew.sh) or [Scoop](https://scoop.sh) and an
 interactive terminal of at least **80 × 24**. The current version is
-**1.0.0-rc.1**. [Installation guide](docs/install.md) covers package-manager
+**1.0.0-rc.2**. [Installation guide](docs/install.md) covers package-manager
 setup, updates, uninstalling, direct downloads, installers and optional
 source builds.
 
@@ -74,7 +74,7 @@ resize and terminal restoration.
 | --- | --- |
 | Code: four games, menu, CLI, terminal core | Merged into main, with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
-| Distribution | Public [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
+| Distribution | Public [v1.0.0-rc.2](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
 | Global leaderboard | Live at `https://devcade.cinesdigital.com`; Windows score submission and server restart persistence verified ([service](docs/leaderboard.md)) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
@@ -247,7 +247,7 @@ See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.
 Anonymous community leaderboards are included in this candidate; the shared
 HTTPS service is deployed. An optional, private [usage statistics panel](docs/analytics.md)
 is available for operators; both game and website usage sharing default to Off.
-The published v1.0.0-rc.1 client predates usage tracking. Verified accounts,
+Usage tracking is available starting with v1.0.0-rc.2; older clients do not send events. Verified accounts,
 multiplayer and plugins remain out of scope for v1.
 
 ## License

@@ -1,7 +1,7 @@
 # Installing DevCade
 
 > **Install and play without Go or a source checkout.**
-> [v1.0.0-rc.1](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.1)
+> [v1.0.0-rc.2](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2)
 > is available as a self-contained binary for Windows, macOS and Linux.
 
 ## Recommended: Homebrew (macOS and Linux)
@@ -66,14 +66,14 @@ scoop update devcade
 scoop uninstall devcade
 ```
 
-Both managers install the published **1.0.0-rc.1** candidate. Open a terminal
+Both managers install the published **1.0.0-rc.2** candidate. Open a terminal
 of at least **80 × 24**; on Windows, Windows Terminal is recommended.
 The managers download prebuilt binaries; the remaining sections are optional
 alternatives for users who prefer direct downloads or source builds.
 
 ## Alternative installation methods
 
-In the commands below, use `1.0.0-rc.1` for the first release candidate, or replace it with a later release version. Release
+In the commands below, use `1.0.0-rc.2` for the current release candidate, or replace it with a later release version. Release
 files live at:
 
 ```
@@ -113,7 +113,7 @@ Always verify the checksum before extracting or running anything.
 ### macOS and Linux
 
 ```sh
-v=1.0.0-rc.1
+v=1.0.0-rc.2
 os=linux      # or darwin
 arch=amd64    # or arm64 (Apple silicon, aarch64)
 base=https://github.com/cagridursun/devcade/releases/download/v$v
@@ -136,7 +136,7 @@ Add `~/.local/bin` to `PATH` if it is not there yet.
 ### Windows (PowerShell)
 
 ```powershell
-$v = "1.0.0-rc.1"; $arch = "amd64"   # or arm64
+$v = "1.0.0-rc.2"; $arch = "amd64"   # or arm64
 $base = "https://github.com/cagridursun/devcade/releases/download/v$v"
 $zip = "devcade_${v}_windows_$arch.zip"
 Invoke-WebRequest -UseBasicParsing "$base/$zip" -OutFile $zip
@@ -177,7 +177,7 @@ Download the script, read it, check it against `SHA256SUMS`, then run it.
 ### macOS and Linux: `install.sh`
 
 ```sh
-v=1.0.0-rc.1
+v=1.0.0-rc.2
 base=https://github.com/cagridursun/devcade/releases/download/v$v
 curl -fLO "$base/install.sh" && curl -fLO "$base/SHA256SUMS"
 sha256sum --ignore-missing -c SHA256SUMS     # macOS: grep ' install.sh$' SHA256SUMS | shasum -a 256 -c
@@ -193,7 +193,7 @@ with an "unsupported" error. It needs `curl` (or `wget` for https), `tar`,
 ### Windows: `install.ps1`
 
 ```powershell
-$v = "1.0.0-rc.1"
+$v = "1.0.0-rc.2"
 $base = "https://github.com/cagridursun/devcade/releases/download/v$v"
 Invoke-WebRequest -UseBasicParsing "$base/install.ps1" -OutFile install.ps1
 Invoke-WebRequest -UseBasicParsing "$base/SHA256SUMS" -OutFile SHA256SUMS
@@ -219,7 +219,7 @@ Install Git and Go 1.26 or newer, then clone the source:
 git clone https://github.com/cagridursun/devcade.git
 cd devcade
 # Optional: use the exact source of the published candidate.
-git checkout v1.0.0-rc.1
+git checkout v1.0.0-rc.2
 ```
 
 Run from the repository root:
@@ -251,7 +251,7 @@ $env:CGO_ENABLED = "0"; go build -o bin\devcade.exe ./cmd/devcade   # Windows Po
 Release archives for all six targets:
 
 ```sh
-go run ./tools/release -version 1.0.0-rc.1 -out dist/release
+go run ./tools/release -version 1.0.0-rc.2 -out dist/release
 ```
 
 Checks (the same ones CI runs):

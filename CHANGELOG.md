@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-rc.2 (published 2026-10-04)
 
 - Fix Maze Chase exposing no score to the shared personal-best/leaderboard path.
   Add real-game completion, persistence and submission regression coverage.
