@@ -35,6 +35,16 @@ func TestPersistenceAndPersonalBests(t *testing.T) {
 	if p.Best["snake"] != 100 {
 		t.Fatal("snapshot aliases bests")
 	}
+	for _, n := range []int{-1, 1751, 1000000001} {
+		if ValidScore("terminalfc", n) {
+			t.Error("terminalfc", n)
+		}
+	}
+	for _, n := range []int{0, 500, 1000, 1750} {
+		if !ValidScore("terminalfc", n) {
+			t.Error("terminalfc valid", n)
+		}
+	}
 }
 func TestCorruptProfileIsNotSilentlyOverwritten(t *testing.T) {
 	s := Store{filepath.Join(t.TempDir(), "profile.json")}
