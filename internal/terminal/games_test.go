@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/cagridursun/devcade/internal/arcade"
 	"github.com/cagridursun/devcade/internal/engine"
@@ -21,8 +22,15 @@ var endRecipes = map[string]func(t *testing.T, h *harness){
 	// Hard-dropping every piece stacks up to the top.
 	"blockdrop": func(t *testing.T, h *harness) {
 		for range 200 {
+			// The unpause barrier consumed the preceding render. With no
+			// frame ticks here, this render acknowledges this one Enter.
 			h.screen.InjectKey(tcell.KeyEnter, 0, 0)
-			if h.tickUntil(t, "", 1); strings.Contains(h.last, endPrompt) {
+			select {
+			case h.last = <-h.screen.shown:
+			case <-time.After(guard):
+				t.Fatal("hard drop did not render")
+			}
+			if strings.Contains(h.last, endPrompt) {
 				return
 			}
 		}
@@ -86,8 +94,20 @@ func TestEveryAvailableGameThroughTheArcade(t *testing.T) {
 			s.resize(100, 30)
 			s.waitFor(t, "PAUSED")
 			s.InjectKey(tcell.KeyRune, ' ', 0)
-			h.tick(t, 0)
-			<-s.shown
+			// A tick can render before the input reader delivers Space.
+			// Wait for unpause itself, consuming its render before drops.
+			unpauseDeadline := time.After(guard)
+		unpause:
+			for {
+				select {
+				case frame := <-s.shown:
+					if strings.Contains(frame, "Q / Esc: back to menu") && !strings.Contains(frame, "PAUSED") {
+						break unpause
+					}
+				case <-unpauseDeadline:
+					t.Fatal("Space did not unpause the game")
+				}
+			}
 
 			// End screen: Space must not pause it and Enter restarts.
 			end(t, h)
