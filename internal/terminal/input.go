@@ -15,6 +15,8 @@ func keyOf(ev *tcell.EventKey) engine.Event {
 		return engine.Event{Key: engine.KeyExit}
 	case tcell.KeyEscape:
 		return engine.Event{Key: engine.KeyBack}
+	case tcell.KeyBackspace, tcell.KeyBackspace2:
+		return engine.Event{Key: engine.KeyErase}
 	case tcell.KeyEnter:
 		return engine.Event{Key: engine.KeySelect}
 	case tcell.KeyUp:
@@ -41,7 +43,7 @@ func keyOf(ev *tcell.EventKey) engine.Event {
 		r += 'a' - 'A'
 	}
 	out := engine.Event{}
-	if r >= 'a' && r <= 'z' {
+	if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' {
 		out.Char = r
 	}
 	switch r {

@@ -210,7 +210,7 @@ func TestUndersizedMessageReportsSizesAndClipsSafely(t *testing.T) {
 }
 
 func TestPrintable(t *testing.T) {
-	for r, want := range map[rune]rune{'a': 'a', ' ': ' ', '~': '~', '\t': '?', 0x7f: '?', 'é': '?', '界': '?'} {
+	for r, want := range map[rune]rune{'a': 'a', ' ': ' ', '~': '~', '\t': '?', 0x7f: '?', 'é': 'é', 'ş': 'ş', 'œ': 'œ', 'ı': 'ı', 'İ': 'İ', 'ñ': 'ñ', '\u0301': '?', '\u202e': '?', '界': '?'} {
 		if got := Printable(r); got != want {
 			t.Errorf("Printable(%q) = %q, want %q", r, got, want)
 		}

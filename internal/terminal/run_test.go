@@ -598,7 +598,9 @@ func TestSnakeFromMenuRestartAndReturn(t *testing.T) {
 	h := startArcade(t, s)
 	s.waitFor(t, " > Snake        Available")
 	s.InjectKey(tcell.KeyEnter, 0, 0)
-	s.waitFor(t, "Q / Esc: back to menu")
+	s.waitFor(t, "New game")
+	s.InjectKey(tcell.KeyEnter, 0, 0)
+	s.waitFor(t, "Q / Esc: back to game menu")
 	h.crashSnake(t)
 
 	// Space on the end screen must not pause it, so Enter still restarts.
@@ -611,8 +613,12 @@ func TestSnakeFromMenuRestartAndReturn(t *testing.T) {
 	s.InjectKey(tcell.KeyRune, ' ', 0)
 	s.waitFor(t, "PAUSED")
 	s.InjectKey(tcell.KeyEscape, 0, 0)
+	s.waitFor(t, "New game")
+	s.InjectKey(tcell.KeyEscape, 0, 0)
 	s.waitFor(t, " > Snake        Available") // selection kept
-	s.InjectKey(tcell.KeyEnter, 0, 0)         // fresh, unpaused run
+	s.InjectKey(tcell.KeyEnter, 0, 0)
+	s.waitFor(t, "New game")
+	s.InjectKey(tcell.KeyEnter, 0, 0) // fresh, unpaused run
 	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score 0") {
 		t.Fatalf("relaunch is not fresh:\n%s", frame)
 	}
@@ -630,6 +636,8 @@ func TestSnakePauseSurvivesResizeWithoutCatchUp(t *testing.T) {
 	s := newSim(80, 24)
 	h := startArcade(t, s)
 	s.waitFor(t, "GAMES")
+	s.InjectKey(tcell.KeyEnter, 0, 0)
+	s.waitFor(t, "New game")
 	s.InjectKey(tcell.KeyEnter, 0, 0)
 	s.waitFor(t, "PLAYING")
 	s.InjectKey(tcell.KeyRune, ' ', 0)
@@ -670,6 +678,8 @@ func TestCtrlCExitsSnakeWhilePausedOrUndersized(t *testing.T) {
 			s := newSim(80, 24)
 			h := startArcade(t, s)
 			s.waitFor(t, "GAMES")
+			s.InjectKey(tcell.KeyEnter, 0, 0)
+			s.waitFor(t, "New game")
 			s.InjectKey(tcell.KeyEnter, 0, 0)
 			s.waitFor(t, "PLAYING")
 			if name == "paused" {

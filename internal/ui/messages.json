@@ -1,0 +1,626 @@
+{
+  "DEVCADE >_  terminal arcade": [
+    "DEVCADE >_  terminal oyun salonu",
+    "DEVCADE >_  arcade de terminal",
+    "DEVCADE >_  terminalarcade",
+    "DEVCADE >_  arcade du terminal"
+  ],
+  "Quick games for the wait while builds, tests or AI agents run.": [
+    "Build, test veya AI yanıtını beklerken kısa bir oyun molası.",
+    "Juegos rápidos mientras esperas builds, tests o agentes de IA.",
+    "Korte spellen terwijl builds, tests of AI-agenten draaien.",
+    "Des jeux rapides pendant les builds, tests ou agents IA."
+  ],
+  "GAMES": [
+    "OYUNLAR",
+    "JUEGOS",
+    "SPELLEN",
+    "JEUX"
+  ],
+  "Available": [
+    "Hazır",
+    "Disponible",
+    "Beschikbaar",
+    "Disponible"
+  ],
+  "TOOLS": [
+    "ARAÇLAR",
+    "HERRAMIENTAS",
+    "HULPMIDDELEN",
+    "OUTILS"
+  ],
+  "   D  Terminal diagnostic: moving @ to check input, timing and resize": [
+    "   D  Terminal tanılama: giriş, zamanlama ve boyut kontrolü",
+    "   D  Diagnóstico: entrada, tiempo y tamaño de terminal",
+    "   D  Terminaltest: invoer, timing en venstergrootte",
+    "   D  Diagnostic : saisie, temps et taille du terminal"
+  ],
+  "New games coming soon": [
+    "Yeni oyunlar yakında",
+    "Nuevos juegos próximamente",
+    "Binnenkort nieuwe spellen",
+    "De nouveaux jeux bientôt"
+  ],
+  "Settings": [
+    "Ayarlar",
+    "Ajustes",
+    "Instellingen",
+    "Paramètres"
+  ],
+  "Language": [
+    "Dil",
+    "Idioma",
+    "Taal",
+    "Langue"
+  ],
+  "Color palette": [
+    "Renk paleti",
+    "Paleta de colores",
+    "Kleurenpalet",
+    "Palette de couleurs"
+  ],
+  "Black / white": [
+    "Siyah / beyaz",
+    "Blanco / negro",
+    "Zwart / wit",
+    "Noir / blanc"
+  ],
+  "Midnight": [
+    "Midnight",
+    "Midnight",
+    "Midnight",
+    "Midnight"
+  ],
+  "Colorful": [
+    "Colorful",
+    "Colorful",
+    "Colorful",
+    "Colorful"
+  ],
+  "Username": [
+    "Kullanıcı adı",
+    "Nombre de usuario",
+    "Gebruikersnaam",
+    "Pseudo"
+  ],
+  "Global score sharing": [
+    "Global skor paylaşımı",
+    "Compartir puntuaciones",
+    "Scores wereldwijd delen",
+    "Partager les scores"
+  ],
+  "On": [
+    "Açık",
+    "Sí",
+    "Aan",
+    "Oui"
+  ],
+  "Off": [
+    "Kapalı",
+    "No",
+    "Uit",
+    "Non"
+  ],
+  "Guest": [
+    "Misafir",
+    "Invitado",
+    "Gast",
+    "Invité"
+  ],
+  "New game": [
+    "Yeni oyun",
+    "Nueva partida",
+    "Nieuw spel",
+    "Nouvelle partie"
+  ],
+  "Leaderboard": [
+    "Skor tablosu",
+    "Clasificación",
+    "Ranglijst",
+    "Classement"
+  ],
+  "Your best: %d": [
+    "Rekorun: %d",
+    "Tu récord: %d",
+    "Jouw record: %d",
+    "Ton record : %d"
+  ],
+  "Your best: -": [
+    "Rekorun: -",
+    "Tu récord: -",
+    "Jouw record: -",
+    "Ton record : -"
+  ],
+  " Up/Down: select  Enter: confirm  Q / Esc: back": [
+    " Yukarı/Aşağı: seç  Enter: onayla  Q / Esc: geri",
+    " Arriba/Abajo: elegir  Enter: confirmar  Q / Esc: volver",
+    " Omhoog/Omlaag: kies  Enter: bevestig  Q / Esc: terug",
+    " Haut/Bas : choisir  Enter : confirmer  Q / Esc : retour"
+  ],
+  " Up/Down: select  Left/Right/Enter: change  Q / Esc: back": [
+    " Yukarı/Aşağı: seç  Sol/Sağ/Enter: değiştir  Q / Esc: geri",
+    " Arriba/Abajo: elegir  Izq./Der./Enter: cambiar  Q/Esc: volver",
+    " Omhoog/Omlaag: kies  Links/Rechts/Enter: wijzig  Q/Esc: terug",
+    " Haut/Bas : choisir  Gauche/Droite/Enter : changer  Q/Esc : retour"
+  ],
+  " Q / Esc: back to game menu   Ctrl+C: quit DevCade": [
+    " Q / Esc: oyun menüsü   Ctrl+C: DevCade'den çık",
+    " Q / Esc: menú del juego   Ctrl+C: salir de DevCade",
+    " Q / Esc: spelmenu   Ctrl+C: DevCade stoppen",
+    " Q / Esc : menu du jeu   Ctrl+C : quitter DevCade"
+  ],
+  " Q / Esc: back to menu   Ctrl+C: quit DevCade": [
+    " Q / Esc: ana menü   Ctrl+C: DevCade'den çık",
+    " Q / Esc: menú principal   Ctrl+C: salir de DevCade",
+    " Q / Esc: hoofdmenu   Ctrl+C: DevCade stoppen",
+    " Q / Esc : menu principal   Ctrl+C : quitter DevCade"
+  ],
+  " R: refresh   Q / Esc: back": [
+    " R: yenile   Q / Esc: geri",
+    " R: actualizar   Q / Esc: volver",
+    " R: vernieuwen   Q / Esc: terug",
+    " R : actualiser   Q / Esc : retour"
+  ],
+  "Choose your username": [
+    "Kullanıcı adını seç",
+    "Elige tu nombre de usuario",
+    "Kies je gebruikersnaam",
+    "Choisis ton pseudo"
+  ],
+  "Use 3-20 lowercase letters, numbers or underscores.": [
+    "3-20 küçük harf, rakam veya alt çizgi kullan.",
+    "Usa 3-20 letras minúsculas, números o guiones bajos.",
+    "Gebruik 3-20 kleine letters, cijfers of underscores.",
+    "Utilise 3-20 lettres minuscules, chiffres ou traits de soulignement."
+  ],
+  " Enter: save locally   Backspace: erase   Esc: play as guest": [
+    " Enter: cihaza kaydet   Backspace: sil   Esc: misafir oyna",
+    " Enter: guardar en el equipo   Backspace: borrar   Esc: invitado",
+    " Enter: lokaal opslaan   Backspace: wissen   Esc: als gast spelen",
+    " Enter : enregistrer   Backspace : effacer   Esc : jouer en invité"
+  ],
+  "A username is not a verified GitHub or X account.": [
+    "Kullanıcı adı doğrulanmış bir GitHub veya X hesabı değildir.",
+    "El nombre no es una cuenta verificada de GitHub o X.",
+    "De naam is geen geverifieerd GitHub- of X-account.",
+    "Le pseudo n'est pas un compte GitHub ou X vérifié."
+  ],
+  "Enable sharing in Settings to publish your name and personal bests.": [
+    "Adını ve rekorlarını yayınlamak için Ayarlar'dan paylaşımı aç.",
+    "Activa compartir en Ajustes para publicar tu nombre y récords.",
+    "Zet delen aan in Instellingen om je naam en records te publiceren.",
+    "Active le partage dans Paramètres pour publier ton pseudo et tes records."
+  ],
+  "Sharing publishes your username and best scores. Existing rows stay public.": [
+    "Paylaşım adını ve rekorlarını yayınlar. Önceki kayıtlar herkese açık kalır.",
+    "Compartir publica tu nombre y récords. Las filas anteriores siguen públicas.",
+    "Delen publiceert je naam en records. Bestaande scores blijven openbaar.",
+    "Le partage publie ton pseudo et tes records. Les scores restent publics."
+  ],
+  "Username changes create a new online identity; old records stay public.": [
+    "Ad değişimi yeni çevrimiçi kimlik oluşturur; eski kayıtlar açık kalır.",
+    "Cambiar el nombre crea otra identidad; los récords anteriores siguen públicos.",
+    "Een nieuwe naam maakt een nieuwe online identiteit; oude records blijven.",
+    "Changer de pseudo crée une identité ; les anciens records restent publics."
+  ],
+  "Profile could not be saved. Changes apply only to this session.": [
+    "Profil kaydedilemedi. Değişiklikler yalnızca bu oturum için geçerli.",
+    "No se pudo guardar el perfil. Cambios solo para esta sesión.",
+    "Profiel niet opgeslagen. Wijzigingen gelden alleen voor deze sessie.",
+    "Profil non enregistré. Les changements valent pour cette session."
+  ],
+  "Profile could not be loaded; the existing file will not be overwritten.": [
+    "Profil okunamadı; mevcut dosyanın üzerine yazılmayacak.",
+    "No se pudo leer el perfil; no se sobrescribirá el archivo.",
+    "Profiel niet geladen; het bestaande bestand wordt niet overschreven.",
+    "Profil illisible ; le fichier existant ne sera pas écrasé."
+  ],
+  "Global service is not configured. Your personal bests are saved locally.": [
+    "Global servis ayarlı değil. Rekorların cihazında saklanır.",
+    "Servicio global sin configurar. Tus récords se guardan en el equipo.",
+    "Wereldwijde dienst niet ingesteld. Records worden lokaal opgeslagen.",
+    "Service global non configuré. Les records sont enregistrés localement."
+  ],
+  "Loading global scores...": [
+    "Global skorlar yükleniyor...",
+    "Cargando puntuaciones globales...",
+    "Wereldwijde scores laden...",
+    "Chargement des scores globaux..."
+  ],
+  "Offline: global scores unavailable. Local bests are kept.": [
+    "Çevrimdışı: global skorlar alınamadı. Rekorların cihazda saklanır.",
+    "Sin conexión: clasificación no disponible. Récords locales guardados.",
+    "Offline: wereldwijde scores niet beschikbaar. Lokale records bewaard.",
+    "Hors ligne : scores globaux indisponibles. Records locaux conservés."
+  ],
+  "Username taken. Choose another in Settings, then refresh.": [
+    "Bu ad alınmış. Ayarlar'dan başka ad seç ve yenile.",
+    "Nombre ocupado. Elige otro en Ajustes y actualiza.",
+    "Naam bezet. Kies een andere in Instellingen en vernieuw.",
+    "Pseudo pris. Choisis-en un autre dans Paramètres et actualise."
+  ],
+  "Online identity rejected. Restore your profile or choose a new username.": [
+    "Kimlik reddedildi. Profilini geri yükle veya yeni ad seç.",
+    "Identidad rechazada. Restaura tu perfil o elige otro nombre.",
+    "Identiteit geweigerd. Herstel je profiel of kies een nieuwe naam.",
+    "Identité refusée. Restaure ton profil ou choisis un nouveau pseudo."
+  ],
+  "Global personal bests": [
+    "Global kişisel rekorlar",
+    "Récords personales globales",
+    "Wereldwijde persoonlijke records",
+    "Records personnels globaux"
+  ],
+  "No scores yet.": [
+    "Henüz skor yok.",
+    "Todavía no hay puntuaciones.",
+    "Nog geen scores.",
+    "Aucun score pour le moment."
+  ],
+  "Rank   Player                 Best": [
+    "Sıra   Oyuncu                 Rekor",
+    "Puesto Jugador                Récord",
+    "Rang   Speler                 Record",
+    "Rang   Joueur                 Record"
+  ],
+  "You: #%d  %s  %d": [
+    "Sen: #%d  %s  %d",
+    "Tú: #%d  %s  %d",
+    "Jij: #%d  %s  %d",
+    "Toi : #%d  %s  %d"
+  ],
+  "Community scores are client-reported.": [
+    "Topluluk skorları oyun istemcileri tarafından bildirilir.",
+    "Las puntuaciones las comunica el cliente del juego.",
+    "Communityscores worden door de spelclient gemeld.",
+    "Les scores communautaires sont déclarés par le client."
+  ],
+  "Open creator profile": [
+    "Yapımcının profilini aç",
+    "Abrir perfil del creador",
+    "Profiel van de maker openen",
+    "Ouvrir le profil du créateur"
+  ],
+  "Browser unavailable. Open https://x.com/c__dursun manually.": [
+    "Tarayıcı açılamadı. https://x.com/c__dursun adresini aç.",
+    "Navegador no disponible. Abre https://x.com/c__dursun.",
+    "Browser niet beschikbaar. Open https://x.com/c__dursun.",
+    "Navigateur indisponible. Ouvre https://x.com/c__dursun."
+  ],
+  "Steer a growing snake to food without hitting walls or yourself.": [
+    "Duvara veya kendine çarpmadan yılanı yemeğe yönlendir.",
+    "Guía la serpiente hacia comida sin chocar.",
+    "Stuur de slang naar eten zonder tegen muren of jezelf te botsen.",
+    "Guide le serpent vers la nourriture sans collision."
+  ],
+  "Rotate falling blocks and clear full rows before the stack tops out.": [
+    "Blokları döndür, yığın tepeye ulaşmadan dolu satırları temizle.",
+    "Gira los bloques y completa filas antes de llegar arriba.",
+    "Draai blokken en maak rijen vol voordat de stapel de top bereikt.",
+    "Tourne les blocs et complète les lignes avant d'atteindre le haut."
+  ],
+  "Clear the maze of dots, dodge four chasers, power up to eat them.": [
+    "Noktaları topla, takipçilerden kaç; güç alıp onları yakala.",
+    "Recoge puntos, esquiva perseguidores y usa poderes para comerlos.",
+    "Verzamel stippen, ontwijk achtervolgers en pak ze met een power-up.",
+    "Ramasse les points, évite les poursuivants et attrape-les avec un bonus."
+  ],
+  "Bomb crates and outlast three bots in a fixed 17x13 blast arena.": [
+    "17x13 arenada sandıkları patlat ve üç bottan uzun süre dayan.",
+    "Destruye cajas y sobrevive a tres bots en la arena de 17x13.",
+    "Blaas kisten op en overleef drie bots in de arena van 17x13.",
+    "Détruis les caisses et survis aux trois bots dans l'arène 17x13."
+  ],
+  "[ PAUSED - press Space to resume ]": [
+    "[ DURAKLATILDI - Space: devam ]",
+    "[ PAUSA - Space: continuar ]",
+    "[ PAUZE - Space: hervatten ]",
+    "[ PAUSE - Space : reprendre ]"
+  ],
+  "DevCade: window too small": [
+    "DevCade: pencere çok küçük",
+    "DevCade: ventana demasiado pequeña",
+    "DevCade: venster te klein",
+    "DevCade : fenêtre trop petite"
+  ],
+  "Need %dx%d, have %dx%d": [
+    "Gerekli %dx%d, mevcut %dx%d",
+    "Necesita %dx%d, actual %dx%d",
+    "Nodig %dx%d, huidig %dx%d",
+    "Requis %dx%d, actuel %dx%d"
+  ],
+  "Enlarge it, or press Q": [
+    "Büyüt veya Q tuşuna bas",
+    "Amplía la ventana o pulsa Q",
+    "Vergroot het venster of druk Q",
+    "Agrandis la fenêtre ou appuie sur Q"
+  ],
+  "PLAYING": [
+    "OYUNDA",
+    "JUGANDO",
+    "SPELEN",
+    "EN JEU"
+  ],
+  "GAME OVER": [
+    "OYUN BİTTİ",
+    "FIN DEL JUEGO",
+    "SPEL VOORBIJ",
+    "PARTIE TERMINÉE"
+  ],
+  "YOU WIN": [
+    "KAZANDIN",
+    "GANASTE",
+    "GEWONNEN",
+    "VICTOIRE"
+  ],
+  "BOARD COMPLETE": [
+    "TAHTA TAMAM",
+    "TABLERO COMPLETO",
+    "BORD VOL",
+    "GRILLE COMPLÈTE"
+  ],
+  "BOARD COMPLETE - YOU WIN": [
+    "TAHTA TAMAM - KAZANDIN",
+    "TABLERO COMPLETO - GANASTE",
+    "BORD VOL - GEWONNEN",
+    "GRILLE COMPLÈTE - VICTOIRE"
+  ],
+  "MAZE CLEARED - YOU WIN": [
+    "LABİRENT TAMAM - KAZANDIN",
+    "LABERINTO COMPLETO - GANASTE",
+    "DOOLHOF LEEG - GEWONNEN",
+    "LABYRINTHE VIDÉ - VICTOIRE"
+  ],
+  "SNAKE   Score %-5d Level %-3d Length %-4d %s": [
+    "SNAKE   Skor %-5d Seviye %-3d Boy %-4d %s",
+    "SNAKE   Puntos %-5d Nivel %-3d Largo %-4d %s",
+    "SNAKE   Score %-5d Niveau %-3d Lengte %-4d %s",
+    "SNAKE   Score %-5d Niveau %-3d Taille %-4d %s"
+  ],
+  "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C": [
+    "Hareket: ok / WASD   Duraklat: Space   Geri: Q / Esc   Çık: Ctrl+C",
+    "Mover: flechas/WASD  Pausa: Space  Volver: Q/Esc  Salir: Ctrl+C",
+    "Beweeg: pijlen/WASD  Pauze: Space  Terug: Q/Esc  Stop: Ctrl+C",
+    "Bouger : flèches/WASD  Pause : Space  Retour : Q/Esc  Quitter : Ctrl+C"
+  ],
+  "Final score %d   Level %d": [
+    "Skor %d   Seviye %d",
+    "Puntos %d   Nivel %d",
+    "Score %d   Niveau %d",
+    "Score %d   Niveau %d"
+  ],
+  "Final score %d": [
+    "Son skor %d",
+    "Puntos %d",
+    "Eindscore %d",
+    "Score final %d"
+  ],
+  "Final score %d   Bots left %d": [
+    "Skor %d   Bot %d",
+    "Puntos %d   Bots %d",
+    "Score %d   Bots %d",
+    "Score %d   Bots %d"
+  ],
+  "Enter: play again": [
+    "Enter: tekrar oyna",
+    "Enter: jugar de nuevo",
+    "Enter: opnieuw spelen",
+    "Enter : rejouer"
+  ],
+  "Score %d": [
+    "Skor %d",
+    "Puntos %d",
+    "Score %d",
+    "Score %d"
+  ],
+  "Lines %d": [
+    "Satır %d",
+    "Filas %d",
+    "Rijen %d",
+    "Lignes %d"
+  ],
+  "Level %d": [
+    "Seviye %d",
+    "Nivel %d",
+    "Niveau %d",
+    "Niveau %d"
+  ],
+  "Next": [
+    "Sonraki",
+    "Siguiente",
+    "Volgende",
+    "Suivant"
+  ],
+  "Pause: Space   Leave: Q / Esc   Exit: Ctrl+C": [
+    "Duraklat: Space  Geri: Q / Esc  Çık: Ctrl+C",
+    "Pausa: Space  Volver: Q/Esc  Salir: Ctrl+C",
+    "Pauze: Space  Terug: Q/Esc  Stop: Ctrl+C",
+    "Pause : Space  Retour : Q/Esc  Quitter : Ctrl+C"
+  ],
+  "Power  -- ": [
+    "Güç  -- ",
+    "Poder  -- ",
+    "Power  -- ",
+    "Bonus  -- "
+  ],
+  "Power %4.1fs": [
+    "Güç %4.1fs",
+    "Poder %4.1fs",
+    "Power %4.1fs",
+    "Bonus %4.1fs"
+  ],
+  "MAZE CHASE   Score %-6d Lives %d   %s   Left %-4d %s": [
+    "MAZE CHASE   Skor %-6d Can %d   %s   Kalan %-4d %s",
+    "MAZE CHASE   Puntos %-6d Vidas %d   %s   Faltan %-4d %s",
+    "MAZE CHASE   Score %-6d Levens %d   %s   Nog %-4d %s",
+    "MAZE CHASE   Score %-6d Vies %d   %s   Reste %-4d %s"
+  ],
+  "@@ you   C1-C4 chasers   c vulnerable   ~ harmless   () power": [
+    "@@ sen   C1-C4 takipçi   c savunmasız   ~ zararsız   () güç",
+    "@@ tú   C1-C4 perseguidores   c vulnerable   ~ seguro   () poder",
+    "@@ jij   C1-C4 jagers   c kwetsbaar   ~ veilig   () power",
+    "@@ toi   C1-C4 chasseurs   c vulnérable   ~ inoffensif   () bonus"
+  ],
+  "ready": [
+    "hazır",
+    "lista",
+    "klaar",
+    "prête"
+  ],
+  "armed": [
+    "kurulu",
+    "activa",
+    "actief",
+    "armée"
+  ],
+  "BLAST GRID   Score %-5d Bots left %d   Bomb %s   %s": [
+    "BLAST GRID   Skor %-5d Bot %d   Bomba %s   %s",
+    "BLAST GRID   Puntos %-5d Bots %d   Bomba %s   %s",
+    "BLAST GRID   Score %-5d Bots %d   Bom %s   %s",
+    "BLAST GRID   Score %-5d Bots %d   Bombe %s   %s"
+  ],
+  "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C": [
+    "Hareket: ok/WASD  Bomba: Z  Duraklat: Space  Geri: Q/Esc  Çık: Ctrl+C",
+    "Mover: flechas/WASD  Bomba: Z  Pausa: Space  Volver: Q/Esc  Salir: Ctrl+C",
+    "Beweeg: pijlen/WASD  Bom: Z  Pauze: Space  Terug: Q/Esc  Stop: Ctrl+C",
+    "Bouger : flèches/WASD  Bombe : Z  Pause : Space  Retour : Q/Esc  Ctrl+C : fin"
+  ],
+  "@@ you   B1-B3 bots   () bomb   ** flame   [] crate   ## wall": [
+    "@@ sen   B1-B3 bot   () bomba   ** alev   [] sandık   ## duvar",
+    "@@ tú   B1-B3 bots   () bomba   ** fuego   [] caja   ## muro",
+    "@@ jij   B1-B3 bots   () bom   ** vuur   [] kist   ## muur",
+    "@@ toi   B1-B3 bots   () bombe   ** feu   [] caisse   ## mur"
+  ],
+  "DEVCADE >_  terminal core diagnostic (M1)": [
+    "DEVCADE >_  terminal tanılama",
+    "DEVCADE >_  diagnóstico de terminal",
+    "DEVCADE >_  terminaltest",
+    "DEVCADE >_  diagnostic du terminal"
+  ],
+  "Position %2d,%-2d  Heading %-5s  Screen %dx%d": [
+    "Konum %2d,%-2d  Yön %-5s  Ekran %dx%d",
+    "Posición %2d,%-2d  Rumbo %-5s  Pantalla %dx%d",
+    "Positie %2d,%-2d  Richting %-5s  Scherm %dx%d",
+    "Position %2d,%-2d  Sens %-5s  Écran %dx%d"
+  ],
+  "Terminal diagnostic: checks input, timing, resize and terminal restore.": [
+    "Terminal tanılama: giriş, zamanlama, boyut ve terminal geri yükleme.",
+    "Diagnóstico: entrada, tiempo, tamaño y restauración del terminal.",
+    "Terminaltest: invoer, timing, grootte en herstel van de terminal.",
+    "Diagnostic : saisie, temps, taille et restauration du terminal."
+  ],
+  "right": [
+    "sağ",
+    "derecha",
+    "rechts",
+    "droite"
+  ],
+  "left": [
+    "sol",
+    "izquierda",
+    "links",
+    "gauche"
+  ],
+  "up": [
+    "yukarı",
+    "arriba",
+    "omhoog",
+    "haut"
+  ],
+  "down": [
+    "aşağı",
+    "abajo",
+    "omlaag",
+    "bas"
+  ],
+  "none": [
+    "yok",
+    "ninguno",
+    "geen",
+    "aucun"
+  ],
+  " Up/Down: select  Enter: open  O: settings  D: diagnostic  Q / Esc: quit": [
+    " Yukarı/Aşağı: seç  Enter: aç  O: ayarlar  D: tanılama  Q / Esc: çık",
+    " Arriba/Abajo: elegir  Enter: abrir  O: ajustes  D: diagnóstico  Q/Esc: salir",
+    " Omhoog/Omlaag: kies  Enter: open  O: instellingen  D: test  Q/Esc: stop",
+    " Haut/Bas : choisir  Enter : ouvrir  O : réglages  D : test  Q/Esc : quitter"
+  ],
+  "Score  %d": [
+    "Skor %d",
+    "Puntos %d",
+    "Score %d",
+    "Score %d"
+  ],
+  "Lines  %d": [
+    "Satır %d",
+    "Filas %d",
+    "Rijen %d",
+    "Lignes %d"
+  ],
+  "Level  %d": [
+    "Seviye %d",
+    "Nivel %d",
+    "Niveau %d",
+    "Niveau %d"
+  ],
+  "Left / Right   move": [
+    "Sol / Sağ     hareket",
+    "Izq. / Der.   mover",
+    "Links/Rechts  bewegen",
+    "Gauche/Droite bouger"
+  ],
+  "Up / Z         rotate cw / ccw": [
+    "Yukarı / Z    sağa/sola döndür",
+    "Arriba / Z    girar der./izq.",
+    "Omhoog / Z    rechts/links draaien",
+    "Haut / Z      tourner droite/gauche"
+  ],
+  "Down           soft drop": [
+    "Aşağı         yavaş düşür",
+    "Abajo         bajar",
+    "Omlaag        zacht dalen",
+    "Bas           descendre"
+  ],
+  "Enter          hard drop": [
+    "Enter         hızlı düşür",
+    "Enter         caída rápida",
+    "Enter         snel dalen",
+    "Enter         chute directe"
+  ],
+  "Lines %d   Level %d": [
+    "Satır %d   Seviye %d",
+    "Filas %d   Nivel %d",
+    "Rijen %d   Niveau %d",
+    "Lignes %d   Niveau %d"
+  ],
+  "Piece <>   Landing ::   Stack []": [
+    "Parça <>  İniş ::  Yığın []",
+    "Pieza <>  Caída ::  Pila []",
+    "Blok <>  Landing ::  Stapel []",
+    "Pièce <>  Chute ::  Pile []"
+  ],
+  " Up/Down: scroll  R: refresh  Q / Esc: back": [
+    " Yukarı/Aşağı: kaydır  R: yenile  Q / Esc: geri",
+    " Arriba/Abajo: desplazar  R: actualizar  Q / Esc: volver",
+    " Omhoog/Omlaag: scroll  R: vernieuwen  Q / Esc: terug",
+    " Haut/Bas : défiler  R : actualiser  Q / Esc : retour"
+  ],
+  " Enter: save   Backspace: erase   Esc: cancel": [
+    " Enter: kaydet   Backspace: sil   Esc: iptal",
+    " Enter: guardar   Backspace: borrar   Esc: cancelar",
+    " Enter: opslaan   Backspace: wissen   Esc: annuleren",
+    " Enter : enregistrer   Backspace : effacer   Esc : annuler"
+  ],
+  " Enter: save and share   Backspace: erase   Esc: cancel": [
+    " Enter: kaydet ve paylaş   Backspace: sil   Esc: iptal",
+    " Enter: guardar y compartir   Backspace: borrar   Esc: cancelar",
+    " Enter: opslaan en delen   Backspace: wissen   Esc: annuleren",
+    " Enter : enregistrer et partager   Backspace : effacer   Esc : annuler"
+  ],
+  "Sharing is on: your alias and saved bests will be published.": [
+    "Paylaşım açık: adın ve kayıtlı rekorların yayınlanacak.",
+    "Compartir activo: se publicarán tu nombre y récords guardados.",
+    "Delen staat aan: je naam en opgeslagen records worden gepubliceerd.",
+    "Partage activé : ton pseudo et tes records seront publiés."
+  ]
+}

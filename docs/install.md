@@ -198,3 +198,13 @@ The binaries are **not code-signed and not notarized**.
 Delete the binary: `rm ~/.local/bin/devcade` on macOS/Linux, or the
 `%LOCALAPPDATA%\Programs\devcade` folder on Windows (and its `PATH` entry if
 you added one). DevCade stores no settings or save files.
+
+## First launch and rankings
+
+The first run asks for a username; Esc continues as guest. Pick a game, then
+New game or Leaderboard. Settings (O) offers five languages, three palettes
+and opt-in global score sharing. English and black/white are the defaults.
+Personal bests are saved on the device; global rankings need the shared HTTPS
+service embedded by the release build. See [settings](settings.md) and
+[leaderboard deployment](leaderboard.md). Uninstalling the binary leaves the
+profile under the OS configuration directory; back it up to retain identity.

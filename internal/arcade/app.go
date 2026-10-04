@@ -1,162 +1,345 @@
 package arcade
 
 import (
+	"context"
 	"fmt"
-	"strings"
-	"time"
-
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/leaderboard"
+	"github.com/cagridursun/devcade/internal/profile"
+	"github.com/cagridursun/devcade/internal/ui"
+	"sync"
+	"time"
 )
 
-// Minimum screen size for the menu, matching the M1 core.
 const (
 	MenuWidth  = 80
 	MenuHeight = 24
 )
+const menuFooterPlay = " Up/Down: select  Enter: open  O: settings  D: diagnostic  Q / Esc: quit"
+const menuFooterInfo = menuFooterPlay
+const activityFooter = " Q / Esc: back to game menu   Ctrl+C: quit DevCade"
+const TwitterURL = "https://x.com/c__dursun"
 
-// Footers name only actions that work in the current context: Enter offers
-// to play only when the highlighted game is playable.
+type screen uint8
+
 const (
-	menuFooterPlay = " Up/Down or W/S: select   Enter: play   D: diagnostic   Q / Esc: quit"
-	menuFooterInfo = " Up/Down or W/S: select   Enter: details   D: diagnostic   Q / Esc: quit"
-	activityFooter = " Q / Esc: back to menu   Ctrl+C: quit DevCade"
+	mainMenu screen = iota
+	gameMenu
+	settings
+	username
+	scores
 )
 
-// App is the interactive arcade: a menu over the catalog and, at most, one
-// active game or tool. It has two states, menu (active == nil) and active.
-// Leaving an activity discards it; the next launch builds a fresh one.
+type Options struct {
+	Profile     profile.Profile
+	Save        func(profile.Profile) error
+	Client      *leaderboard.Client
+	Onboard     bool
+	InitialGame string
+	Notice      string
+	OpenURL     func(context.Context, string) error
+}
+type result struct {
+	game, name   string
+	board        leaderboard.Board
+	registration *leaderboard.Registration
+	err          error
+}
+
+// The terminal goroutine owns App. Workers only receive immutable snapshots.
 type App struct {
-	catalog    Catalog
-	diagnostic func() engine.Game
-
-	width, height int
-	selected      int
-	notice        string         // feedback for the last menu action
-	active        *engine.Engine // nil while the menu is shown
+	catalog                 Catalog
+	diagnostic              func() engine.Game
+	width, height, selected int
+	notice                  string
+	active                  *engine.Engine
+	game                    engine.Game
+	state                   screen
+	activity                string
+	choice, setting, scroll int
+	profile                 profile.Profile
+	save                    func(profile.Profile) error
+	client                  *leaderboard.Client
+	ctx                     context.Context
+	cancel                  context.CancelFunc
+	wg                      sync.WaitGroup
+	results                 chan result
+	busy, pending, opening  bool
+	boards                  map[string]leaderboard.Board
+	networkNotice           string
+	nameInput               string
+	returnTo                screen
+	shareAfterName          bool
+	openURL                 func(context.Context, string) error
+	social                  chan error
 }
 
-// NewApp returns an arcade that starts in the menu. diagnostic builds the
-// terminal diagnostic launched with D.
-func NewApp(catalog Catalog, diagnostic func() engine.Game) *App {
-	return &App{catalog: catalog, diagnostic: diagnostic}
+func NewApp(c Catalog, d func() engine.Game) *App {
+	return NewAppWithOptions(c, d, Options{Profile: profile.Default()})
 }
-
+func NewAppWithOptions(c Catalog, d func() engine.Game, o Options) *App {
+	ctx, cancel := context.WithCancel(context.Background())
+	p := o.Profile
+	if p.Language == "" {
+		p = profile.Default()
+	}
+	p = p.Clone()
+	a := &App{catalog: c, diagnostic: d, profile: p, save: o.Save, client: o.Client, notice: o.Notice, ctx: ctx, cancel: cancel, results: make(chan result, 1), social: make(chan error, 1), boards: map[string]leaderboard.Board{}, openURL: o.OpenURL}
+	if o.InitialGame != "" {
+		for i := range c.Len() {
+			if c.Entry(i).ID == o.InitialGame {
+				a.selected = i
+				a.state = gameMenu
+			}
+		}
+	}
+	if o.Onboard && p.Username == "" {
+		a.returnTo = a.state
+		a.state = username
+	}
+	return a
+}
+func (a *App) Close()          { a.cancel(); a.wg.Wait() }
+func (a *App) Theme() string   { return a.profile.Theme }
 func (a *App) menuReady() bool { return a.width >= MenuWidth && a.height >= MenuHeight }
-
-// Resize records the screen size and forwards it to the active engine. The
-// menu selection is kept across any size change.
-func (a *App) Resize(width, height int) {
-	a.width, a.height = max(width, 0), max(height, 0)
+func (a *App) Resize(w, h int) {
+	a.width, a.height = max(w, 0), max(h, 0)
 	if a.active != nil {
 		a.active.Resize(a.width, a.height)
 	}
 }
-
-// Input applies one key press and reports whether DevCade should exit.
-// Ctrl+C exits from anywhere; Q/Esc leave the activity, or exit from the menu.
-func (a *App) Input(ev engine.Event) (exit bool) {
+func (a *App) persist() bool {
+	if a.save != nil {
+		if err := a.save(a.profile.Clone()); err != nil {
+			a.notice = "Profile could not be saved. Changes apply only to this session."
+			return false
+		}
+	}
+	return true
+}
+func (a *App) observeScore() {
+	f, ok := a.game.(engine.Finisher)
+	if !ok || !f.Finished() {
+		return
+	}
+	g, ok := a.game.(interface{ Score() int })
+	if !ok || !profile.ValidGame(a.activity) {
+		return
+	}
+	if a.profile.Record(a.activity, g.Score()) {
+		a.persist()
+		if a.profile.Share {
+			a.sync(a.activity)
+		}
+	}
+}
+func (a *App) Input(ev engine.Event) bool {
+	a.poll()
 	if ev.Key == engine.KeyExit {
+		a.observeScore()
 		return true
 	}
 	if a.active != nil {
 		if ev.Key == engine.KeyBack {
-			a.active = nil // back to the menu; the game is discarded
+			a.observeScore()
+			a.active = nil
+			a.game = nil
+			if a.activity == "diagnostic" {
+				a.state = mainMenu
+			} else {
+				a.state = gameMenu
+			}
+			a.choice = 0
 			return false
 		}
 		a.active.Input(ev)
+		a.observeScore()
 		return false
+	}
+	if a.state == username {
+		return a.nameEvent(ev)
 	}
 	if ev.Key == engine.KeyBack {
-		return true
-	}
-	if !a.menuReady() {
-		return false // the menu is not visible: ignore navigation
-	}
-	if ev.Char == 'd' {
-		a.launch(a.diagnostic)
+		switch a.state {
+		case mainMenu:
+			return true
+		case scores:
+			a.state = gameMenu
+		case gameMenu, settings:
+			a.state = mainMenu
+		}
+		a.notice = ""
 		return false
 	}
-	n := a.catalog.Len()
-	switch ev.Key {
-	case engine.KeyUp:
-		a.selected = (a.selected + n - 1) % n
-		a.notice = ""
-	case engine.KeyDown:
-		a.selected = (a.selected + 1) % n
-		a.notice = ""
-	case engine.KeySelect:
-		e := a.catalog.Entry(a.selected)
-		if !e.Available() {
-			a.notice = fmt.Sprintf("%s is not playable yet: it is planned for %s.", e.Name, e.Milestone)
+	if !a.menuReady() {
+		return false
+	}
+	switch a.state {
+	case mainMenu:
+		if ev.Char == 'd' {
+			a.activity = "diagnostic"
+			a.launch(a.diagnostic)
 			return false
 		}
-		a.launch(e.New)
+		if ev.Char == 'o' {
+			a.state = settings
+			a.setting = 0
+			return false
+		}
+		n := a.catalog.Len() + 2
+		switch ev.Key {
+		case engine.KeyUp:
+			a.selected = (a.selected + n - 1) % n
+			a.notice = ""
+		case engine.KeyDown:
+			a.selected = (a.selected + 1) % n
+			a.notice = ""
+		case engine.KeySelect:
+			if a.selected == a.catalog.Len() {
+				a.state = settings
+				a.setting = 0
+			} else if a.selected == a.catalog.Len()+1 {
+				a.openCreator()
+			} else if e := a.entry(); e.Available() {
+				a.state = gameMenu
+				a.choice = 0
+				a.notice = ""
+			} else {
+				a.notice = fmt.Sprintf("%s is not playable yet: it is planned for %s.", e.Name, e.Milestone)
+			}
+		}
+	case gameMenu:
+		if ev.Key == engine.KeyUp || ev.Key == engine.KeyDown {
+			a.choice = 1 - a.choice
+		}
+		if ev.Key == engine.KeySelect {
+			if a.choice == 0 {
+				a.activity = a.entry().ID
+				a.launch(a.entry().New)
+			} else {
+				a.state = scores
+				a.scroll = 0
+				a.sync(a.entry().ID)
+			}
+		}
+	case settings:
+		a.settingsInput(ev)
+	case scores:
+		if ev.Char == 'r' {
+			if a.profile.Share {
+				a.sync(a.entry().ID)
+			}
+		}
+		if ev.Key == engine.KeyDown {
+			a.scroll = min(a.scroll+1, max(0, len(a.boards[a.entry().ID].Rows)-12))
+		}
+		if ev.Key == engine.KeyUp {
+			a.scroll = max(0, a.scroll-1)
+		}
 	}
 	return false
 }
-
-// launch starts a fresh game in a new engine sized to the screen. The
-// engine drops its first frame, so no menu time reaches the game.
-func (a *App) launch(newGame func() engine.Game) {
-	a.notice = ""
-	a.active = engine.New(newGame())
-	a.active.Resize(a.width, a.height)
-}
-
-// Advance forwards elapsed time to the active game only.
-func (a *App) Advance(dt time.Duration) {
-	if a.active != nil {
-		a.active.Advance(dt)
-	}
-}
-
-// Render draws the active game with a navigation footer, or the menu.
-func (a *App) Render(c engine.Canvas) {
-	if a.active != nil {
-		a.active.Render(c)
-		if a.active.Ready() {
-			w, h := c.Size()
-			c.Text(0, h-1, strings.Repeat(" ", w), engine.Default)
-			c.Text(0, h-1, activityFooter, engine.Accent)
-		}
-		return
+func (a *App) entry() Entry { return a.catalog.Entry(min(a.selected, a.catalog.Len()-1)) }
+func (a *App) nameEvent(ev engine.Event) bool {
+	if ev.Key == engine.KeyBack && ev.Char == 0 {
+		a.nameInput = ""
+		a.shareAfterName = false
+		a.state = a.returnTo
+		return false
 	}
 	if !a.menuReady() {
-		engine.RenderTooSmall(c, MenuWidth, MenuHeight, a.width, a.height)
+		return false
+	}
+	switch {
+	case ev.Char > 0:
+		if len(a.nameInput) < 20 && ((ev.Char >= 'a' && ev.Char <= 'z') || (ev.Char >= '0' && ev.Char <= '9') || ev.Char == '_') {
+			a.nameInput += string(ev.Char)
+		}
+	case ev.Key == engine.KeyErase:
+		if len(a.nameInput) > 0 {
+			a.nameInput = a.nameInput[:len(a.nameInput)-1]
+		}
+	case ev.Key == engine.KeySelect:
+		if profile.ValidUsername(a.nameInput) {
+			if a.profile.Username != a.nameInput {
+				a.profile.Identity = profile.Identity{}
+			}
+			a.profile.Username = a.nameInput
+			if a.shareAfterName {
+				a.profile.Share = true
+			}
+			a.shareAfterName = false
+			a.state = a.returnTo
+			a.notice = ""
+			a.persist()
+			if a.profile.Share {
+				a.sync(a.entry().ID)
+			}
+		}
+	}
+	return false
+}
+func (a *App) settingsInput(ev engine.Event) {
+	if ev.Key == engine.KeyUp {
+		a.setting = (a.setting + 3) % 4
 		return
 	}
-	a.renderMenu(c)
-}
-
-func (a *App) renderMenu(c engine.Canvas) {
-	w, h := c.Size()
-	c.Text(1, 0, "DEVCADE >_  terminal arcade", engine.Accent)
-	c.Text(1, 1, "Quick games for the wait while builds, tests or AI agents run.", engine.Default)
-	c.Text(0, 2, strings.Repeat("-", w), engine.Default)
-
-	c.Text(1, 4, "GAMES", engine.Accent)
-	row := 5
-	for i := range a.catalog.Len() {
-		e := a.catalog.Entry(i)
-		marker, color := "   ", engine.Default
-		if i == a.selected {
-			marker, color = " > ", engine.Player
+	if ev.Key == engine.KeyDown {
+		a.setting = (a.setting + 1) % 4
+		return
+	}
+	if ev.Key != engine.KeyLeft && ev.Key != engine.KeyRight && ev.Key != engine.KeySelect {
+		return
+	}
+	step := 1
+	if ev.Key == engine.KeyLeft {
+		step = -1
+	}
+	cycle := func(value string, list []string) string {
+		index := 0
+		for i, s := range list {
+			if s == value {
+				index = i
+			}
 		}
-		c.Text(1, row, fmt.Sprintf("%s%-12s %s", marker, e.Name, e.Status()), color)
-		row++
+		return list[(index+step+len(list))%len(list)]
 	}
-	sel := a.catalog.Entry(a.selected)
-	c.Text(4, row+1, sel.Description, engine.Default)
-	if a.notice != "" {
-		c.Text(4, row+2, a.notice, engine.Warning)
+	a.notice = ""
+	switch a.setting {
+	case 0:
+		a.profile.Language = cycle(a.profile.Language, ui.Languages)
+	case 1:
+		a.profile.Theme = cycle(a.profile.Theme, ui.Themes)
+	case 2:
+		a.returnTo = settings
+		a.state = username
+		a.nameInput = a.profile.Username
+		return
+	case 3:
+		if a.profile.Username == "" {
+			a.returnTo = settings
+			a.state = username
+			a.nameInput = ""
+			a.shareAfterName = true
+			return
+		}
+		a.profile.Share = !a.profile.Share
 	}
-
-	c.Text(1, row+4, "TOOLS", engine.Accent)
-	c.Text(1, row+5, "   D  Terminal diagnostic: moving @ to check input, timing and resize", engine.Default)
-
-	footer := menuFooterInfo
-	if sel.Available() {
-		footer = menuFooterPlay
+	a.persist()
+	if a.setting == 3 && a.profile.Share {
+		a.sync(a.entry().ID)
 	}
-	c.Text(0, h-1, footer, engine.Accent)
+}
+func (a *App) launch(newGame func() engine.Game) {
+	a.notice = ""
+	a.game = newGame()
+	a.active = engine.New(a.game)
+	a.active.Resize(a.width, a.height)
+}
+func (a *App) Advance(dt time.Duration) {
+	a.poll()
+	if a.active != nil {
+		a.active.Advance(dt)
+		a.observeScore()
+	}
 }

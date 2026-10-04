@@ -26,7 +26,7 @@ const usage = `DevCade - a terminal arcade for developers.
 Usage:
   devcade                 open the arcade menu
   devcade list            list the games and whether they are playable
-  devcade <game>          start a game directly by its ID (see "devcade list")
+  devcade <game>          open a game's New game / Leaderboard menu
   devcade --diagnostic    start the terminal diagnostic directly
   devcade --help          show this help
   devcade --version       show the version
@@ -38,14 +38,15 @@ at least 80x24.
 
 Menu:
   Up/Down or W/S          select a game
-  Enter                   play the selected game
+  Enter                   open the game menu or highlighted item
+  O                       open Settings (language, palette, username, sharing)
   D                       open the terminal diagnostic
   Q, Esc, Ctrl+C          quit
 
 In every game:
   Space                   pause / resume
   Enter                   play again after game over or a win
-  Q, Esc                  back to the menu (quit when started directly)
+  Q, Esc                  back to the game menu, then main menu
   Ctrl+C                  quit DevCade
 
 Snake:       arrows / WASD turn (up to two turns are queued)
@@ -112,9 +113,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 	var newProgram func() terminal.Program
 	switch {
 	case *diagnostic:
-		newProgram = func() terminal.Program { return engine.New(newDiagnostic()) }
+		newProgram = newConfiguredDiagnostic
 	case len(rest) == 0:
-		newProgram = func() terminal.Program { return arcade.NewApp(catalog, newDiagnostic) }
+		newProgram = func() terminal.Program { return newArcade("") }
 	case rest[0] == "list":
 		printList(stdout)
 		return exitOK
@@ -128,8 +129,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 				"Run 'devcade list' to see which games are playable.\n", entry.Name, entry.Milestone)
 			return exitUsage
 		}
-		// Started directly, Q/Esc end the game and DevCade with it.
-		newProgram = func() terminal.Program { return engine.New(entry.New()) }
+		newProgram = func() terminal.Program { return newArcade(entry.ID) }
 	}
 
 	if err := requireTerminal(); err != nil {
@@ -138,7 +138,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	ctx, stop := withSignals(context.Background())
 	defer stop()
-	err := play(ctx, newProgram())
+	program := newProgram()
+	if closer, ok := program.(interface{ Close() }); ok {
+		defer closer.Close()
+	}
+	err := play(ctx, program)
 	// The terminal is restored by now, so diagnostics are safe to print.
 	var panicErr *terminal.PanicError
 	switch {

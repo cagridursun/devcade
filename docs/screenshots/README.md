@@ -1,10 +1,13 @@
 # Terminal captures
 
 These PNGs show actual output from the DevCade Linux amd64 binary, running
-in an 80×24 PTY with `TERM=xterm-256color`, 256-color output and `NO_COLOR`
-unset. Captured on 2026-10-04 from the locally built `1.0.0-rc.1` archive,
+in an 80×24 PTY with `TERM=xterm-256color`, 24-bit color output (`TCELL_TRUECOLOR=enable`) and `NO_COLOR`
+unset. Game captures use the Colorful palette; the Settings image shows
+Turkish UI with Midnight. Captured on 2026-10-04 from the locally built `1.0.0-rc.1` archive,
 installed using the bundled installer. Normal game
-inputs move the player, hard-drop pieces or place bombs before capture.
+inputs confirm New game, move the player, hard-drop pieces or place bombs
+before capture. The Settings session changes language and palette through
+normal key input; both choices are saved to the isolated capture profile.
 
 The ANSI output was decoded by pyte and rasterized with Pillow and the local
 DejaVu Sans Mono font. Colors use a conventional dark terminal palette;

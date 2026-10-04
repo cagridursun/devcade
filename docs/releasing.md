@@ -18,6 +18,7 @@ go run ./tools/release -version 1.0.0-rc.1 -out dist/release
 | `-version` | (required) | `MAJOR.MINOR.PATCH[-PRERELEASE]`, no leading `v`, no `+build` metadata |
 | `-out` | `dist/release` | Output directory. Must be below `<root>/dist` (git-ignored); it is emptied first |
 | `-root` | `.` | Repository root (must be the `github.com/cagridursun/devcade` module) |
+| `-leaderboard-url` | (empty) | Public HTTPS score API embedded in all six clients; required for publishing |
 | `-base-url` | `https://github.com/cagridursun/devcade/releases/download/v{version}` | URL prefix written into the manifests; `{version}` is substituted; https only |
 | `-manifests-only` | `false` | Skip building; regenerate the manifests from an existing `<out>/SHA256SUMS` |
 | `-go` | `go` | Go command to build with |
@@ -119,13 +120,17 @@ reference build.
 
 ## Publish the first release
 
+Deploy the shared [leaderboard service](leaderboard.md) and obtain its public
+HTTPS address first. The workflow refuses publication without a healthy
+`leaderboard_url`; preparation builds may leave it empty for offline play.
+
 1. Merge the release-preparation PR after both CI and Release candidate checks
    are green. No tag or release is created by merging.
 2. Make `cagridursun/devcade` public using GitHub repository settings. Check
    that the README screenshots and source can be opened signed out.
 3. Run **Release candidate** on `main`, version `1.0.0-rc.1`, with
-   **publish checked**. This rebuilds and verifies all artifacts before the
-   publication job can run.
+   **publish checked** and `leaderboard_url` set to the shared service. This rebuilds and verifies all artifacts before the
+   publication job can run, and smoke-tests the leaderboard Docker image.
 4. The publish job refuses a private repository, a branch other than main,
    missing versioned release notes, an existing release or an existing tag.
    It creates `v1.0.0-rc.1` at the exact workflow commit and uploads the six

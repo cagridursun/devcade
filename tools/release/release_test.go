@@ -44,6 +44,26 @@ func TestValidateVersion(t *testing.T) {
 	}
 }
 
+func TestLeaderboardURLIsValidatedAndEmbeddedWithoutAmbientChanges(t *testing.T) {
+	for _, u := range []string{"", "https://scores.example", "https://scores.example/api"} {
+		if err := validateLeaderboardURL(u); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, u := range []string{"http://scores.example", "https://user:secret@scores.example", "https://scores.example?token=secret", "https://scores.example#fragment", "https://scores.example/ bad", "https://scores.example/\"bad"} {
+		if validateLeaderboardURL(u) == nil {
+			t.Error("unsafe endpoint accepted")
+		}
+	}
+	args := strings.Join(buildArgsWithLeaderboard("1.0.0-rc.1", "out", "https://scores.example"), " ")
+	if !strings.Contains(args, "-X main.leaderboardURL=https://scores.example") {
+		t.Fatal(args)
+	}
+	if strings.Contains(strings.Join(buildArgs("1.0.0", "out"), " "), "leaderboardURL") {
+		t.Fatal("default build gained an endpoint")
+	}
+}
+
 func TestTargetsAndArchiveNames(t *testing.T) {
 	want := []string{
 		"devcade_1.0.0-rc.1_darwin_amd64.tar.gz",

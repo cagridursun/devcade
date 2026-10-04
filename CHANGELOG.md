@@ -4,6 +4,14 @@
 
 First four-game release candidate.
 
+### Settings, profile and community rankings
+- Five UI languages; English is the default. Three palettes; black/white is the default.
+- Username onboarding with guest play and opt-in anonymous score sharing.
+- Game-specific New game / Leaderboard submenus, persistent completed-run bests.
+- Shared HTTP leaderboard server/client with max-only per-game updates and own rank.
+- Creator attribution/profile launcher and new-games notice in the main menu.
+- Public HTTPS service deployment is a launch prerequisite; container/proxy files are included.
+
 ### Games
 - **Snake**: fixed 36×18 board, two-turn input queue, speed rises every five
   foods, wins on a full board.

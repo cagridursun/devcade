@@ -98,8 +98,17 @@ func run(ctx context.Context, b backend, app Program, frames <-chan time.Time) (
 	width, height := screen.Size()
 	app.Resize(width, height)
 	draw := func(sync bool) {
-		screen.Clear() // logical buffer only
-		app.Render(canvas{screen: screen, width: width, height: height})
+		theme := "mono"
+		if provider, ok := app.(interface{ Theme() string }); ok {
+			theme = provider.Theme()
+		}
+		if _, noColor := os.LookupEnv("NO_COLOR"); noColor {
+			theme = "mono"
+		}
+		baseStyle := styleOfTheme(theme, engine.Default)
+		screen.SetStyle(baseStyle)
+		screen.Fill(' ', baseStyle) // explicit palette for blank cells too
+		app.Render(canvas{screen: screen, width: width, height: height, theme: theme})
 		if sync {
 			screen.Sync() // full repaint, only after resize
 		} else {

@@ -118,3 +118,14 @@ Remaining: merge release preparation after green checks, make repo public,
 run the publishing workflow, verify anonymous public downloads, collect
 remaining human macOS/Linux acceptance. Homebrew/Scoop repositories and
 signing are deferred; cross-builds are not manual platform acceptance.
+
+## Settings and global rankings follow-up (2026-10-04)
+
+PR #5 now also includes five languages, three palettes, username/guest
+onboarding, New game/Leaderboard submenus, atomic local bests and an anonymous
+HTTP global score server/client. The server has native tests, persistent
+snapshots, max-only updates, public own-rank lookup and single-writer OS locks.
+Docker/Caddy deployment files and a release endpoint input are included.
+Publication now requires a deployed healthy public HTTPS score endpoint; no
+public service has been provisioned. See docs/settings.md and docs/leaderboard.md.
+The existing Windows gameplay report predates this follow-up.

@@ -42,7 +42,7 @@ func TestKeyNormalization(t *testing.T) {
 		{tcell.KeyRune, 'z', 0, ev(engine.KeyAction, 'z')},
 		{tcell.KeyRune, 'Z', tcell.ModShift, ev(engine.KeyAction, 'z')},
 		{tcell.KeyRune, 'z', tcell.ModCtrl, ev(engine.KeyNone, 0)},
-		{tcell.KeyRune, '7', 0, ev(engine.KeyNone, 0)},
+		{tcell.KeyRune, '7', 0, ev(engine.KeyNone, '7')},
 		{tcell.KeyRune, 'é', 0, ev(engine.KeyNone, 0)},
 		{tcell.KeyF1, 0, 0, ev(engine.KeyNone, 0)},
 	}
@@ -63,14 +63,14 @@ func TestCanvasClipsAndKeepsOneCellPerRune(t *testing.T) {
 	s.SetSize(10, 2)
 	c := canvas{screen: s, width: 10, height: 2}
 	c.Text(-2, 0, "xyAB", engine.Default)    // clipped on the left
-	c.Text(4, 0, "é界z", engine.Accent)       // non-ASCII replaced
+	c.Text(4, 0, "é界z", engine.Accent)       // Latin supported, wide rune replaced
 	c.Text(8, 1, "long text", engine.Player) // clipped on the right
 	c.Cell(5, 5, '#', engine.Default)        // off-grid: ignored
 	s.Show()
-	want := []string{"AB  ??z   ", "        lo"}
+	want := []string{"AB  é?z   ", "        lo"}
 	cells, w, _ := s.GetContents()
 	for y, line := range want {
-		for x, r := range line {
+		for x, r := range []rune(line) {
 			got := string(cells[y*w+x].Bytes)
 			if got == "" {
 				got = " "

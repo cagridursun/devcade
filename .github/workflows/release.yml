@@ -5,6 +5,10 @@ on:
     paths:
       - '.github/workflows/release.yml'
       - 'tools/release/**'
+      - 'cmd/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
       - 'packaging/**'
       - 'LICENSE'
       - 'THIRD_PARTY_NOTICES.txt'
@@ -21,6 +25,10 @@ on:
         description: 'Publish after all checks (main branch, public repo only)'
         default: false
         type: boolean
+      leaderboard_url:
+        description: 'Shared HTTPS leaderboard endpoint (required to publish)'
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -33,6 +41,7 @@ env:
   GO_VERSION: '1.26.8'
   GOFLAGS: -mod=readonly
   VERSION: ${{ inputs.version || '1.0.0-rc.1' }}
+  LEADERBOARD_URL: ${{ inputs.leaderboard_url || '' }}
 
 jobs:
   build:
@@ -56,7 +65,33 @@ jobs:
           go vet ./...
           go test -count=1 -timeout 120s ./...
       - name: Build all six archives
-        run: go run ./tools/release -version "$VERSION" -out dist/release
+        run: go run ./tools/release -version "$VERSION" -leaderboard-url "$LEADERBOARD_URL" -out dist/release
+      - name: Build and smoke-test the leaderboard container
+        run: |
+          docker build -f packaging/leaderboard/Dockerfile -t devcade-leaderboard:test .
+          docker run -d --name devcade-leaderboard-test -p 127.0.0.1:18080:8080 devcade-leaderboard:test
+          trap 'docker logs devcade-leaderboard-test; docker rm -f devcade-leaderboard-test' EXIT
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:18080/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:18080/v1/leaderboards/snake
+          docker stop devcade-leaderboard-test
+          docker start devcade-leaderboard-test
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:18080/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:18080/healthz
+      - name: Require an online leaderboard before publishing
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        run: |
+          test -n "$LEADERBOARD_URL" || { echo 'Deploy the shared leaderboard and supply its HTTPS URL before publishing'; exit 1; }
+          curl --fail --silent --show-error --max-time 10 --proto '=https' "${LEADERBOARD_URL%/}/healthz"
+          for id in snake blockdrop mazechase blastgrid; do
+            curl --fail --silent --show-error --max-time 10 --proto '=https' "${LEADERBOARD_URL%/}/v1/leaderboards/$id" \
+              | python3 -c 'import json,sys; b=json.load(sys.stdin); assert isinstance(b["rows"],list) and len(b["rows"])<=20'
+          done
       - name: Verify checksums and archive permissions
         working-directory: dist/release
         run: |

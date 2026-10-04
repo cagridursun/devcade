@@ -4,7 +4,6 @@
 package probe
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
@@ -86,7 +85,7 @@ func (p *Probe) Render(c engine.Canvas) {
 	w, h := c.Size()
 	c.Text(1, 0, "DEVCADE >_  terminal core diagnostic (M1)", engine.Accent)
 	c.Text(1, 1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
-	c.Text(1, 2, fmt.Sprintf("Position %2d,%-2d  Heading %-5s  Screen %dx%d", p.x, p.y, p.heading(), w, h), engine.Default)
+	c.Text(1, 2, engine.Format(c, "Position %2d,%-2d  Heading %-5s  Screen %dx%d", p.x, p.y, engine.Format(c, p.heading()), w, h), engine.Default)
 
 	// Border around the arena: rows headerRows and h-2, columns 0 and w-1.
 	top, bottom := headerRows, h-2

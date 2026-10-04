@@ -16,6 +16,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -145,14 +146,15 @@ func insideDir(dir, path string) bool {
 }
 
 type config struct {
-	Version       string
-	Root          string // repository root (absolute)
-	Out           string // output directory (absolute)
-	BaseURL       string // resolved, no trailing slash
-	ManifestsOnly bool
-	Go            string // go command
-	MTime         time.Time
-	Log           io.Writer
+	LeaderboardURL string
+	Version        string
+	Root           string // repository root (absolute)
+	Out            string // output directory (absolute)
+	BaseURL        string // resolved, no trailing slash
+	ManifestsOnly  bool
+	Go             string // go command
+	MTime          time.Time
+	Log            io.Writer
 }
 
 func main() {
@@ -168,6 +170,7 @@ func cli(args []string, log io.Writer) error {
 	out := fs.String("out", filepath.Join("dist", "release"), "output directory; must be inside <root>/dist")
 	root := fs.String("root", ".", "repository root")
 	baseURL := fs.String("base-url", defaultBaseURL, "download URL prefix for the generated manifests; {version} is replaced")
+	leaderboardURL := fs.String("leaderboard-url", "", "public HTTPS leaderboard endpoint embedded in all game binaries")
 	manifestsOnly := fs.Bool("manifests-only", false, "skip building; regenerate manifests from <out>/SHA256SUMS")
 	goCmd := fs.String("go", "go", "go command used for building")
 	if err := fs.Parse(args); err != nil {
@@ -180,6 +183,10 @@ func cli(args []string, log io.Writer) error {
 		return err
 	}
 	cfg := config{Version: *version, ManifestsOnly: *manifestsOnly, Go: *goCmd, Log: log}
+	if err := validateLeaderboardURL(*leaderboardURL); err != nil {
+		return err
+	}
+	cfg.LeaderboardURL = strings.TrimRight(*leaderboardURL, "/")
 	var err error
 	if cfg.BaseURL, err = resolveBaseURL(*baseURL, *version); err != nil {
 		return err
@@ -349,7 +356,7 @@ func buildArgs(version, out string) []string {
 }
 
 func goBuild(cfg config, t target, out string) error {
-	cmd := exec.Command(cfg.Go, buildArgs(cfg.Version, out)...)
+	cmd := exec.Command(cfg.Go, buildArgsWithLeaderboard(cfg.Version, out, cfg.LeaderboardURL)...)
 	cmd.Dir = cfg.Root
 	cmd.Env = buildEnv(os.Environ(), t)
 	cmd.Stdout = cfg.Log
@@ -358,6 +365,28 @@ func goBuild(cfg config, t target, out string) error {
 		return fmt.Errorf("go build %s: %w", t, err)
 	}
 	return nil
+}
+
+func validateLeaderboardURL(raw string) error {
+	if raw == "" {
+		return nil
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || strings.ContainsAny(raw, " \t\r\n\"'\\") {
+		return errors.New("leaderboard URL must be public HTTPS without credentials, query, fragment or whitespace")
+	}
+	return nil
+}
+func buildArgsWithLeaderboard(version, out, endpoint string) []string {
+	args := buildArgs(version, out)
+	if endpoint != "" {
+		for i, arg := range args {
+			if strings.HasPrefix(arg, "-ldflags=") {
+				args[i] += " -X main.leaderboardURL=" + endpoint
+			}
+		}
+	}
+	return args
 }
 
 // readText reads a text file with LF line endings, whatever the checkout's

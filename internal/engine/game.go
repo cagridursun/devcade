@@ -6,7 +6,10 @@
 // stdin, write stdout, emit escape sequences or handle process signals.
 package engine
 
-import "time"
+import (
+	"time"
+	"unicode"
+)
 
 // Key is a normalized input action. Terminals usually report key presses and
 // repeats only, so there is deliberately no key-release concept.
@@ -23,6 +26,7 @@ const (
 	KeyBack   // leave the current screen (Q, Escape)
 	KeyExit   // leave the whole application from anywhere (Ctrl+C)
 	KeyAction // the game's primary action (Z): rotate counterclockwise, place a bomb
+	KeyErase  // Backspace in text entry
 )
 
 func (k Key) String() string {
@@ -49,7 +53,8 @@ func (k Key) String() string {
 	return "none"
 }
 
-// Event is one normalized key press. Char is the lower-case ASCII letter that
+// Event is one normalized key press. Char is a lower-case ASCII letter, digit
+// or underscore that
 // was typed, or 0, so menus can bind letters without games depending on raw
 // keys. The same press may carry both, e.g. 'd' is KeyRight with Char 'd'.
 type Event struct {
@@ -71,7 +76,8 @@ const (
 // Canvas is a grid of single-width cells addressed from (0, 0) at the top
 // left. Drawing outside the grid is silently clipped.
 //
-// Cells hold printable ASCII only (0x20-0x7E). Wider or non-printable runes
+// Cells hold ASCII and single-width Latin letters used by the five UI languages.
+// Wider or non-printable runes
 // would break the one-rune-per-cell alignment that games rely on, so
 // implementations replace them with '?' (see Printable).
 type Canvas interface {
@@ -80,10 +86,10 @@ type Canvas interface {
 	Text(x, y int, text string, color Color)
 }
 
-// Printable returns r when it is printable ASCII and '?' otherwise. Canvas
+// Printable accepts ASCII and precomposed Latin letters, otherwise '?'. Canvas
 // implementations use it to enforce the single-cell glyph contract.
 func Printable(r rune) rune {
-	if r < 0x20 || r > 0x7e {
+	if (r < 0x20 || r > 0x7e) && !(r >= 0x00a1 && r <= 0x024f && (unicode.IsLetter(r) || r == '¡' || r == '¿')) {
 		return '?'
 	}
 	return r

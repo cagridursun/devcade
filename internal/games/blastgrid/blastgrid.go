@@ -475,7 +475,8 @@ func (g *Game) Render(c engine.Canvas) {
 	ax := max(0, (w-arenaW)/2)
 	ay := y0 + hudH
 	line := func(y int, s string, color engine.Color) {
-		c.Text(max(0, (w-len(s))/2), y, s, color)
+		s = engine.Format(c, s)
+		c.Text(max(0, (w-len([]rune(s)))/2), y, s, color)
 	}
 
 	status := "PLAYING"
@@ -489,7 +490,7 @@ func (g *Game) Render(c engine.Canvas) {
 	if g.hasBomb(player) {
 		bombState = "armed"
 	}
-	line(y0, fmt.Sprintf("BLAST GRID   Score %-5d Bots left %d   Bomb %s   %s", g.score, g.BotsLeft(), bombState, status), engine.Accent)
+	line(y0, engine.Format(c, "BLAST GRID   Score %-5d Bots left %d   Bomb %s   %s", g.score, g.BotsLeft(), engine.Format(c, bombState), engine.Format(c, status)), engine.Accent)
 	line(y0+1, "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
 
 	cell := func(p point, s string, color engine.Color) {
@@ -519,7 +520,7 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 		glyph, color := "@@", engine.Player
 		if i != player {
-			glyph, color = fmt.Sprintf("B%d", i), engine.Accent
+			glyph, color = engine.Format(c, "B%d", i), engine.Accent
 		}
 		if g.bombAt(a.pos) != nil {
 			glyph = "(" + glyph[1:] // standing on a bomb: "(@" or "(1"
@@ -533,15 +534,15 @@ func (g *Game) Render(c engine.Canvas) {
 		if g.state == won {
 			title = "YOU WIN"
 		}
-		box := []string{"", title, fmt.Sprintf("Final score %d   Bots left %d", g.score, g.BotsLeft()), "Enter: play again", ""}
+		box := []string{"", title, engine.Format(c, "Final score %d   Bots left %d", g.score, g.BotsLeft()), "Enter: play again", ""}
 		top := ay + (Rows-len(box))/2
 		for i, s := range box {
-			c.Text(ax+(arenaW-32)/2, top+i, "  "+center(s, 28)+"  ", engine.Warning)
+			c.Text(ax+(arenaW-32)/2, top+i, "  "+center(engine.Format(c, s), 28)+"  ", engine.Warning)
 		}
 	}
 }
 
 func center(s string, width int) string {
-	pad := max(0, width-len(s))
+	pad := max(0, width-len([]rune(s)))
 	return fmt.Sprintf("%*s%s%*s", pad/2, "", s, pad-pad/2, "")
 }

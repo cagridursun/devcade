@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -116,9 +115,9 @@ func (e *Engine) Render(c Canvas) {
 	}
 	e.game.Render(c)
 	if e.paused {
-		const banner = "[ PAUSED - press Space to resume ]"
+		banner := Format(c, "[ PAUSED - press Space to resume ]")
 		w, h := c.Size()
-		c.Text((w-len(banner))/2, h/2, banner, Warning)
+		c.Text((w-len([]rune(banner)))/2, h/2, banner, Warning)
 	}
 }
 
@@ -126,6 +125,6 @@ func (e *Engine) Render(c Canvas) {
 // Lines are short so they stay readable when clipped on a tiny terminal.
 func RenderTooSmall(c Canvas, minW, minH, width, height int) {
 	c.Text(0, 0, "DevCade: window too small", Warning)
-	c.Text(0, 1, fmt.Sprintf("Need %dx%d, have %dx%d", minW, minH, width, height), Default)
+	c.Text(0, 1, Format(c, "Need %dx%d, have %dx%d", minW, minH, width, height), Default)
 	c.Text(0, 2, "Enlarge it, or press Q", Default)
 }

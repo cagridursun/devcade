@@ -202,3 +202,12 @@ with steps to reproduce.
   Frames captured at 80×24; see `screenshots/README.md`.
 - This PTY evidence does not replace human macOS/Linux emulator acceptance.
   Cross-builds are not manual ARM64 or Intel macOS gameplay tests.
+
+## Settings and rankings acceptance (new in this candidate)
+
+Owner gameplay evidence above predates these additions. Before publication,
+manually try username entry (including q/w/a/s/d/digits/Backspace), guest skip,
+all five languages including accented letters, all three themes and a restart
+that preserves settings/bests. Verify game submenu/back navigation, Twitter
+launcher/fallback, and two clients sharing the deployed public ranking.
+Automated HTTP/simulation/PTY evidence does not replace this human acceptance.

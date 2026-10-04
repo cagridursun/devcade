@@ -21,4 +21,4 @@
                                                                                 
                                                                                 
                                                                                 
-                                                                                
+ Q / Esc: back to game menu   Ctrl+C: quit DevCade                              
