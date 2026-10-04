@@ -11,10 +11,10 @@ const row = { rank: 1, username: 'cagridursun', score: 310, player_id: 'public-b
 const response = (value) => ({ ok: true, text: async () => JSON.stringify(value) });
 const old = () => ({ version: 1, generated_at: previousDate, boards: Object.fromEntries(games.map(game => [game, { status: 'ok', updated_at: previousDate, rows: [{ rank: 1, username: 'player_one', score: 20 }] }])) });
 
-test('fetches all four independent boards and strips public player IDs', async () => {
+test('fetches all independent boards and strips public player IDs', async () => {
   const requested = [];
   const data = await collectBoards({ endpoint: 'https://example.test', now, fetcher: async url => { requested.push(url); return response({ rows: [row] }); } });
-  assert.equal(requested.length, 4);
+  assert.equal(requested.length, games.length);
   for (const game of games) {
     assert.ok(requested.includes(`https://example.test/v1/leaderboards/${game}`));
     assert.deepEqual(data.boards[game], { status: 'ok', updated_at: now, rows: [{ rank: 1, username: 'cagridursun', score: 310 }] });
@@ -91,6 +91,7 @@ test('rejects untrusted names, invalid scores, ranks, duplicate aliases and unso
   }
   assert.throws(() => cleanRows('snake', [{ ...row, score: 315 }]));
   assert.throws(() => cleanRows('snake', [{ ...row, score: 6460 }]));
+  assert.throws(() => cleanRows('terminalfc', [{ ...row, score: 1751 }]));
   assert.throws(() => cleanRows('snake', [row, { ...row, rank: 2 }]));
   assert.throws(() => cleanRows('snake', [row, { ...row, rank: 2, username: 'player_two', score: 400 }]));
   assert.throws(() => cleanRows('unknown', []));
