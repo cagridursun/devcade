@@ -718,5 +718,29 @@
     "PERDISTE",
     "VERLOREN",
     "DÉFAITE"
+  ],
+  "H%d  %s  WASD  Z pass/tackle  Enter shoot  X switch  Pause: Space": [
+    "H%d  %s  WASD  Z pas/tackle  Enter şut  X değiştir  Space: duraklat",
+    "H%d  %s  WASD  Z pase/entrada  Enter tiro  X cambiar  Space: pausa",
+    "H%d  %s  WASD  Z pass/tackle  Enter schot  X wissel  Space: pauze",
+    "H%d  %s  WASD  Z passe/tacle  Enter tir  X changer  Space : pause"
+  ],
+  "HOME": [
+    "EV",
+    "LOCAL",
+    "THUIS",
+    "DOM"
+  ],
+  "AWAY": [
+    "DEP",
+    "VIS",
+    "UIT",
+    "EXT"
+  ],
+  "FREE": [
+    "BOŞ",
+    "LIBRE",
+    "VRIJ",
+    "LIBRE"
   ]
 }
