@@ -1,6 +1,6 @@
 const $ = selector => document.querySelector(selector);
 const format = n => Number(n || 0).toLocaleString('tr-TR');
-const names = {snake:'Snake',blockdrop:'Block Drop',mazechase:'Maze Chase',blastgrid:'Blast Grid',darwin:'macOS',linux:'Linux',windows:'Windows'};
+const names = {snake:'Snake',blockdrop:'Block Drop',mazechase:'Maze Chase',blastgrid:'Blast Grid',terminalfc:'Terminal FC',darwin:'macOS',linux:'Linux',windows:'Windows'};
 function cell(parent,tag,text){const el=document.createElement(tag);el.textContent=text;parent.append(el);return el;}
 function pair(parent,label,value){const row=document.createElement('div');row.className='pair';cell(row,'span',label);cell(row,'strong',format(value));parent.append(row);}
 function distribution(selector,values){const parent=$(selector);parent.replaceChildren();for(const [name,n] of Object.entries(values||{}))pair(parent,names[name]||name,n);if(!Object.keys(values||{}).length)cell(parent,'p','Henüz veri yok.');}
