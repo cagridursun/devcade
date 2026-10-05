@@ -29,7 +29,7 @@ type Profile struct {
 }
 
 func Default() Profile {
-	return Profile{Version: 1, Language: "en", Theme: "mono", Best: map[string]int{}}
+	return Profile{Version: 1, Language: "en", Theme: "mono", Share: true, Metrics: true, Best: map[string]int{}}
 }
 
 var usageID = regexp.MustCompile(`^[a-f0-9]{32}$`)
