@@ -241,7 +241,9 @@ func TestSlowOfflineServiceDoesNotBlockMenuOrExit(t *testing.T) {
 	h := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { waiting <- struct{}{}; <-r.Context().Done() }))
 	defer h.Close()
 	c, _ := leaderboard.NewClient(h.URL)
-	a := NewAppWithOptions(Builtin(), nil, Options{Profile: profile.Default(), Client: c})
+	p := profile.Default()
+	p.Share = false
+	a := NewAppWithOptions(Builtin(), nil, Options{Profile: p, Client: c})
 	a.Resize(80, 24)
 	a.state = scores
 	start := time.Now()
