@@ -2,15 +2,12 @@
 
 ## Scope and branch
 
-Implemented on `feat/space-shooter`, based on main commit
-`618f8d2` (verified against GitHub main on 2026-10-05). Main had four playable
-games; Brick Breaker exists separately on `feat/brick-breaker` and was not
-copied, modified or implemented here. This branch therefore has five playable
-entries, with Space Shooter appended after all existing games. Its website
-card retains the planned `06` number. When combining the two game branches,
-retain both registrations, validators, localization entries, site entries and
-smoke-test IDs. Menu Settings/profile rows now follow catalog length, avoiding
-an overlap when the sixth game is added.
+Implemented in PR #13, integrated with main after Brick Breaker PR #12 merged
+on 2026-10-05. The catalog order is Snake, Block Drop, Maze Chase, Blast Grid,
+Brick Breaker, Terminal FC (coming soon) and Space Shooter. Space Shooter is
+game seven in the menu and website. Six entries are playable; Terminal FC's
+sixth slot is reserved until its implementation merges. No Terminal FC gameplay
+was copied into this PR. Settings/profile rows follow catalog length.
 
 No AGENTS.md was found in the available workspace/repository. No new dependencies,
 production score submissions, production analytics, releases or deployments
@@ -132,7 +129,7 @@ All executed successfully:
 - `go test -timeout 60s ./...`.
 - `go test -race -timeout 120s ./...`.
 - Native builds of `./cmd/devcade` and `./cmd/devcade-leaderboard`.
-- `node --test tools/pages/*.test.mjs`: 18 tests passed.
+- `node --test tools/pages/*.test.mjs`: 19 tests passed.
 - `node tools/pages/build.mjs --offline`: all five boards built as unavailable,
   intentionally without production requests or invented scores.
 - `DEVCADE_RELEASE_E2E=1 go test -count=1 -timeout 300s -run EndToEnd -v ./tools/release`:
@@ -185,7 +182,7 @@ best persistence, opt-in leaderboard submission and separate usage consent.
 Register the new game throughout profile/server validation, localized UI,
 analytics dashboard, website boards and platform smoke checks. Remove the
 obsolete four-best server restart limit while preserving datastore identities
-and versions. Brick Breaker remains a separate development branch.
+and versions. Brick Breaker is preserved from main; Terminal FC is a planned sixth entry.
 
 Validation: full Go tests/vet/race, website tests/offline build, six-platform
 CGO-free release dry run and real English/colorful and Turkish/mono PTY checks.
@@ -195,8 +192,8 @@ and Windows/macOS playtests remain outstanding.
 **Rollout order (not performed):** Deploy the compatible leaderboard/analytics
 backend first; preserve datastore/profile files and identities. Then publish
 the client and website. An older backend rejects `spaceshooter` even if the
-new local game works. Coordinate with Brick Breaker before merging both game
-branches so registrations and smoke lists retain both IDs.
+new local game works. When Terminal FC merges, replace its planned entry with its factory and retain
+all existing IDs in validators and smoke checks.
 
 ## Special-attack follow-up (PR #13)
 
@@ -224,3 +221,12 @@ native client build, clean gofmt/diff checks, and a real Turkish/Mono PTY
 special activation. The latter observed the sweep at arena rows 16 and 9,
 verified pause freeze, expiry, wave-one preservation and TTY restoration.
 The captured midpoint is `docs/screenshots/spaceshooter-special.png`.
+
+## Integration and game-seven ordering
+
+Merged main after Brick Breaker PR #12, preserving both games and the
+Brick Breaker metrics/statistics, translations, website card and smoke checks.
+Reserved catalog slot six for Terminal FC as coming soon; Space Shooter now
+occupies slot seven. The website displays 05/06/07 accordingly, with only six
+playable games included in score fetching and smoke launches. No release
+workflow dispatch, tag or release publication is part of this integration.

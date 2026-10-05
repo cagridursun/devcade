@@ -641,6 +641,48 @@
     "Deelt een willekeurige ID, spel, score, duur, resultaat, versie en platform.",
     "Partage un ID aléatoire, jeu, score, durée, résultat, version et plateforme."
   ],
+  "Break tough bricks across ten levels, catch bonuses and build combos.": [
+    "On bölümde tuğlaları kır, bonusları yakala, combo yap.",
+    "Rompe ladrillos en diez niveles, recoge bonos y encadena golpes.",
+    "Breek stenen in tien levels, vang bonussen en bouw combos.",
+    "Cassez les briques en dix niveaux, prenez les bonus et les combos."
+  ],
+  "BRICK BREAKER  Score %-6d Level %d/10 Lives %d Combo %d": [
+    "BRICK BREAKER  Puan %-6d Bölüm %d/10 Can %d Combo %d",
+    "BRICK BREAKER  Puntos %-6d Nivel %d/10 Vidas %d Combo %d",
+    "BRICK BREAKER  Score %-6d Level %d/10 Levens %d Combo %d",
+    "BRICK BREAKER  Score %-6d Niveau %d/10 Vies %d Combo %d"
+  ],
+  "Enter/Z: launch (auto in 1.5s)": [
+    "Enter/Z: başlat (1.5s otomatik)",
+    "Enter/Z: lanzar (auto en 1.5s)",
+    "Enter/Z: start (auto na 1.5s)",
+    "Enter/Z: lancer (auto dans 1.5s)"
+  ],
+  "Bricks %d Cleared %d Best combo %d | W M S L P X: bonuses": [
+    "Tuğla %d Bölüm %d En iyi combo %d | W M S L P X: bonus",
+    "Ladrillos %d Niveles %d Combo %d | W M S L P X: bonos",
+    "Stenen %d Levels %d Beste combo %d | W M S L P X: bonus",
+    "Briques %d Niveaux %d Combo max %d | W M S L P X: bonus"
+  ],
+  "ALL LEVELS COMPLETE": [
+    "TÜM BÖLÜMLER TAMAMLANDI",
+    "TODOS LOS NIVELES COMPLETOS",
+    "ALLE LEVELS VOLTOOID",
+    "TOUS LES NIVEAUX TERMINÉS"
+  ],
+  "W:wide M:multi S:slow L:life P:pierce X:2x": [
+    "W:geniş M:çok S:yavaş L:can P:delici X:2x",
+    "W:ancho M:multi S:lento L:vida P:perfora X:2x",
+    "W:breed M:multi S:traag L:leven P:door X:2x",
+    "W:large M:multi S:lent L:vie P:perce X:2x"
+  ],
+  "Move: arrows/A/D  Launch: Enter/Z  Pause: Space": [
+    "Hareket: oklar/A/D  Başlat: Enter/Z  Duraklat: Space",
+    "Mover: flechas/A/D  Lanzar: Enter/Z  Pausa: Space",
+    "Beweeg: pijlen/A/D  Start: Enter/Z  Pauze: Space",
+    "Bouger: flèches/A/D  Lancer: Enter/Z  Pause: Space"
+  ],
   "Dodge enemy fire, clear waves and defeat bosses with your spaceship.": [
     "Uzay geminle ateşten kaç, dalgaları temizle ve bossları yen.",
     "Esquiva disparos, supera oleadas y derrota jefes con tu nave.",
@@ -700,5 +742,17 @@
     "ATAQUE ESPECIAL",
     "SPECIALE AANVAL",
     "ATTAQUE SPÉCIALE"
+  ],
+  "Five-a-side terminal football. Coming soon.": [
+    "Beşe beş terminal futbolu. Yakında.",
+    "Fútbol de cinco en terminal. Próximamente.",
+    "Vijf-tegen-vijf terminalvoetbal. Binnenkort.",
+    "Football à cinq dans le terminal. Bientôt."
+  ],
+  "Coming soon (TFC)": [
+    "Yakında (TFC)",
+    "Próximamente (TFC)",
+    "Binnenkort (TFC)",
+    "Bientôt (TFC)"
   ]
 }

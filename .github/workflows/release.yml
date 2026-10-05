@@ -88,7 +88,7 @@ jobs:
         run: |
           test -n "$LEADERBOARD_URL" || { echo 'Deploy the shared leaderboard and supply its HTTPS URL before publishing'; exit 1; }
           curl --fail --silent --show-error --max-time 10 --proto '=https' "${LEADERBOARD_URL%/}/healthz"
-          for id in snake blockdrop mazechase blastgrid spaceshooter; do
+          for id in snake blockdrop mazechase blastgrid brickbreaker spaceshooter; do
             curl --fail --silent --show-error --max-time 10 --proto '=https' "${LEADERBOARD_URL%/}/v1/leaderboards/$id" \
               | python3 -c 'import json,sys; b=json.load(sys.stdin); assert isinstance(b["rows"],list) and len(b["rows"])<=20'
           done
@@ -139,7 +139,7 @@ jobs:
           binary="$RUNNER_TEMP/devcade-bin/devcade"
           test "$("$binary" --version)" = "devcade $VERSION"
           "$binary" --help >/dev/null
-          for id in snake blockdrop mazechase blastgrid spaceshooter; do
+          for id in snake blockdrop mazechase blastgrid brickbreaker spaceshooter; do
             "$binary" list | grep "^$id .*Available" >/dev/null
           done
           set +e
@@ -165,7 +165,7 @@ jobs:
           & $binary --help
           if ($LASTEXITCODE -ne 0) { throw 'Help failed' }
           $games = & $binary list
-          foreach ($id in 'snake','blockdrop','mazechase','blastgrid','spaceshooter') {
+          foreach ($id in 'snake','blockdrop','mazechase','blastgrid','brickbreaker','spaceshooter') {
             if (-not ($games -match "^$id .*Available")) { throw "$id missing" }
           }
           if (-not (Select-String -Path (Join-Path $target 'LICENSE-NOTICE.txt') -Pattern 'MIT License')) { throw 'License missing' }

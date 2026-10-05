@@ -68,7 +68,7 @@ source builds.
 
 ## Status: v1 release candidate
 
-**Five games are playable in this branch, including Space Shooter.** Space Shooter is planned as game six; Brick Breaker is developed separately. Running `devcade` opens the arcade menu:
+**Six games are playable; Terminal FC is reserved as planned game six, and Space Shooter is game seven.** Running `devcade` opens the arcade menu:
 
 | ID | Game | What you do |
 | --- | --- | --- |
@@ -76,7 +76,9 @@ source builds.
 | `blockdrop` | Block Drop | Rotate and drop falling pieces; clear full rows |
 | `mazechase` | Maze Chase | Clear the maze of pellets, dodge four chasers, power up to eat them |
 | `blastgrid` | Blast Grid | Bomb crates and outlast three bots in a fixed arena |
-| `spaceshooter` | Space Shooter | Endless waves, bosses, shields and rapid fire |
+| `brickbreaker` | Brick Breaker | Ten levels, tough bricks, six bonuses and combo scoring |
+| `terminalfc` | Terminal FC (planned #6) | Five-a-side football; not playable yet |
+| `spaceshooter` | Space Shooter (#7) | Endless waves, bosses, shields and rapid fire |
 
 Exact rules, scoring and timing for each game are in [docs/games.md](docs/games.md).
 The menu also offers the **terminal diagnostic** (`D`, or `devcade --diagnostic`):
@@ -85,7 +87,7 @@ resize and terminal restoration.
 
 | Area | Status |
 | --- | --- |
-| Code: original four games, menu, CLI, terminal core | Merged into main, with automated tests (see [CI](.github/workflows/ci.yml)) |
+| Code: six playable games, menu, CLI, terminal core | Integrated with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
 | Distribution | Public [v1.0.0-rc.2](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
@@ -175,6 +177,7 @@ internal/games/blockdrop/ Block Drop
 internal/games/mazechase/ Maze Chase
 internal/games/spaceshooter/ Space Shooter
 internal/games/blastgrid/ Blast Grid
+internal/games/brickbreaker/ Brick Breaker
 internal/games/probe/     The terminal diagnostic, written as a game
 tools/release/            Release builder: archives, checksums, Homebrew/Scoop manifests
 packaging/                Installer scripts, manifest templates, license notice

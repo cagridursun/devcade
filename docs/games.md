@@ -143,10 +143,57 @@ it, and scores only once.
 **Arena:** the layout keeps every floor cell connected once crates are gone,
 and every spawn can escape its own bomb. Tests check both.
 
+## Brick Breaker (`brickbreaker`)
+
+Move the paddle with Left/Right or A/D. Enter or Z launches the ball;
+serves also launch automatically after 1.5 seconds. Space pauses, Q/Esc
+returns to the menu, and Enter restarts after a win or loss. The fixed
+60×18 board fits the standard 80×24 terminal and survives resizing.
+
+A run has ten progressively harder layouts and starts with three lives.
+Bricks display their remaining durability (`[1]`, `[2]`, `[3]`); `####`
+are steel obstacles that reflect even piercing balls. Only breakable bricks
+must be cleared. Ball speed increases with the level and destroyed bricks;
+paddle impact position changes its angle, with a minimum horizontal component
+to avoid vertical stalls. Losing the last active ball costs one life.
+
+Destroyed bricks have a 20% chance to drop one of six equally likely bonuses:
+
+| Glyph | Bonus | Effect |
+|---|---|---|
+| W | Wide Paddle | Paddle grows from 9 to 13 columns for 10 seconds |
+| M | Multi Ball | Adds two balls, up to five active balls |
+| S | Slow Ball | All balls run at 65% speed for 10 seconds |
+| L | Extra Life | Adds one life, up to five |
+| P | Piercing Ball | Destroys breakable bricks without reflecting for 10 seconds |
+| X | Score Multiplier | Doubles brick points for 10 seconds |
+
+Collect drops by catching them with the paddle. Repeated timed bonuses refresh
+their duration; timers advance only during gameplay. Losing a life or advancing
+a level clears bonuses and drops. Losing one ball during multiball preserves
+both the remaining balls and active effects.
+
+Normal, reinforced and heavy bricks award 10, 25 and 50 base points when
+destroyed. Successive destructions before a paddle bounce earn combo ratios
+of 1× (one brick), 1.2× (2–3), 1.5× (4–6), 2× (7–9) and 3× (10+).
+Points use integer arithmetic, rounding down per brick. Steel and partial hits
+award no points. Each cleared level adds `level × 500`; completing all ten
+adds `remaining lives × 250` once. No time bonus or endless mode is included.
+
+Personal bests and global boards rank by score, using the existing opt-in
+sharing path. Opt-in run metrics also record score, bricks destroyed, levels
+cleared, highest combo, balls lost and active play time. Balls lost counts
+individual balls; lives are consumed only when no active balls remain.
+
+Deployment: update the leaderboard service together with the client before
+publishing a release. Older servers reject the new `brickbreaker` game ID and
+new optional run summary. Local play and personal bests remain available.
+
 ## Space Shooter (`spaceshooter`)
 
-Space Shooter is planned game six. This branch has five playable games because
-Brick Breaker is developed separately; existing menu entries retain their order.
+Space Shooter is game seven. Brick Breaker is game five; Terminal FC has
+its sixth catalog slot reserved as coming soon until its implementation merges.
+There are six playable games and one planned entry.
 
 - Arrows/WASD move one cell within the bottom four rows; movement accepts at
   most one press per 70 ms of active time. Fire is automatic every 240 ms.

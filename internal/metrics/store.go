@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"sort"
 	"sync"
 	"time"
 
+	"github.com/cagridursun/devcade/internal/engine"
 	"github.com/cagridursun/devcade/internal/profile"
 )
 
@@ -24,21 +26,28 @@ var hexID = regexp.MustCompile(`^[a-f0-9]{32}$`)
 var versionName = regexp.MustCompile(`^[a-zA-Z0-9.+_-]{1,64}$`)
 
 type Event struct {
-	ID           string    `json:"id"`
-	Installation string    `json:"installation"`
-	Kind         string    `json:"kind"`
-	Run          string    `json:"run,omitempty"`
-	Game         string    `json:"game,omitempty"`
-	Platform     string    `json:"platform"`
-	Version      string    `json:"version"`
-	DurationMS   int64     `json:"duration_ms,omitempty"`
-	Score        int       `json:"score,omitempty"`
-	Outcome      string    `json:"outcome,omitempty"`
-	Source       string    `json:"source,omitempty"`
-	At           time.Time `json:"at,omitempty"`
+	Statistics   *engine.RunStats `json:"statistics,omitempty"`
+	ID           string           `json:"id"`
+	Installation string           `json:"installation"`
+	Kind         string           `json:"kind"`
+	Run          string           `json:"run,omitempty"`
+	Game         string           `json:"game,omitempty"`
+	Platform     string           `json:"platform"`
+	Version      string           `json:"version"`
+	DurationMS   int64            `json:"duration_ms,omitempty"`
+	Score        int              `json:"score,omitempty"`
+	Outcome      string           `json:"outcome,omitempty"`
+	Source       string           `json:"source,omitempty"`
+	At           time.Time        `json:"at,omitempty"`
 }
 
 func (e Event) valid() bool {
+	if s := e.Statistics; s != nil {
+		if e.Kind != "run_end" || e.Game != "brickbreaker" || s.Score != e.Score || s.BricksDestroyed < 0 || s.BricksDestroyed > 720 || s.LevelsCleared < 0 || s.LevelsCleared > 10 || s.HighestCombo < 0 || s.HighestCombo > s.BricksDestroyed || s.BallsLost < 0 || s.BallsLost > 10000 || s.PlayTimeMS < 0 || s.PlayTimeMS > int64((24*time.Hour)/time.Millisecond) {
+			return false
+		}
+	}
+
 	if !hexID.MatchString(e.ID) || !hexID.MatchString(e.Installation) || !versionName.MatchString(e.Version) {
 		return false
 	}
@@ -147,6 +156,10 @@ func (s *Store) Record(e Event, source string, now time.Time) error {
 	if (source != "client" && source != "website") || e.Source != "" || !e.At.IsZero() {
 		return fmt.Errorf("%w: server owns source and timestamps", ErrInvalid)
 	}
+	if e.Statistics != nil {
+		stats := *e.Statistics
+		e.Statistics = &stats
+	}
 	e.Source = source
 	e.At = now.UTC()
 	if !e.valid() {
@@ -154,7 +167,7 @@ func (s *Store) Record(e Event, source string, now time.Time) error {
 	}
 	if previous, ok := s.seen[eventKey(e)]; ok {
 		e.At = previous.At
-		if e != previous {
+		if !reflect.DeepEqual(e, previous) {
 			return fmt.Errorf("%w: event id conflict", ErrInvalid)
 		}
 		return nil

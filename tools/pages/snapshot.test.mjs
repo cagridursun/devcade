@@ -135,3 +135,12 @@ test('site has working install commands, both languages, social links and safe t
     assert.ok(messages.tr[key], `Missing Turkish: ${key}`);
   }
 });
+
+ test('Space Shooter is game seven and Terminal FC slot is planned', async () => {
+ const html = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
+ assert.ok(html.includes('07 /</span><h3>Space Shooter'));
+ assert.ok(html.includes('06 /</span><h3>Terminal FC'));
+ assert.ok(html.indexOf('05 /</span><h3>Brick Breaker') < html.indexOf('06 /</span><h3>Terminal FC'));
+ assert.ok(!games.includes('terminalfc'));
+ assert.ok(games.includes('brickbreaker') && games.includes('spaceshooter'));
+});

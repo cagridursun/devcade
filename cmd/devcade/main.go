@@ -31,7 +31,8 @@ Usage:
   devcade --help          show this help
   devcade --version       show the version
 
-Games (IDs for "devcade <game>"): snake, blockdrop, mazechase, blastgrid, spaceshooter.
+Games (IDs for "devcade <game>"): snake, blockdrop, mazechase, blastgrid, brickbreaker, spaceshooter.
+Catalog order: Brick Breaker #5, Terminal FC #6 (coming soon), Space Shooter #7.
 The terminal diagnostic moves an '@' around a box to check input, timing,
 resize and terminal restoration. Everything interactive needs a terminal of
 at least 80x24.
