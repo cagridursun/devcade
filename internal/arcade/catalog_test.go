@@ -15,9 +15,8 @@ func TestBuiltinCatalog(t *testing.T) {
 		{"mazechase", "Maze Chase", ""}, // M5
 		{"blastgrid", "Blast Grid", ""},
 		{"brickbreaker", "Brick Breaker", ""}, // Game 5
-		{"terminalfc", "Terminal FC", "TFC"},
+		{"terminalfc", "Terminal FC", ""},     // Game 6
 		{"spaceshooter", "Space Shooter", ""}, // Game 7
-		{"terminalfc", "Terminal FC", ""},
 	}
 	if c.Len() != len(want) {
 		t.Fatalf("Len = %d, want %d", c.Len(), len(want))
