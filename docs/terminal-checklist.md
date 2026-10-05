@@ -2,7 +2,7 @@
 
 **Status: partial.** Automated checks use tcell's simulated screen, and
 cross-builds only prove the code compiles. The v1 release (terminal core,
-menu and all four games) is accepted only after the surfaces below have been
+menu and all available games) is accepted only after the surfaces below have been
 tested by hand. Earlier results are kept in their own column and do not
 count toward later milestones.
 
@@ -211,3 +211,6 @@ all five languages including accented letters, all three themes and a restart
 that preserves settings/bests. Verify game submenu/back navigation, Twitter
 launcher/fallback, and two clients sharing the deployed public ranking.
 Automated HTTP/simulation/PTY evidence does not replace this human acceptance.
+
+Space Shooter feature-branch verification and outstanding platform/boss human
+acceptance are recorded in [the implementation report](space-shooter-implementation.md).

@@ -89,7 +89,7 @@ func TestHelpVersionAndListNeedNoTerminal(t *testing.T) {
 		t.Fatalf("list: code=%d stderr=%q", code, errOut)
 	}
 	for _, want := range []string{"snake", "Snake", "blockdrop", "Block Drop",
-		"mazechase", "Maze Chase", "blastgrid", "Blast Grid", "terminalfc", "Terminal FC", "--diagnostic"} {
+		"mazechase", "Maze Chase", "blastgrid", "Blast Grid", "brickbreaker", "Brick Breaker", "terminalfc", "Terminal FC", "spaceshooter", "Space Shooter", "--diagnostic"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("list output lacks %q:\n%s", want, out)
 		}
@@ -118,7 +118,7 @@ func TestListNeverConstructsGames(t *testing.T) {
 	}
 }
 
-func TestAllBuiltinGamesAreListedAsAvailable(t *testing.T) {
+func TestBuiltinGamesAreListedWithCatalogAvailability(t *testing.T) {
 	stub(t, nil, nil)
 	_, out, _ := runArgs("list")
 	if n := strings.Count(out, "Available"); n != arcade.Builtin().Len() || strings.Contains(out, "Coming soon") {
@@ -129,7 +129,7 @@ func TestAllBuiltinGamesAreListedAsAvailable(t *testing.T) {
 func TestComingSoonGamesFailBeforeTerminalAccess(t *testing.T) {
 	h := stub(t, nil, nil)
 	calls := 0
-	catalog = testCatalog(t, &calls) // v1 ships no coming-soon game; keep the path covered
+	catalog = testCatalog(t, &calls) // Exercise planned-entry behavior without depending on a particular milestone.
 	for _, id := range []string{"later"} {
 		code, out, errOut := runArgs(id)
 		if code != exitUsage || out != "" || !strings.Contains(errOut, "not available yet") || !strings.Contains(errOut, "devcade list") {
@@ -280,7 +280,7 @@ func TestBuiltinIDsDoNotShadowCommands(t *testing.T) {
 // TestRedirectedProcessFailsPromptly runs the real binary with piped stdio
 // and no terminal hooks replaced.
 func TestRedirectedProcessFailsPromptly(t *testing.T) {
-	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}, {"blockdrop"}, {"mazechase"}, {"blastgrid"}, {"terminalfc"}} {
+	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}, {"blockdrop"}, {"mazechase"}, {"blastgrid"}, {"brickbreaker"}, {"terminalfc"}, {"spaceshooter"}} {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		cmd := exec.CommandContext(ctx, os.Args[0], args...) // TestMain calls main(), which exits
 		cmd.Env = append(os.Environ(), "DEVCADE_RUN_MAIN=1")

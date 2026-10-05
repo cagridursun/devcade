@@ -32,6 +32,9 @@ func TestEveryGameHUDAndMenusFitAllFiveLanguages(t *testing.T) {
 				a.Render(boundedCanvas{newGrid(80, 24), t})
 			}
 			for i := range a.catalog.Len() {
+				if !a.catalog.Entry(i).Available() {
+					continue
+				}
 				a.selected = i
 				a.activity = a.entry().ID
 				a.launch(a.entry().New)

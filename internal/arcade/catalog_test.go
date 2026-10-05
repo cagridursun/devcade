@@ -13,7 +13,10 @@ func TestBuiltinCatalog(t *testing.T) {
 		{"snake", "Snake", ""},          // M3
 		{"blockdrop", "Block Drop", ""}, // M4
 		{"mazechase", "Maze Chase", ""}, // M5
-		{"blastgrid", "Blast Grid", ""}, // M6
+		{"blastgrid", "Blast Grid", ""},
+		{"brickbreaker", "Brick Breaker", ""}, // Game 5
+		{"terminalfc", "Terminal FC", "TFC"},
+		{"spaceshooter", "Space Shooter", ""}, // Game 7
 		{"terminalfc", "Terminal FC", ""},
 	}
 	if c.Len() != len(want) {
@@ -45,6 +48,9 @@ func TestBuiltinFactoriesBuildFreshGames(t *testing.T) {
 	c := Builtin()
 	for i := range c.Len() {
 		e := c.Entry(i)
+		if !e.Available() {
+			continue
+		}
 		a, b := e.New(), e.New()
 		if a == nil || a == b {
 			t.Fatalf("%s: each launch must build a new game", e.ID)
@@ -98,5 +104,12 @@ func TestNewCatalogKeepsOrderAndOwnsItsEntries(t *testing.T) {
 	entries[0].ID = "mutated"
 	if c.Entry(0).ID != "b" || c.Entry(1).ID != "a" || !c.Entry(1).Available() || c.Entry(1).Status() != "Available" {
 		t.Fatalf("catalog = %+v, %+v", c.Entry(0), c.Entry(1))
+	}
+}
+
+func TestSpaceShooterOccupiesSeventhCatalogSlot(t *testing.T) {
+	c := Builtin()
+	if c.Len() < 7 || c.Entry(4).ID != "brickbreaker" || c.Entry(5).ID != "terminalfc" || c.Entry(6).ID != "spaceshooter" || !c.Entry(6).Available() {
+		t.Fatal("expected Brick Breaker fifth, Terminal FC sixth, Space Shooter seventh")
 	}
 }

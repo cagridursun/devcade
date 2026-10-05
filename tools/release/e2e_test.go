@@ -81,8 +81,12 @@ func TestEndToEndRelease(t *testing.T) {
 				t.Errorf("--version = %q, %v", got, err)
 			}
 			for _, arg := range []string{"--help", "list"} {
-				if outp, err := exec.Command(bin, arg).CombinedOutput(); err != nil || len(outp) == 0 {
+				outp, err := exec.Command(bin, arg).CombinedOutput()
+				if err != nil || len(outp) == 0 {
 					t.Errorf("%s: %v\n%s", arg, err, outp)
+				}
+				if !strings.Contains(string(outp), "spaceshooter") {
+					t.Errorf("%s: release binary omits Space Shooter", arg)
 				}
 			}
 		}

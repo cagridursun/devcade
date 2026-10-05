@@ -1,5 +1,5 @@
 // Command devcade is a terminal arcade for developers: an arcade menu over
-// Snake, Block Drop, Maze Chase, Blast Grid and Terminal FC, plus a terminal diagnostic.
+// Snake, Block Drop, Maze Chase, Blast Grid, Brick Breaker, Terminal FC and Space Shooter, plus a terminal diagnostic.
 package main
 
 import (
@@ -31,7 +31,8 @@ Usage:
   devcade --help          show this help
   devcade --version       show the version
 
-Games (IDs for "devcade <game>"): snake, blockdrop, mazechase, blastgrid, terminalfc.
+Games (IDs for "devcade <game>"): snake, blockdrop, mazechase, blastgrid, brickbreaker, terminalfc, spaceshooter.
+Catalog order: Brick Breaker #5, Terminal FC #6, Space Shooter #7.
 The terminal diagnostic moves an '@' around a box to check input, timing,
 resize and terminal restoration. Everything interactive needs a terminal of
 at least 80x24.

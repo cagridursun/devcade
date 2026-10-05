@@ -8,8 +8,10 @@ import (
 	"github.com/cagridursun/devcade/internal/engine"
 	"github.com/cagridursun/devcade/internal/games/blastgrid"
 	"github.com/cagridursun/devcade/internal/games/blockdrop"
+	"github.com/cagridursun/devcade/internal/games/brickbreaker"
 	"github.com/cagridursun/devcade/internal/games/mazechase"
 	"github.com/cagridursun/devcade/internal/games/snake"
+	"github.com/cagridursun/devcade/internal/games/spaceshooter"
 	"github.com/cagridursun/devcade/internal/games/terminalfc"
 )
 
@@ -104,8 +106,12 @@ func Builtin() Catalog {
 			Description: "Clear the maze of dots, dodge four chasers, power up to eat them."},
 		Entry{ID: "blastgrid", Name: "Blast Grid", New: blastgrid.New,
 			Description: "Bomb crates and outlast three bots in a fixed 17x13 blast arena."},
+		Entry{ID: "brickbreaker", Name: "Brick Breaker", New: brickbreaker.New,
+			Description: "Break tough bricks across ten levels, catch bonuses and build combos."},
 		Entry{ID: "terminalfc", Name: "Terminal FC", New: terminalfc.New,
 			Description: "Play a fast 5v5 football match with passing, tackles and shots."},
+		Entry{ID: "spaceshooter", Name: "Space Shooter", New: spaceshooter.New,
+			Description: "Dodge enemy fire, clear waves and defeat bosses with your spaceship."},
 	)
 	if err != nil {
 		panic(err) // a programming error in this table; covered by tests

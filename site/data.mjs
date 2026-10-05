@@ -1,5 +1,5 @@
-export const games = ['snake', 'blockdrop', 'mazechase', 'blastgrid', 'terminalfc'];
-export const gameNames = { snake: 'Snake', blockdrop: 'Block Drop', mazechase: 'Maze Chase', blastgrid: 'Blast Grid', terminalfc: 'Terminal FC' };
+export const games = ['snake', 'blockdrop', 'mazechase', 'blastgrid', 'brickbreaker', 'terminalfc', 'spaceshooter'];
+export const gameNames = { snake: 'Snake', blockdrop: 'Block Drop', mazechase: 'Maze Chase', blastgrid: 'Blast Grid', brickbreaker: 'Brick Breaker', terminalfc: 'Terminal FC', spaceshooter: 'Space Shooter' };
 
 // Keep the public website response small and omit identity fields it does not use.
 export function cleanRows(game, rows) {

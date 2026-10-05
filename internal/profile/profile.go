@@ -38,7 +38,7 @@ var username = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
 func ValidUsername(s string) bool { return username.MatchString(s) }
 
 var validGames = map[string]struct{}{
-	"snake": {}, "blockdrop": {}, "mazechase": {}, "blastgrid": {}, "terminalfc": {},
+	"snake": {}, "blockdrop": {}, "mazechase": {}, "blastgrid": {}, "brickbreaker": {}, "terminalfc": {}, "spaceshooter": {},
 }
 
 func ValidGame(s string) bool {
