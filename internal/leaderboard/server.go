@@ -78,7 +78,7 @@ func Open(path string) (*Server, error) {
 			return nil, fmt.Errorf("invalid player")
 		}
 		names[p.Username] = true
-		if len(p.Best) > 4 {
+		if len(p.Best) > 5 {
 			return nil, fmt.Errorf("invalid bests")
 		}
 		for game, n := range p.Best {

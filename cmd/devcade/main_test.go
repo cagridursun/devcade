@@ -89,7 +89,7 @@ func TestHelpVersionAndListNeedNoTerminal(t *testing.T) {
 		t.Fatalf("list: code=%d stderr=%q", code, errOut)
 	}
 	for _, want := range []string{"snake", "Snake", "blockdrop", "Block Drop",
-		"mazechase", "Maze Chase", "blastgrid", "Blast Grid", "--diagnostic"} {
+		"mazechase", "Maze Chase", "blastgrid", "Blast Grid", "brickbreaker", "Brick Breaker", "--diagnostic"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("list output lacks %q:\n%s", want, out)
 		}
@@ -120,8 +120,8 @@ func TestListNeverConstructsGames(t *testing.T) {
 func TestAllBuiltinGamesAreListedAsAvailable(t *testing.T) {
 	stub(t, nil, nil)
 	_, out, _ := runArgs("list")
-	if n := strings.Count(out, "Available"); n != 4 || strings.Contains(out, "Coming soon") {
-		t.Fatalf("want four available games:\n%s", out)
+	if n := strings.Count(out, "Available"); n != 5 || strings.Contains(out, "Coming soon") {
+		t.Fatalf("want five available games:\n%s", out)
 	}
 }
 
@@ -279,7 +279,7 @@ func TestBuiltinIDsDoNotShadowCommands(t *testing.T) {
 // TestRedirectedProcessFailsPromptly runs the real binary with piped stdio
 // and no terminal hooks replaced.
 func TestRedirectedProcessFailsPromptly(t *testing.T) {
-	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}, {"blockdrop"}, {"mazechase"}, {"blastgrid"}} {
+	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}, {"blockdrop"}, {"mazechase"}, {"blastgrid"}, {"brickbreaker"}} {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		cmd := exec.CommandContext(ctx, os.Args[0], args...) // TestMain calls main(), which exits
 		cmd.Env = append(os.Environ(), "DEVCADE_RUN_MAIN=1")

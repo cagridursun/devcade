@@ -121,3 +121,13 @@ type Game interface {
 type Finisher interface {
 	Finished() bool
 }
+
+// RunStats is an optional game-specific run summary, reported with opt-in metrics.
+type RunStats struct {
+	Score           int   `json:"score"`
+	BricksDestroyed int   `json:"bricks_destroyed"`
+	LevelsCleared   int   `json:"levels_cleared"`
+	HighestCombo    int   `json:"highest_combo"`
+	BallsLost       int   `json:"balls_lost"`
+	PlayTimeMS      int64 `json:"play_time_ms"`
+}
