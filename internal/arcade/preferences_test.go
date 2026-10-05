@@ -109,7 +109,7 @@ func TestSettingsPersistLanguagesPalettesAndRemainReadable(t *testing.T) {
 	}
 	a.Input(key(engine.KeyBack))
 	out := render(a, 80, 24)
-	if !strings.Contains(out, "Yeni oyunlar yakında") || !strings.Contains(out, "c__dursun") {
+	if !strings.Contains(out, "c__dursun") {
 		t.Fatal(out)
 	}
 }
@@ -131,7 +131,7 @@ func (g *scoreGame) HandleInput(k engine.Key) {
 	}
 }
 func TestFinishedRunsSaveOnceAndRestartNeverLowersBest(t *testing.T) {
-	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker", "spaceshooter"} {
+	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker", "terminalfc", "spaceshooter"} {
 		t.Run(id, func(t *testing.T) {
 			g := &scoreGame{score: 100}
 			c, _ := NewCatalog(Entry{ID: id, Name: id, Description: "Test game.", New: func() engine.Game { return g }})
