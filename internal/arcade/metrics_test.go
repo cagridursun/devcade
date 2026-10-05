@@ -21,6 +21,8 @@ func TestUsageConsentMustBePersistedAndIsIndependentOfScores(t *testing.T) {
 	defer h.Close()
 	c, _ := metrics.NewClient(h.URL, "v1")
 	p := profile.Default()
+	p.Share = false
+	p.Metrics = false
 	save := profile.Store{Path: filepath.Join(t.TempDir(), "profile.json")}
 	a := NewAppWithOptions(Builtin(), nil, Options{Profile: p, Save: save.Save, Metrics: c})
 	a.Resize(80, 24)
@@ -48,7 +50,9 @@ func TestUsageConsentMustBePersistedAndIsIndependentOfScores(t *testing.T) {
 		t.Fatalf("%+v", r)
 	}
 	failed, _ := metrics.NewClient(h.URL, "v1")
-	b := NewAppWithOptions(Builtin(), nil, Options{Profile: profile.Default(), Save: func(profile.Profile) error { return errors.New("read-only") }, Metrics: failed})
+	failedProfile := profile.Default()
+	failedProfile.Metrics = false
+	b := NewAppWithOptions(Builtin(), nil, Options{Profile: failedProfile, Save: func(profile.Profile) error { return errors.New("read-only") }, Metrics: failed})
 	b.Resize(80, 24)
 	b.Input(char('o'))
 	b.setting = 4
