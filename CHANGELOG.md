@@ -7,6 +7,15 @@
 - Add combo scoring, clear/win bonuses, local/global scores and optional run
   summaries. Extend leaderboard persistence, CLI, menus, usage dashboard and
   Pages boards to five games; localize the new terminal UI in all five languages.
+- Limit Space Shooter special damage to a seven-cell vertical corridor
+  (ordinary enemies: 1, boss: 3) and add a 600 ms upward sweep visual.
+
+- Add Space Shooter: endless waves, three enemy types, fifth-wave bosses,
+  shields, rapid fire and a limited special attack.
+- Integrate completed best scores, opt-in analytics, all five UI languages,
+  terminal/website leaderboards and platform smoke checks.
+- Validate persisted server bests by recognized IDs instead of a fixed four-game
+  map limit; preserve existing data and identities.
 
 
 ## 1.0.0-rc.2 (published 2026-10-04)

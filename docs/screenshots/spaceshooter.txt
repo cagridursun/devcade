@@ -1,0 +1,24 @@
+   SPACE SHOOTER  Score 0 Wave 1 Lives 3 Z 1                                    
+   Move: arrows/WASD  Auto-fire  Z: special  Pause: Space                       
+   |------------------------------------------------------------------------|   
+   |                                                                        |   
+   |        ><                                      ><                      |   
+   |                                                                        |   
+   |        ><        ><                            ><        ><            |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                                                        |   
+   |                                    |                                   |   
+   |                                                                        |   
+   |                                  |                                     |   
+   |                                                                        |   
+   |                                  A^                                    |   
+   |                                                                        |   
+   |------------------------------------------------------------------------|   
+   PLAYING                                                                      
+ Q / Esc: back to game menu   Ctrl+C: quit DevCade                              

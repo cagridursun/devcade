@@ -11,6 +11,7 @@ import (
 	"github.com/cagridursun/devcade/internal/games/brickbreaker"
 	"github.com/cagridursun/devcade/internal/games/mazechase"
 	"github.com/cagridursun/devcade/internal/games/snake"
+	"github.com/cagridursun/devcade/internal/games/spaceshooter"
 )
 
 // Entry describes one built-in game. An entry is playable exactly when New
@@ -106,6 +107,10 @@ func Builtin() Catalog {
 			Description: "Bomb crates and outlast three bots in a fixed 17x13 blast arena."},
 		Entry{ID: "brickbreaker", Name: "Brick Breaker", New: brickbreaker.New,
 			Description: "Break tough bricks across ten levels, catch bonuses and build combos."},
+		Entry{ID: "terminalfc", Name: "Terminal FC", Milestone: "TFC",
+			Description: "Five-a-side terminal football. Coming soon."},
+		Entry{ID: "spaceshooter", Name: "Space Shooter", New: spaceshooter.New,
+			Description: "Dodge enemy fire, clear waves and defeat bosses with your spaceship."},
 	)
 	if err != nil {
 		panic(err) // a programming error in this table; covered by tests

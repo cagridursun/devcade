@@ -1,6 +1,6 @@
 # DevCade games: rules and policies
 
-All four games share these rules:
+All built-in games share these rules:
 - They fit an 80×24 terminal, draw each board cell two columns wide in
   printable ASCII, and never use color alone to tell objects apart.
 - Boards have a fixed logical size: resizing the window only re-centers them.
@@ -188,3 +188,66 @@ individual balls; lives are consumed only when no active balls remain.
 Deployment: update the leaderboard service together with the client before
 publishing a release. Older servers reject the new `brickbreaker` game ID and
 new optional run summary. Local play and personal bests remain available.
+
+## Space Shooter (`spaceshooter`)
+
+Space Shooter is game seven. Brick Breaker is game five; Terminal FC has
+its sixth catalog slot reserved as coming soon until its implementation merges.
+There are six playable games and one planned entry.
+
+- Arrows/WASD move one cell within the bottom four rows; movement accepts at
+  most one press per 70 ms of active time. Fire is automatic every 240 ms.
+- Z uses a special charge, clearing hostile bullets globally and hitting a seven-cell-wide
+  vertical corridor centered on the ship: one damage to ordinary enemies,
+  three to a boss whose hitbox overlaps the corridor. One initial charge; a boss clear grants one, capped at two.
+  Activations are separated by at least 750 ms. A full-width line sweeps
+  upward across the arena for 600 ms, with `==` marking the damaging corridor
+  and `--` outside it. Damage occurs once at activation; the sweep is visual,
+  follows gameplay time and freezes during suspension. Space pauses; Enter restarts
+  after game over; Q/Esc return; Ctrl+C exits.
+- Three lives; losing one resets position and removes hostile threats within
+  three cells of the previous/reset position. Protection lasts 1.5 s, shown
+  as `{}`. A shield absorbs one damage event and protects for 500 ms.
+- Waves begin with a one-second countdown; movement remains enabled. Ordinary
+  waves contain `min(18, 6 + 2*(wave-1))` enemies in a seeded permutation of
+  eighteen spaced slots. Index modulo three chooses Scout (0), Diver (1,
+  introduced in wave 2), Gunner (2, introduced in wave 3); earlier unavailable
+  types are Scouts. Scout `><`: 1 HP, 10 points; Diver `VV`: 1 HP, 20; Gunner
+  `[]`: 2 HP, 30. Enemies escaping the bottom request damage and give no points.
+- Every fifth wave has only a five-cell boss: HP `12 + 4*min(5, wave/5-1)`,
+  500 kill points. It sweeps the upper arena, alternating aimed and three-way
+  spread shots; a projectile hits it only once. `!!`/`V!`/`[!` and boss
+  warning glyphs telegraph attacks for 400 ms. Diver starts after 1.2 s plus
+  telegraph, then alternates lateral steps while descending.
+- Base movement intervals: Scout/boss 400 ms, Diver 300 ms, Gunner 600 ms.
+  Scouts/Gunners descend at edges and every tenth move. Gunner firing timer
+  1.8 s, boss 1.4 s, plus telegraph. Intervals scale by
+  `base - min(14,wave-1)*base/30`, capped at wave 15. Player bullets move
+  10 cells/s; hostile bullets 6 cells/s (spread adds +/-2 lateral cells/s);
+  pickups fall 3 cells/s.
+- Ordinary kills have a seeded 15% pickup chance, equally split: RF gives
+  120 ms firing for eight seconds, refreshed on collection; SH gives one
+  shield charge, replaced on collection. Pickups expire after eight seconds
+  or leaving the arena. Bosses give no random drops.
+- Kill points and the 100-point clear bonus use `min(5, 1+(wave-1)/5)`.
+  A clear scores once using the completed wave before incrementing it. Final
+  life loss takes precedence over wave clear: kill points remain, no bonus.
+  Score saturates at 1,000,000,000; wave number saturates at 1,000,000.
+- Logical arena: 36x18 cells, two terminal columns per cell, minimum 80x24.
+  Simulation: 20 ms fixed step with retained fractional time. Rendering uses
+  no RNG and resize only changes placement. Per-tick order: expire timers;
+  move/spawn; special attack; swept opposing bullet contact; swept enemy hits;
+  player contact/escape requests; collect pickups; coalesced player damage;
+  fatality; surviving clear. Sweeps use relative movement; stable creation IDs
+  break equal-time ties within each collision phase; a projectile hits the
+  nearest traversed enemy once. Opposing contacts use traversal-time order.
+- Caps: 18 enemies (one on boss waves), 128 projectiles total, 24 pickups.
+  Full projectile/pickup caps discard the new entity deterministically. Spawns
+  use a permutation, with no retries. Clear removes projectiles and pickups
+  while retaining lives, unexpired power-ups and protection.
+
+Local bests follow the shared completed-run policy; quitting unfinished does
+not submit a best. Score and usage sharing remain separate and default off.
+Deploy a backend recognizing `spaceshooter` **before** publishing the new
+client or website. Older servers reject the new ID. Preserve existing
+profile/server data and identities; no migration or reset is required.

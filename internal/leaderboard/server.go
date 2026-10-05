@@ -78,9 +78,7 @@ func Open(path string) (*Server, error) {
 			return nil, fmt.Errorf("invalid player")
 		}
 		names[p.Username] = true
-		if len(p.Best) > 5 {
-			return nil, fmt.Errorf("invalid bests")
-		}
+		// Per-key validation below bounds the map to recognized game IDs.
 		for game, n := range p.Best {
 			if !profile.ValidScore(game, n) {
 				return nil, fmt.Errorf("invalid stored score")

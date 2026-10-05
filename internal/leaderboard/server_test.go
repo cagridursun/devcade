@@ -44,7 +44,7 @@ func TestTwoClientsShareBestPerGameAndSurviveRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	var wg sync.WaitGroup
-	for _, game := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker"} {
+	for _, game := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker", "spaceshooter"} {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -59,7 +59,7 @@ func TestTwoClientsShareBestPerGameAndSurviveRestart(t *testing.T) {
 	if err = c.Submit(ctx, two.Token, "snake", 300); err != nil {
 		t.Fatal(err)
 	}
-	for _, game := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker"} {
+	for _, game := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker", "spaceshooter"} {
 		b, err := c.Fetch(ctx, game, one.ID)
 		if err != nil || b.Own == nil || b.Own.Score != 200 {
 			t.Fatal(game, b, err)

@@ -23,6 +23,7 @@ var endRecipes = map[string]func(t *testing.T, h *harness){
 		}
 		h.tickUntil(t, endPrompt, 20000)
 	},
+	"spaceshooter": func(t *testing.T, h *harness) { h.tickUntil(t, endPrompt, 20000) },
 	// Heading right from the center, the snake hits the wall.
 	"snake": func(t *testing.T, h *harness) { h.tickUntil(t, endPrompt, 200) },
 	// Hard-dropping every piece stacks up to the top.
