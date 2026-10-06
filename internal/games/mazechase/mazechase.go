@@ -430,10 +430,12 @@ const (
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	const frameW = 78
-	const frameH = Rows + 2
+	const (
+		frameW = 78
+		frameH = Rows
+	)
 	x0 := max(0, (w-frameW)/2)
-	y0 := max(0, (h-1-(2+frameH))/2)
+	y0 := max(0, (h-1-(2+frameH+1))/2)
 
 	status := "PLAYING"
 	switch g.state {
@@ -442,12 +444,12 @@ func (g *Game) Render(c engine.Canvas) {
 	case won:
 		status = "YOU WIN"
 	}
-	powerText := "Power  -- "
+	powerText := "Power --"
 	if g.vulnerable() {
-		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil - g.now).Seconds())
+		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil-g.now).Seconds())
 	}
 
-	c.Text(x0, y0, engine.Format(c, "> MAZE CHASE   Score %d   Lives %d   %s   Left %d   %s",
+	c.Text(x0, y0, engine.Format(c, "> MAZE CHASE   Score %04d   Lives %d   %s   Left %03d   %s",
 		g.score, g.lives, powerText, g.remaining, engine.Format(c, status)), engine.Accent)
 	c.Text(x0, y0+1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Muted)
 
@@ -455,42 +457,59 @@ func (g *Game) Render(c engine.Canvas) {
 	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
 	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
 
-	bx, by := fx+(frameW-boardW)/2, fy+1
-	cell := func(p point, s string, color engine.Color) {
-		c.Text(bx+p.x*2, by+p.y, s, color)
+	// The fixed 29-column maze is stretched across the whole arcade viewport.
+	// Its authored outer wall is represented by the shared frame, eliminating
+	// the old centered ## rectangle and the dead margins around it.
+	const innerCols = Cols - 2
+	innerX := fx + 1
+	innerW := frameW - 2
+	left := func(x int) int {
+		return innerX + (x-1)*innerW/innerCols
 	}
-	for y := range Rows {
-		for x := range Cols {
+	right := func(x int) int {
+		return innerX + x*innerW/innerCols
+	}
+	centerX := func(x int) int {
+		l, r := left(x), right(x)
+		return l + max(0, (r-l-1)/2)
+	}
+	rowY := func(y int) int { return fy + y }
+
+	for y := 1; y < Rows-1; y++ {
+		for x := 1; x < Cols-1; x++ {
 			p := point{x, y}
-			switch {
-			case maze.wall[y][x]:
-				cell(p, "##", engine.Border)
-			case g.items[y][x] == pellet:
-				cell(p, " .", engine.Muted)
-			case g.items[y][x] == power:
-				cell(p, "()", engine.Warning)
+			if maze.wall[y][x] {
+				for px := left(x); px < right(x); px++ {
+					c.Cell(px, rowY(y), '▓', engine.Border)
+				}
+				continue
 			}
+			switch g.items[y][x] {
+			case pellet:
+				c.Cell(centerX(x), rowY(y), '·', engine.Muted)
+			case power:
+				c.Cell(centerX(x), rowY(y), '✱', engine.Warning)
+			}
+			_ = p
 		}
 	}
+
 	for i := range g.chasers {
 		ch := &g.chasers[i]
 		if ch.removed {
 			continue
 		}
-		digit := string(rune('1' + i))
-		switch {
-		case g.now < ch.graceUntil:
-			cell(ch.pos, "~"+digit, engine.Muted)
-		case g.vulnerable():
-			cell(ch.pos, "c"+digit, engine.Accent)
-		default:
-			cell(ch.pos, "C"+digit, engine.Danger)
+		color := engine.Danger
+		if g.now < ch.graceUntil {
+			color = engine.Muted
+		} else if g.vulnerable() {
+			color = engine.Accent
 		}
+		c.Cell(centerX(ch.pos.x), rowY(ch.pos.y), '◆', color)
 	}
-	cell(g.player, "@@", engine.Player)
+	c.Cell(centerX(g.player.x), rowY(g.player.y), '●', engine.Player)
 
-	legend := "@@ you   C1-C4 chasers   c vulnerable   ~ harmless   () power"
-	c.Text(fx+2, fy+frameH-1, legend, engine.Muted)
+	c.Text(x0, y0+2+frameH, "● you   ◆ chasers   ✱ power pellet   ▓ wall", engine.Muted)
 
 	if g.state != playing {
 		title := "GAME OVER"
@@ -498,9 +517,10 @@ func (g *Game) Render(c engine.Canvas) {
 			title = "MAZE CLEARED - YOU WIN"
 		}
 		box := []string{"", title, engine.Format(c, "Final score %d", g.score), "Enter: play again", ""}
-		top := by + (Rows-len(box))/2
+		top := fy + (frameH-len(box))/2
+		left := fx + (frameW-32)/2
 		for i, line := range box {
-			c.Text(bx+(boardW-32)/2, top+i, "  "+center(engine.Format(c, line), 28)+"  ", engine.Warning)
+			c.Text(left, top+i, "  "+center(engine.Format(c, line), 28)+"  ", engine.Warning)
 		}
 	}
 }
