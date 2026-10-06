@@ -519,6 +519,7 @@ func (g *Game) step() {
 	}
 	g.oldX, g.oldY = g.x, g.y
 }
+
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
 	const frameW = 78
