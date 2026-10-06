@@ -1148,7 +1148,7 @@ func (g *Game) Render(c engine.Canvas) {
 		if p.team == awayTeam {
 			label = fmt.Sprintf("A%d", i-4)
 		}
-			color := engine.TeamHome
+		color := engine.TeamHome
 		if p.team == awayTeam {
 			color = engine.TeamAway
 		}
