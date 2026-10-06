@@ -71,6 +71,7 @@ func TestRealTerminalFCFinishedScoreIsSavedSubmittedAndRestarted(t *testing.T) {
 	defer a.Close()
 	a.Resize(80, 24)
 	a.Input(key(engine.KeySelect))
+	a.Input(key(engine.KeySelect))
 
 	finisher := a.game.(engine.Finisher)
 	for i := 0; i < 4000 && !finisher.Finished(); i++ {
