@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 // Arena and rules.
@@ -471,13 +472,12 @@ const (
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	y0 := max(0, (h-1-blockH)/2)
-	ax := max(0, (w-arenaW)/2)
-	ay := y0 + hudH
-	line := func(y int, s string, color engine.Color) {
-		s = engine.Format(c, s)
-		c.Text(max(0, (w-len([]rune(s)))/2), y, s, color)
-	}
+	const (
+		frameW = 78
+		frameH = 18
+	)
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-(2+frameH+1))/2)
 
 	status := "PLAYING"
 	switch g.state {
@@ -490,44 +490,79 @@ func (g *Game) Render(c engine.Canvas) {
 	if g.hasBomb(player) {
 		bombState = "armed"
 	}
-	line(y0, engine.Format(c, "BLAST GRID   Score %-5d Bots left %d   Bomb %s   %s", g.score, g.BotsLeft(), engine.Format(c, bombState), engine.Format(c, status)), engine.Accent)
-	line(y0+1, "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
 
-	cell := func(p point, s string, color engine.Color) {
-		c.Text(ax+p.x*2, ay+p.y, s, color)
+	c.Text(x0, y0, engine.Format(c, "> BLAST GRID   Score %04d   Bots %d   Bomb %s   %s",
+		g.score, g.BotsLeft(), engine.Format(c, bombState), engine.Format(c, status)), engine.Accent)
+	c.Text(x0, y0+1, "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Muted)
+
+	fx, fy := x0, y0+2
+	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
+	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
+
+	// The 17x13 simulation grid is projected across the complete arcade frame.
+	// The authored outer wall is the frame itself; interior tiles are enlarged
+	// into readable arcade sprites instead of the old compact ##/[] map.
+	const (
+		innerCols = Cols - 2
+		innerRows = Rows - 2
+	)
+	innerX, innerY := fx+1, fy+1
+	innerW, innerH := frameW-2, frameH-2
+	left := func(x int) int { return innerX + (x-1)*innerW/innerCols }
+	right := func(x int) int { return innerX + x*innerW/innerCols }
+	top := func(y int) int { return innerY + (y-1)*innerH/innerRows }
+	bottom := func(y int) int { return innerY + y*innerH/innerRows }
+	centerX := func(x int) int {
+		l, r := left(x), right(x)
+		return l + max(0, (r-l-1)/2)
 	}
-	for y := range Rows {
-		for x := range Cols {
-			p := point{x, y}
-			switch {
-			case g.grid[y][x] == wall:
-				cell(p, "##", engine.Default)
-			case g.grid[y][x] == crate:
-				cell(p, "[]", engine.Default)
-			case g.now < g.flameUntil[y][x]:
-				cell(p, "**", engine.Warning)
-			default:
-				cell(p, "  ", engine.Default)
+	centerY := func(y int) int {
+		t, b := top(y), bottom(y)
+		return t + max(0, (b-t-1)/2)
+	}
+
+	drawTile := func(x, y int, glyph rune, color engine.Color) {
+		l, r := left(x), right(x)
+		width := min(3, max(1, r-l))
+		start := l + max(0, (r-l-width)/2)
+		for px := start; px < start+width; px++ {
+			c.Cell(px, centerY(y), glyph, color)
+		}
+	}
+	for y := 1; y < Rows-1; y++ {
+		for x := 1; x < Cols-1; x++ {
+			switch g.grid[y][x] {
+			case wall:
+				drawTile(x, y, '█', engine.Border)
+			case crate:
+				drawTile(x, y, '▓', engine.Accent)
+			}
+			if g.now < g.flameUntil[y][x] {
+				drawTile(x, y, '✱', engine.Danger)
 			}
 		}
 	}
 	for _, b := range g.bombs {
-		cell(b.pos, "()", engine.Warning)
+		c.Cell(centerX(b.pos.x), centerY(b.pos.y), '●', engine.Warning)
 	}
 	for i, a := range g.actors {
 		if !a.alive {
 			continue
 		}
-		glyph, color := "@@", engine.Player
-		if i != player {
-			glyph, color = engine.Format(c, "B%d", i), engine.Accent
+		if i == player {
+			glyph := '▲'
+			if g.bombAt(a.pos) != nil {
+				glyph = '▣'
+			}
+			c.Cell(centerX(a.pos.x), centerY(a.pos.y), glyph, engine.Player)
+			continue
 		}
-		if g.bombAt(a.pos) != nil {
-			glyph = "(" + glyph[1:] // standing on a bomb: "(@" or "(1"
-		}
-		cell(a.pos, glyph, color)
+		label := engine.Format(c, "B%d", i)
+		x := centerX(a.pos.x) - len([]rune(label))/2
+		c.Text(x, centerY(a.pos.y), label, engine.Danger)
 	}
-	line(ay+Rows, "@@ you   B1-B3 bots   () bomb   ** flame   [] crate   ## wall", engine.Default)
+
+	c.Text(x0, y0+2+frameH, "▲ you   B1-B3 bots   ● bomb   ✱ flame   ▓ crate   █ wall", engine.Muted)
 
 	if g.state != playing {
 		title := "GAME OVER"
@@ -535,9 +570,10 @@ func (g *Game) Render(c engine.Canvas) {
 			title = "YOU WIN"
 		}
 		box := []string{"", title, engine.Format(c, "Final score %d   Bots left %d", g.score, g.BotsLeft()), "Enter: play again", ""}
-		top := ay + (Rows-len(box))/2
+		top := fy + (frameH-len(box))/2
+		left := fx + (frameW-34)/2
 		for i, s := range box {
-			c.Text(ax+(arenaW-32)/2, top+i, "  "+center(engine.Format(c, s), 28)+"  ", engine.Warning)
+			c.Text(left, top+i, "  "+center(engine.Format(c, s), 30)+"  ", engine.Warning)
 		}
 	}
 }

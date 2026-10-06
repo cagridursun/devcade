@@ -606,7 +606,7 @@ func TestSnakeFromMenuRestartAndReturn(t *testing.T) {
 	// Space on the end screen must not pause it, so Enter still restarts.
 	s.InjectKey(tcell.KeyRune, ' ', 0)
 	s.InjectKey(tcell.KeyEnter, 0, 0)
-	if frame := s.waitFor(t, "Score 0     Level 1   Length 3    PLAYING"); strings.Contains(frame, "PAUSED") {
+	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score: 0000") {
 		t.Fatalf("restart blocked by pause:\n%s", frame)
 	}
 
@@ -619,7 +619,7 @@ func TestSnakeFromMenuRestartAndReturn(t *testing.T) {
 	s.InjectKey(tcell.KeyEnter, 0, 0)
 	s.waitFor(t, "New game")
 	s.InjectKey(tcell.KeyEnter, 0, 0) // fresh, unpaused run
-	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score 0") {
+	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score: 0000") {
 		t.Fatalf("relaunch is not fresh:\n%s", frame)
 	}
 	h.crashSnake(t)

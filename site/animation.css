@@ -1,3 +1,3 @@
-.terminal-preview{position:relative;aspect-ratio:1000/664;background:#101419}.terminal-preview img,.terminal-preview canvas{display:block;width:100%;height:auto}.animation-toggle{position:absolute;bottom:12px;right:12px;padding:6px 10px;border:1px solid #506045;border-radius:5px;background:#111a10f2;color:#d7ecc8;font:11px var(--mono)}.animation-toggle:hover{background:#283620}.hero-terminal figcaption{line-height:1.5}@media(max-width:400px){.animation-toggle{bottom:8px;right:8px;font-size:10px;padding:5px 8px}}
+.terminal-preview{position:relative;aspect-ratio:1000/668;background:#101419}.terminal-preview img{display:block;width:100%;height:auto}.hero-terminal figcaption{line-height:1.5}
 
 .usage-preference{padding-bottom:30px;font:12px var(--mono);color:var(--muted)}.usage-preference p{max-width:760px;line-height:1.7}.usage-preference button{border:1px solid #506045;border-radius:5px;background:#111a10;color:#d7ecc8;padding:9px 12px;font:inherit}

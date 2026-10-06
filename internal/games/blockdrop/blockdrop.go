@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 // Board and rules.
@@ -508,97 +509,83 @@ const (
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	x0 := max(0, (w-layoutW)/2)
-	y0 := max(0, (h-1-boardH)/2)
+	const (
+		frameW = 78
+		cellW  = 3
+		wellW  = Cols*cellW + 2
+	)
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-(boardH+1))/2)
 
-	// Border.
-	for x := 1; x < boardW-1; x++ {
-		c.Cell(x0+x, y0, '-', engine.Default)
-		c.Cell(x0+x, y0+boardH-1, '-', engine.Default)
+	status := "PLAYING"
+	if g.state == lost {
+		status = "GAME OVER"
 	}
-	for y := 0; y < boardH; y++ {
-		glyph := '|'
-		if y == 0 || y == boardH-1 {
-			glyph = '+'
-		}
-		c.Cell(x0, y0+y, glyph, engine.Default)
-		c.Cell(x0+boardW-1, y0+y, glyph, engine.Default)
-	}
-	// cell draws a board cell; hidden rows are never shown.
-	cell := func(p point, s string, color engine.Color) {
+	c.Text(x0, y0, engine.Format(c, "> BLOCK DROP   Score %05d   Lines %03d   Level %02d   %s",
+		g.score, g.lines, g.Level(), engine.Format(c, status)), engine.Accent)
+
+	fx, fy := x0, y0+1
+	gameui.Box(c, fx, fy, frameW, boardH, engine.Border)
+	gameui.DotGrid(c, fx, fy, frameW, boardH, 2)
+
+	// Block Drop keeps the authentic 10x20 rules, but the board is rendered as
+	// a chunky arcade well rather than the old two-character ASCII panel.
+	wx := fx + 5
+	gameui.Box(c, wx, fy, wellW, boardH, engine.Border)
+
+	cell := func(p point, glyph string, color engine.Color) {
 		if p.y >= HiddenRows && p.y < Rows && p.x >= 0 && p.x < Cols {
-			c.Text(x0+1+p.x*2, y0+1+p.y-HiddenRows, s, color)
+			c.Text(wx+1+p.x*cellW, fy+1+p.y-HiddenRows, glyph, color)
 		}
 	}
 	for y := HiddenRows; y < Rows; y++ {
 		for x := range Cols {
 			if g.board[y][x] != none {
-				cell(point{x, y}, "[]", engine.Accent)
-			} else {
-				cell(point{x, y}, " .", engine.Default)
+				cell(point{x, y}, "▓▓▓", engine.Accent)
 			}
 		}
 	}
 	if g.state == playing {
 		for _, p := range g.landing().cells() {
-			cell(p, "::", engine.Default)
+			cell(p, "░░░", engine.Muted)
 		}
-		// The falling piece has its own glyph, so it never blends into the
-		// stack on a monochrome terminal (color is only decorative).
 		for _, p := range g.cur.cells() {
-			cell(p, "<>", engine.Player)
+			cell(p, "███", engine.Player)
 		}
 	}
 
-	// Side panel.
-	px := x0 + panelX
-	status := "PLAYING"
-	if g.state == lost {
-		status = "GAME OVER"
-	}
-	for i, line := range []string{
-		"BLOCK DROP",
-		"",
-		engine.Format(c, "Score  %d", g.score),
-		engine.Format(c, "Lines  %d", g.lines),
-		engine.Format(c, "Level  %d", g.Level()),
-		status,
-		"",
-		"Next",
-	} {
-		color := engine.Default
-		if i == 0 {
-			color = engine.Accent
-		}
-		c.Text(px, y0+i, line, color)
-	}
-	// Preview: state 0 of the next piece, its top row aligned to row 9.
+	px := wx + wellW + 4
+	c.Text(px, fy+2, engine.Format(c, status), engine.Accent)
+	c.Text(px, fy+4, "NEXT", engine.Default)
+
 	top := 4
 	for _, p := range shapes[g.next][0] {
 		top = min(top, p.y)
 	}
 	for _, p := range shapes[g.next][0] {
-		c.Text(px+2+p.x*2, y0+9+p.y-top, "[]", engine.Player)
-	}
-	for i, line := range []string{
-		"Left / Right   move",
-		"Up / Z         rotate cw / ccw",
-		"Down           soft drop",
-		"Enter          hard drop",
-		controlsLine,
-		"",
-		legendLine,
-	} {
-		c.Text(px, y0+13+i, line, engine.Default)
+		c.Text(px+2+p.x*3, fy+6+p.y-top, "██", engine.Player)
 	}
 
+	for i, line := range []string{
+		"Left / Right  move",
+		"Up / Z        rotate",
+		"Down          soft drop",
+		"Enter         hard drop",
+		"Pause: Space",
+		"Leave: Q / Esc",
+		"Exit: Ctrl+C",
+	} {
+		c.Text(px, fy+11+i, line, engine.Muted)
+	}
+	c.Text(px, fy+19, "Active █  Ghost ░  Stack ▓", engine.Muted)
+
 	if g.state != playing {
-		// A blank-padded box centered on the board, above the footer row.
 		box := []string{"", "GAME OVER", engine.Format(c, "Final score %d", g.score),
 			engine.Format(c, "Lines %d   Level %d", g.lines, g.Level()), "Enter: play again", ""}
-		top := y0 + (boardH-len(box))/2
+		top := fy + (boardH-len(box))/2
+		left := wx + (wellW-30)/2
 		for i, line := range box {
-			c.Text(x0+(boardW-26)/2, top+i, " "+center(engine.Format(c, line), 24)+" ", engine.Warning)
+			c.Text(left, top+i, " "+center(engine.Format(c, line), 28)+" ", engine.Warning)
 		}
 	}
 }

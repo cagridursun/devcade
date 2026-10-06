@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 const (
@@ -1110,11 +1111,14 @@ func (g *Game) Render(c engine.Canvas) {
 		g.renderDifficulty(c, w, h)
 		return
 	}
-	ox := (w - 74) / 2
-	oy := 2
 
-	// HUD
-	c.Text(max(0, ox), 0, engine.Format(c, "TERMINAL FC   HOME %d-%d AWAY   Time %s   %s", g.homeGoals, g.awayGoals, formatTime(g.liveLeft), translate(c, g.phaseText())), engine.Accent)
+	const frameW = 78
+	const pitchFrameW = 74
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-22)/2)
+	ox := x0 + (frameW-pitchFrameW)/2
+	oy := y0 + 2
+
 	poss := "FREE"
 	if g.ball.owner != noPlayer {
 		if g.players[g.ball.owner].team == homeTeam {
@@ -1124,34 +1128,51 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 	poss = translate(c, poss)
-	c.Text(max(0, ox), 1, engine.Format(c, "H%d %s  Arrows  A lob/tackle  S pass/press  D shoot  W switch  Pause: Space", g.active+1, poss), engine.Default)
 
-	// Border and pitch markings. Exact goal mouth is rows 6..11.
-	c.Text(ox, oy, "+"+repeat("-", 72)+"+", engine.Default)
-	for y := 0; y < PitchH; y++ {
-		left, right := "|", "|"
-		if y >= 6 && y < 12 {
-			left, right = "[", "]"
+	c.Text(x0, y0, engine.Format(c, "> TERMINAL FC   HOME %d-%d AWAY   Time %s   %s",
+		g.homeGoals, g.awayGoals, formatTime(g.liveLeft), translate(c, g.phaseText())), engine.Accent)
+	c.Text(x0, y0+1, engine.Format(c, "H%d %s   Arrows   A lob/tackle   S pass/press   D shoot   W switch   Pause: Space", g.active+1, poss), engine.Muted)
+
+	gameui.Box(c, ox, oy, pitchFrameW, PitchH+2, engine.Border)
+	gameui.DotGrid(c, ox, oy, pitchFrameW, PitchH+2, 2)
+
+	// Draw a real center circle instead of crossing the halfway line through an
+	// ASCII oval. The line deliberately stops around the circle so players can
+	// move through the center without turning the marking into visual noise.
+	midX := ox + pitchFrameW/2
+	midY := oy + 1 + PitchH/2
+	for y := 1; y <= PitchH; y++ {
+		sy := oy + y
+		if sy < midY-2 || sy > midY+2 {
+			c.Cell(midX, sy, '|', engine.Border)
 		}
-		c.Text(ox, oy+1+y, left+repeat(" ", 72)+right, engine.Default)
-		c.Cell(ox+1+PitchW, oy+1+y, '|', engine.Default)
 	}
-	c.Text(ox, oy+19, "+"+repeat("-", 72)+"+", engine.Default)
+	c.Text(midX-4, midY-2, "  /---\\  ", engine.Border)
+	c.Text(midX-4, midY-1, " /     \\ ", engine.Border)
+	c.Text(midX-4, midY, "(   +   )", engine.Border)
+	c.Text(midX-4, midY+1, " \\     / ", engine.Border)
+	c.Text(midX-4, midY+2, "  \\---/  ", engine.Border)
 
-	// Suggested pass target first, then players, possession markers, then ball.
+	// Goal mouths.
+	for y := 6; y < 12; y++ {
+		c.Cell(ox, oy+1+y, '[', engine.Border)
+		c.Cell(ox+pitchFrameW-1, oy+1+y, ']', engine.Border)
+	}
+
 	if g.passTarget != noPlayer && g.phase == phaseLive {
 		p := g.players[g.passTarget]
 		c.Text(ox+1+int(p.pos.x)*2, oy+1+int(p.pos.y), ">>", engine.Warning)
 	}
 	for i, p := range g.players {
-		label := fmt.Sprintf("%c%d", 'H', i+1)
+		number := i + 1
+		color := engine.TeamHome
 		if p.team == awayTeam {
-			label = fmt.Sprintf("A%d", i-4)
+			number = i - 4
+			color = engine.TeamAway
 		}
-		color := engine.Default
+		label := fmt.Sprintf("■%d", number)
 		if i == g.active {
-			color = engine.Player
-			label = ">" + label[1:]
+			label = fmt.Sprintf("▣%d", number)
 		}
 		x := ox + 1 + int(clamp(p.pos.x, 0, PitchW-1))*2
 		y := oy + 1 + int(clamp(p.pos.y, 0, PitchH-1))
@@ -1163,7 +1184,7 @@ func (g *Game) Render(c engine.Canvas) {
 	if g.ball.owner == noPlayer {
 		x := ox + 1 + int(clamp(g.ball.pos.x, 0, PitchW-1))*2
 		y := oy + 1 + int(clamp(g.ball.pos.y, 0, PitchH-1))
-		c.Text(x, y, "oo", engine.Accent)
+		c.Text(x, y, "● ", engine.Accent)
 	}
 
 	switch g.phase {

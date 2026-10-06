@@ -2,7 +2,7 @@ name: Generate gameplay showcase
 
 on:
   push:
-    branches: [main, fix/real-gameplay-showcase]
+    branches: [main, fix/real-gameplay-showcase, experiment/arcade-visual-system]
     paths:
       - 'tools/showcase/**'
       - '.github/workflows/showcase.yml'

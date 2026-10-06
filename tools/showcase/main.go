@@ -216,4 +216,16 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("captured %d renderer-backed gameplay frames\n", len(frames))
+
+	seen := map[string]bool{}
+	for _, f := range frames {
+		if seen[f.game] {
+			continue
+		}
+		seen[f.game] = true
+		fmt.Printf("\n===== %s / actual 80x24 Game.Render =====\n", f.game)
+		for _, line := range f.lines {
+			fmt.Println(line)
+		}
+	}
 }

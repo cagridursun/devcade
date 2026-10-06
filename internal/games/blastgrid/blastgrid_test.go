@@ -746,11 +746,11 @@ func TestRenderFitsAndShowsTheArena(t *testing.T) {
 		g, _ := seeded()
 		g.Resize(size[0], size[1])
 		out := renderStrict(t, g, size[0], size[1])
-		if strings.Count(out, "@@") != 2 { // the player and the legend
+		if strings.Count(out, "▲") != 2 { // the player and the legend
 			t.Errorf("%v: want one player glyph plus legend:\n%s", size, out)
 		}
-		for _, want := range []string{"BLAST GRID", "Score 0", "Bots left 3", "Bomb ready", "B1", "B2", "B3",
-			"Bomb: Z", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C", "[]", strings.Repeat("##", Cols)} {
+		for _, want := range []string{"BLAST GRID", "Score 0000", "Bots 3", "Bomb ready", "B1", "B2", "B3",
+			"Bomb: Z", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C", "▓", "█"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("%v: screen lacks %q:\n%s", size, want, out)
 			}
@@ -761,7 +761,7 @@ func TestRenderFitsAndShowsTheArena(t *testing.T) {
 	addBomb(g, point{9, 9}, 1, 0)
 	g.Update(ms)
 	out := renderStrict(t, g, 80, 24)
-	for _, want := range []string{"(@", "**", "Bomb armed"} {
+	for _, want := range []string{"▣", "✱", "Bomb armed"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("screen lacks %q:\n%s", want, out)
 		}
@@ -787,7 +787,7 @@ func TestEngineResizeAndPause(t *testing.T) {
 	if snapshot(g) != before {
 		t.Fatal("resize changed the game")
 	}
-	if strings.Index(renderStrict(t, g, 120, 40), "@@") == strings.Index(at80, "@@") {
+	if strings.Index(renderStrict(t, g, 120, 40), "▲") == strings.Index(at80, "▲") {
 		t.Fatal("arena not re-centered on the larger screen")
 	}
 

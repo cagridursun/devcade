@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 // Board and rules.
@@ -218,65 +219,66 @@ func (g *Game) spawnFood() {
 	g.food = free[g.rng.IntN(len(free))]
 }
 
-// Layout: two HUD rows above a bordered board of two terminal columns per
-// cell, centered in the screen minus the last row (the navigation footer).
+// The visual experiment uses a shared 78-column arcade frame. At the minimum
+// 80x24 terminal size this leaves a one-column outer margin and one footer row
+// for the application shell.
 const (
-	boardW = Cols*2 + 2
-	boardH = Rows + 2
-	hudH   = 2
+	frameW = 78
+	arenaH = Rows + 2
+	viewH  = 23
 )
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	x0 := max(0, (w-boardW)/2)
-	y0 := max(0, (h-1-(hudH+boardH))/2)
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-viewH)/2)
 
+	// Shared game chrome: title, compact HUD and a phosphor-style speed meter.
 	status := "PLAYING"
-	switch g.state {
-	case lost:
+	if g.state == lost {
 		status = "GAME OVER"
-	case won:
+	} else if g.state == won {
 		status = "BOARD COMPLETE"
 	}
-	c.Text(x0, y0, engine.Format(c, "SNAKE   Score %-5d Level %-3d Length %-4d %s", g.Score(), g.Level(), len(g.body), engine.Format(c, status)), engine.Accent)
-	c.Text(x0, y0+1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
+	c.Text(x0, y0, "> SNAKE", engine.Accent)
+	gameui.RightText(c, x0, y0, frameW, engine.Format(c, status), engine.Muted)
+	c.Text(x0, y0+1, engine.Format(c, "Score: %04d     Level: %-2d     Length: %-3d", g.Score(), g.Level(), len(g.body)), engine.Default)
+	speed := 1 + min(3, g.Level()-1)
+	gameui.RightText(c, x0, y0+1, frameW, "Speed: "+gameui.Meter(speed, 4), engine.Accent)
 
-	bx, by := x0, y0+hudH
-	for x := 1; x < boardW-1; x++ {
-		c.Cell(bx+x, by, '-', engine.Default)
-		c.Cell(bx+x, by+boardH-1, '-', engine.Default)
-	}
-	for y := 0; y < boardH; y++ {
-		glyph := '|'
-		if y == 0 || y == boardH-1 {
-			glyph = '+'
-		}
-		c.Cell(bx, by+y, glyph, engine.Default)
-		c.Cell(bx+boardW-1, by+y, glyph, engine.Default)
-	}
+	bx, by := x0, y0+2
+	gameui.Box(c, bx, by, frameW, arenaH, engine.Border)
+	gameui.DotGrid(c, bx, by, frameW, arenaH, 2)
+
+	// The snake board is 72 columns wide. Two columns of breathing room on each
+	// side make it feel less cramped while preserving the original 36x18 rules.
 	cell := func(p point, s string, color engine.Color) {
-		c.Text(bx+1+p.x*2, by+1+p.y, s, color)
+		c.Text(bx+3+p.x*2, by+1+p.y, s, color)
 	}
 	if g.state == playing {
-		cell(g.food, "**", engine.Warning)
+		cell(g.food, "✱ ", engine.Danger)
 	}
 	for i := len(g.body) - 1; i >= 1; i-- {
-		cell(g.body[i], "oo", engine.Player)
+		cell(g.body[i], "██", engine.Player)
 	}
-	cell(g.body[0], "@@", engine.Player)
+	cell(g.body[0], "▣▣", engine.Player)
 
 	if g.state != playing {
 		title := "GAME OVER"
 		if g.state == won {
 			title = "BOARD COMPLETE - YOU WIN"
 		}
-		// A blank-padded box centered on the board, above the footer row.
 		box := []string{"", title, engine.Format(c, "Final score %d   Level %d", g.Score(), g.Level()), "Enter: play again", ""}
-		top := by + (boardH-len(box))/2
+		overlayW := 34
+		top := by + (arenaH-len(box))/2
+		left := bx + (frameW-overlayW)/2
 		for i, line := range box {
-			c.Text(bx+(boardW-32)/2, top+i, "  "+center(engine.Format(c, line), 28)+"  ", engine.Warning)
+			c.Text(left, top+i, fmt.Sprintf("%*s", overlayW, ""), engine.Default)
+			c.Text(left, top+i, center(engine.Format(c, line), overlayW), engine.Warning)
 		}
 	}
+
+	c.Text(x0, y0+22, "Arrows / WASD: move   Pause: Space   Q / Esc: menu", engine.Muted)
 }
 
 func center(s string, width int) string {

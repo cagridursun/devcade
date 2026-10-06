@@ -386,10 +386,10 @@ func TestRenderFitsAndShowsOneHeadAndFood(t *testing.T) {
 		g, _ := seeded()
 		g.Resize(size[0], size[1])
 		out := renderStrict(t, g, size[0], size[1])
-		if strings.Count(out, "@@") != 1 || strings.Count(out, "**") != 1 || strings.Count(out, "oo") != 2 {
+		if strings.Count(out, "▣▣") != 1 || strings.Count(out, "✱ ") != 1 || strings.Count(out, "██") != 2 {
 			t.Errorf("%v: want one head, one food, two body cells:\n%s", size, out)
 		}
-		for _, want := range []string{"SNAKE", "Score 0", "Level 1", "Pause: Space", "Leave: Q / Esc"} {
+		for _, want := range []string{"> SNAKE", "Score: 0000", "Level: 1", "PLAYING", "Pause: Space", "Q / Esc: menu"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("%v: HUD lacks %q", size, want)
 			}
@@ -423,7 +423,7 @@ func TestResizeChangesLayoutOnly(t *testing.T) {
 
 func headCol(screen string) [2]int {
 	for y, line := range strings.Split(screen, "\n") {
-		if x := strings.Index(line, "@@"); x >= 0 {
+		if x := strings.Index(line, "▣▣"); x >= 0 {
 			return [2]int{x, y}
 		}
 	}

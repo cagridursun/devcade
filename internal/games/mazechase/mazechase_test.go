@@ -467,7 +467,7 @@ func TestEatenChaserRespawnAndGrace(t *testing.T) {
 	if c.removed || c.pos != maze.chasers[0] || c.graceUntil != 3180*ms {
 		t.Fatalf("respawn: %+v", *c)
 	}
-	if out := renderStrict(t, g, 80, 24); !strings.Contains(out, "~1") {
+	if out := renderStrict(t, g, 80, 24); !strings.Contains(out, "□") {
 		t.Fatalf("harmless chaser not shown:\n%s", out)
 	}
 	// Park it and put the player on it: harmless during grace.
@@ -683,8 +683,10 @@ func TestEngineIntegrationPauseResizeRestart(t *testing.T) {
 
 func playerCell(screen string) [2]int {
 	for y, line := range strings.Split(screen, "\n") {
-		if x := strings.Index(line, "@@"); x >= 0 {
-			return [2]int{x, y}
+		for x, r := range []rune(line) {
+			if r == '●' {
+				return [2]int{x, y}
+			}
 		}
 	}
 	return [2]int{-1, -1}
@@ -745,24 +747,24 @@ func TestRenderFits(t *testing.T) {
 		g := started()
 		g.Resize(size[0], size[1])
 		out := renderStrict(t, g, size[0], size[1])
-		if n := strings.Count(out, "@@"); n != 2 { // the player and its legend entry
-			t.Errorf("%v: %d @@ glyphs, want the player plus the legend:\n%s", size, n, out)
+		if n := strings.Count(out, "●"); n != 2 { // the player and its legend entry
+			t.Errorf("%v: %d player glyphs, want the player plus the legend:\n%s", size, n, out)
 		}
-		for _, want := range []string{"MAZE CHASE", "Score 0", "Lives 3", "Power  --", "C1", "C2", "C3", "C4", "()",
+		for _, want := range []string{"MAZE CHASE", "Score 0000", "Lives 3", "Power --", "◆", "✱",
 			"Move: arrows / WASD", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("%v: screen lacks %q", size, want)
 			}
 		}
-		if strings.Count(out, "()") != 5 { // four power pellets plus the legend
-			t.Errorf("%v: power pellets: %d", size, strings.Count(out, "()"))
+		if strings.Count(out, "✱") != 5 { // four power pellets plus the legend
+			t.Errorf("%v: power pellets: %d", size, strings.Count(out, "✱"))
 		}
 	}
 
 	g := started()
 	g.powerUntil = 7500 * ms
 	out := renderStrict(t, g, 80, 24)
-	if !strings.Contains(out, "Power  7.5s") || !strings.Contains(out, "c2") || strings.Contains(out, "C2") {
+	if !strings.Contains(out, "Power  7.5s") || !strings.Contains(out, "◇") {
 		t.Errorf("vulnerable rendering:\n%s", out)
 	}
 }
@@ -773,7 +775,7 @@ func TestRenderShowsExactlyOnePlayer(t *testing.T) {
 		g.Update(100 * ms)
 		out := renderStrict(t, g, 80, 24)
 		board := strings.Split(out, "\n")[hudH : hudH+Rows]
-		if n := strings.Count(strings.Join(board, "\n"), "@@"); n != 1 {
+		if n := strings.Count(strings.Join(board, "\n"), "●"); n != 1 {
 			t.Fatalf("%d player glyphs on the board:\n%s", n, out)
 		}
 	}

@@ -521,7 +521,7 @@ func TestSpecialSweepAnimationLifetimeFreezeAndReset(t *testing.T) {
 	c := &canvas{t: t}
 	g.Render(c)
 	// Board origin (3,2); interior begins at (4,3), bottom arena row is 20.
-	if c.rows[20][4] != '-' || c.rows[20][4+g.shockX*2] != '=' {
+	if c.rows[20][4] != '│' || c.rows[20][4+g.shockX*2] != '█' {
 		t.Fatal("sweep does not span arena")
 	}
 	before := g.shock
@@ -532,7 +532,7 @@ func TestSpecialSweepAnimationLifetimeFreezeAndReset(t *testing.T) {
 	g.Update(ShockDuration / 2)
 	c = &canvas{t: t}
 	g.Render(c)
-	if c.rows[11][4] != '-' {
+	if c.rows[11][4] != '│' {
 		t.Fatal("sweep did not travel upwards")
 	}
 	g.Resize(120, 40)
