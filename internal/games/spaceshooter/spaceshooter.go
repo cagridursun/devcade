@@ -521,58 +521,57 @@ func (g *Game) step() {
 }
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	x0, y0 := max(0, (w-74)/2), max(0, (h-23)/2)
-	text := func(x, y int, s string, args ...any) { c.Text(x, y, engine.Format(c, s, args...), engine.Default) }
-	c.Text(x0, y0, engine.Format(c, "SPACE SHOOTER  Score %d Wave %d Lives %d Z %d", g.score, g.wave, g.lives, g.charges), engine.Accent)
-	c.Text(x0, y0+1, "Move: arrows/WASD  Auto-fire  Z: special  Pause: Space", engine.Muted)
+	const frameW = 78
+	const frameH = Rows + 2
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-(2+frameH+1))/2)
+
+	c.Text(x0, y0, engine.Format(c, "> SPACE SHOOTER   Score %05d   Wave %d   Lives %d   Special %s",
+		g.score, g.wave, g.lives, gameui.Meter(g.charges, 4)), engine.Accent)
+	c.Text(x0, y0+1, "Move: arrows/WASD   Auto-fire   Z: special   Pause: Space", engine.Muted)
+
 	bx, by := x0, y0+2
-	for x := 0; x < 74; x++ {
-		c.Cell(bx+x, by, '-', engine.Border)
-		c.Cell(bx+x, by+19, '-', engine.Border)
-	}
-	for y := 0; y < 20; y++ {
-		c.Cell(bx, by+y, '|', engine.Border)
-		c.Cell(bx+73, by+y, '|', engine.Border)
-	}
-	gameui.DotGrid(c, bx, by, 74, 20, 2)
+	gameui.Box(c, bx, by, frameW, frameH, engine.Border)
+	gameui.DotGrid(c, bx, by, frameW, frameH, 2)
+
 	cell := func(x, y int, s string, color engine.Color) {
 		if x >= 0 && x < Cols && y >= 0 && y < Rows {
-			c.Text(bx+1+x*2, by+1+y, s, color)
+			c.Text(bx+3+x*2, by+1+y, s, color)
 		}
 	}
-	// Render the full-width sweep behind actors. The stronger corridor marks
-	// where enemy damage was applied at activation; rendering has no side effects.
+
+	// Special attack sweep stays behind actors and becomes a much stronger
+	// visual event in the arcade skin.
 	if g.shock > 0 {
 		row := Rows - 1 - int((ShockDuration-g.shock)*time.Duration(Rows)/ShockDuration)
 		for x := 0; x < Cols; x++ {
-			glyph := "--"
-			color := engine.Default
+			glyph := "│ "
+			color := engine.Muted
 			if x >= g.shockX-SpecialRadius && x <= g.shockX+SpecialRadius {
-				glyph = "=="
+				glyph = "█ "
 				color = engine.Warning
 			}
 			cell(x, row, glyph, color)
 		}
 	}
+
 	for _, e := range g.enemies {
-		glyph := []string{"><", "VV", "[]", "<<[==]>>  "}[e.kind]
+		glyph := []string{"▼ ", "◆ ", "▣ ", "<<[==]>>  "}[e.kind]
+		color := engine.Accent
 		if e.warning > 0 {
-			glyph = []string{"!!", "V!", "[!", "!!"}[e.kind]
+			glyph = []string{"!!", "!!", "!!", "!!"}[e.kind]
 			if e.kind == boss {
 				glyph = "!![==]!!  "
 			}
-		}
-		color := engine.Accent
-		if e.warning > 0 {
 			color = engine.Danger
 		}
 		cell(e.x, e.y, glyph, color)
 	}
 	for _, b := range g.bullets {
-		s := "| "
+		s := "│ "
 		color := engine.Accent
 		if b.hostile {
-			s = ". "
+			s = "· "
 			color = engine.Danger
 		}
 		cell(int(b.x), int(b.y), s, color)
@@ -582,18 +581,21 @@ func (g *Game) Render(c engine.Canvas) {
 		if p.shield {
 			s = "SH"
 		}
-		cell(int(p.x), int(p.y), s, engine.Accent)
+		cell(int(p.x), int(p.y), s, engine.Warning)
 	}
-	player := "A^"
+
+	player := "▲ "
 	if g.protection > 0 {
-		player = "{}"
+		player = "◆ "
 	} else if g.shield {
-		player = "[A"
+		player = "▣ "
 	}
 	cell(g.x, g.y, player, engine.Player)
+
 	if g.prep > 0 {
-		text(bx+20, by+9, "Wave %d ready: %d", g.wave, int((g.prep+time.Second-1)/time.Second))
+		c.Text(bx+24, by+9, engine.Format(c, "Wave %d ready: %d", g.wave, int((g.prep+time.Second-1)/time.Second)), engine.Warning)
 	}
+
 	status := "PLAYING"
 	if g.rapid > 0 {
 		status = "Rapid fire"
@@ -613,7 +615,7 @@ func (g *Game) Render(c engine.Canvas) {
 	c.Text(x0, y0+22, status, engine.Muted)
 	for _, e := range g.enemies {
 		if e.kind == boss {
-			text(x0+28, y0+22, "Boss HP %d", e.hp)
+			c.Text(x0+28, y0+22, engine.Format(c, "Boss HP %d", e.hp), engine.Warning)
 		}
 	}
 	if g.ended {
@@ -626,3 +628,4 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 }
+
