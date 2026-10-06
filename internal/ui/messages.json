@@ -886,5 +886,17 @@
     "FLECHAS: ELEGIR   ENTER: EMPEZAR",
     "PIJLEN: KIES   ENTER: START",
     "FLÈCHES : CHOISIR   ENTER : DÉMARRER"
+  ],
+  "Username already belongs to another online identity. Choose a different username; local bests are safe.": [
+    "Bu kullanıcı adı başka bir çevrimiçi kimliğe ait. Farklı bir ad seç; yerel rekorların güvende.",
+    "Este nombre ya pertenece a otra identidad en línea. Elige otro; tus récords locales están seguros.",
+    "Deze naam hoort al bij een andere online identiteit. Kies een andere; je lokale records blijven veilig.",
+    "Ce pseudo appartient déjà à une autre identité en ligne. Choisis-en un autre ; tes records locaux sont conservés."
+  ],
+  "Online identity expired. Choose a new username in Settings; local bests are safe and will sync after reconnecting.": [
+    "Çevrimiçi kimliğin süresi doldu. Ayarlar'dan yeni bir kullanıcı adı seç; yerel rekorların güvende ve yeniden bağlanınca eşitlenecek.",
+    "La identidad en línea caducó. Elige otro nombre en Ajustes; tus récords locales están seguros y se sincronizarán al reconectar.",
+    "Je online identiteit is verlopen. Kies een nieuwe naam in Instellingen; je lokale records zijn veilig en synchroniseren na opnieuw verbinden.",
+    "Ton identité en ligne a expiré. Choisis un nouveau pseudo dans Paramètres ; tes records locaux sont conservés et seront synchronisés après reconnexion."
   ]
 }
