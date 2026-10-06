@@ -337,42 +337,59 @@ func (g *Game) Render(c engine.Canvas) {
 	x0 := max(0, (w-frameW)/2)
 	y0 := max(0, (h-1-(2+frameH+1))/2)
 
-	c.Text(x0, y0, engine.Format(c, "> BRICK BREAKER   Score %-6d Level %d/10 Lives %d Combo %d", g.score, g.level, g.lives, g.combo), engine.Accent)
+	c.Text(x0, y0, engine.Format(c, "> BRICK BREAKER   Score %05d   Level %d/10   Lives %d   Combo %d",
+		g.score, g.level, g.lives, g.combo), engine.Accent)
 	c.Text(x0, y0+1, "Move: arrows/A/D   Launch: Enter/Z   Pause: Space", engine.Muted)
 
 	fx, fy := x0, y0+2
 	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
 	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
 
-	bx := fx + (frameW-Cols)/2
+	// Physics stay on the original 60-column board, but rendering expands that
+	// board to the complete frame. The visible side walls now match the exact
+	// collision boundaries, so the ball never appears to bounce in mid-air.
+	innerX := fx + 1
+	innerW := frameW - 2
 	by := fy + 1
+	mapX := func(v float64) int {
+		v = math.Max(0, math.Min(Cols, v))
+		return innerX + int(math.Round(v*float64(innerW-1)/float64(Cols)))
+	}
 
 	for _, r := range g.bricks {
 		if r.hp == 0 {
 			continue
 		}
-		s := "████"
+		left := mapX(float64(r.x))
+		right := max(left+1, mapX(float64(r.x+4)))
+		glyph := '█'
 		color := engine.Accent
 		if r.steel {
-			s = "▓▓▓▓"
+			glyph = '▓'
 			color = engine.Border
 		}
-		c.Text(bx+r.x, by+r.y, s, color)
+		for x := left; x < right; x++ {
+			c.Cell(x, by+r.y, glyph, color)
+		}
 	}
 	for _, d := range g.drops {
-		c.Cell(bx+int(d.x), by+int(d.y), bonusGlyph[d.kind], engine.Warning)
+		c.Cell(mapX(d.x), by+int(d.y), bonusGlyph[d.kind], engine.Warning)
 	}
 	for _, b := range g.balls {
-		c.Cell(bx+int(b.x), by+int(b.y), '●', engine.Player)
+		c.Cell(mapX(b.x), by+int(b.y), '●', engine.Player)
 	}
+
 	half := g.paddleWidth() / 2
-	for x := int(math.Ceil(g.paddle - half)); float64(x) < g.paddle+half; x++ {
-		c.Cell(bx+x, by+paddleY, '█', engine.Player)
+	leftPaddle := mapX(g.paddle - half)
+	rightPaddle := max(leftPaddle+1, mapX(g.paddle+half))
+	for x := leftPaddle; x <= rightPaddle; x++ {
+		c.Cell(x, by+paddleY, '█', engine.Player)
 	}
+
 	if g.serve > 0 {
-		c.Text(bx+8, by+11, "W:wide M:multi S:slow L:life P:pierce X:2x", engine.Muted)
-		c.Cell(bx+int(g.paddle), by+paddleY, '●', engine.Player)
-		c.Text(bx+15, by+12, "Enter/Z: launch (auto in 1.5s)", engine.Warning)
+		c.Cell(mapX(g.paddle), by+paddleY-1, '●', engine.Player)
+		c.Text(fx+18, by+11, "W wide   M multi   S slow   L life   P pierce   X 2x", engine.Muted)
+		c.Text(fx+24, by+13, "Enter/Z: launch   auto-launch in 1.5s", engine.Warning)
 	}
 
 	c.Text(x0, y0+22, engine.Format(c, "Bricks %d   Cleared %d   Best combo %d   W M S L P X: bonuses",
@@ -384,8 +401,9 @@ func (g *Game) Render(c engine.Canvas) {
 			title = "ALL LEVELS COMPLETE"
 		}
 		lines := []string{"", title, engine.Format(c, "Final score %d", g.score), "Enter: play again", ""}
+		left := fx + (frameW-42)/2
 		for i, s := range lines {
-			c.Text(bx+10, by+7+i, fmt.Sprintf(" %-40s ", engine.Format(c, s)), engine.Warning)
+			c.Text(left, by+6+i, fmt.Sprintf(" %-40s ", engine.Format(c, s)), engine.Warning)
 		}
 	} else {
 		effects := ""
@@ -395,7 +413,7 @@ func (g *Game) Render(c engine.Canvas) {
 			}
 		}
 		if effects != "" {
-			c.Text(bx+2, by+Rows, effects, engine.Warning)
+			c.Text(fx+2, by+Rows-1, effects, engine.Warning)
 		}
 	}
 }
