@@ -445,7 +445,7 @@ func (g *Game) Render(c engine.Canvas) {
 	}
 	c.Text(x0, y0, engine.Format(c, "MAZE CHASE   Score %-6d Lives %d   %s   Left %-4d %s",
 		g.score, g.lives, powerText, g.remaining, engine.Format(c, status)), engine.Accent)
-	c.Text(x0, y0+1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
+	c.Text(x0, y0+1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Muted)
 
 	bx, by := x0+(blockW-boardW)/2, y0+hudH
 	cell := func(p point, s string, color engine.Color) {
@@ -456,9 +456,9 @@ func (g *Game) Render(c engine.Canvas) {
 			p := point{x, y}
 			switch {
 			case maze.wall[y][x]:
-				cell(p, "##", engine.Default)
+				cell(p, "##", engine.Border)
 			case g.items[y][x] == pellet:
-				cell(p, " .", engine.Default)
+				cell(p, " .", engine.Muted)
 			case g.items[y][x] == power:
 				cell(p, "()", engine.Warning)
 			}
@@ -472,15 +472,15 @@ func (g *Game) Render(c engine.Canvas) {
 		digit := string(rune('1' + i))
 		switch {
 		case g.now < ch.graceUntil:
-			cell(ch.pos, "~"+digit, engine.Default)
+			cell(ch.pos, "~"+digit, engine.Muted)
 		case g.vulnerable():
-			cell(ch.pos, "c"+digit, engine.Default)
+			cell(ch.pos, "c"+digit, engine.Accent)
 		default:
-			cell(ch.pos, "C"+digit, engine.Accent)
+			cell(ch.pos, "C"+digit, engine.Danger)
 		}
 	}
 	cell(g.player, "@@", engine.Player)
-	c.Text(x0, by+Rows, "@@ you   C1-C4 chasers   c vulnerable   ~ harmless   () power", engine.Default)
+	c.Text(x0, by+Rows, "@@ you   C1-C4 chasers   c vulnerable   ~ harmless   () power", engine.Muted)
 
 	if g.state != playing {
 		title := "GAME OVER"
