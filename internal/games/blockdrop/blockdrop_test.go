@@ -349,7 +349,7 @@ func TestProjectionAndHardDrop(t *testing.T) {
 		t.Fatalf("landing %+v", land)
 	}
 	out := boardArea(t, renderStrict(t, g, 80, 24))
-	if n := strings.Count(out, "::"); n != 4 {
+	if n := strings.Count(out, "░░░"); n != 4 {
 		t.Fatalf("projection cells %d, want 4:\n%s", n, out)
 	}
 	g.HandleInput(engine.KeySelect)
@@ -376,7 +376,7 @@ func TestProjectionAndHardDrop(t *testing.T) {
 func TestProjectionHiddenWhenGrounded(t *testing.T) {
 	g, _ := seeded()
 	g.put(pieceO, 0, 4, 20)
-	if out := boardArea(t, renderStrict(t, g, 80, 24)); strings.Contains(out, "::") {
+	if out := boardArea(t, renderStrict(t, g, 80, 24)); strings.Contains(out, "░░░") {
 		t.Fatalf("projection drawn under a grounded piece:\n%s", out)
 	}
 }
@@ -917,7 +917,8 @@ func boardArea(t *testing.T, screen string) string {
 	}
 	rows := make([]string, VisibleRows)
 	for i := range rows {
-		rows[i] = lines[at[1]+1+i][at[0]+1 : at[0]+1+Cols*3]
+		line := []rune(lines[at[1]+1+i])
+		rows[i] = string(line[at[0]+1 : at[0]+1+Cols*3])
 	}
 	return strings.Join(rows, "\n")
 }
@@ -929,8 +930,9 @@ func TestGroundedPieceIsDistinctFromTheStackWithoutColor(t *testing.T) {
 	g.fill("xxxx..xxxx", "xxxx..xxxx")
 	g.put(pieceO, 0, 4, 20)
 	board := strings.Split(boardArea(t, renderStrict(t, g, 80, 24)), "\n")
+	want := strings.Repeat("▓▓▓", 4) + strings.Repeat("███", 2) + strings.Repeat("▓▓▓", 4)
 	for _, row := range board[VisibleRows-2:] {
-		if row != "▓▓▓▓▓▓▓▓▓▓▓▓██████▓▓▓▓▓▓▓▓▓▓▓▓" {
+		if row != want {
 			t.Fatalf("bottom rows render as %q, want the active piece in solid blocks", board[VisibleRows-2:])
 		}
 	}
