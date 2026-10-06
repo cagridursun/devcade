@@ -41,6 +41,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 // Rules.
@@ -429,8 +430,10 @@ const (
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	x0 := max(0, (w-blockW)/2)
-	y0 := max(0, (h-1-blockH)/2)
+	const frameW = 78
+	const frameH = Rows + 2
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-(2+frameH))/2)
 
 	status := "PLAYING"
 	switch g.state {
@@ -441,13 +444,18 @@ func (g *Game) Render(c engine.Canvas) {
 	}
 	powerText := "Power  -- "
 	if g.vulnerable() {
-		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil - g.now).Seconds())
+		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil-g.now).Seconds())
 	}
-	c.Text(x0, y0, engine.Format(c, "MAZE CHASE   Score %-6d Lives %d   %s   Left %-4d %s",
+
+	c.Text(x0, y0, engine.Format(c, "> MAZE CHASE   Score %d   Lives %d   %s   Left %d   %s",
 		g.score, g.lives, powerText, g.remaining, engine.Format(c, status)), engine.Accent)
 	c.Text(x0, y0+1, "Move: arrows / WASD   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Muted)
 
-	bx, by := x0+(blockW-boardW)/2, y0+hudH
+	fx, fy := x0, y0+2
+	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
+	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
+
+	bx, by := fx+(frameW-boardW)/2, fy+1
 	cell := func(p point, s string, color engine.Color) {
 		c.Text(bx+p.x*2, by+p.y, s, color)
 	}
@@ -480,7 +488,9 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 	cell(g.player, "@@", engine.Player)
-	c.Text(x0, by+Rows, "@@ you   C1-C4 chasers   c vulnerable   ~ harmless   () power", engine.Muted)
+
+	legend := "@@ you   C1-C4 chasers   c vulnerable   ~ harmless   () power"
+	c.Text(fx+2, fy+frameH-1, legend, engine.Muted)
 
 	if g.state != playing {
 		title := "GAME OVER"
