@@ -16,12 +16,12 @@ type terminalFCControlProbe struct {
 	keys []engine.Key
 }
 
-func (g *terminalFCControlProbe) MinimumSize() (int, int) { return 80, 24 }
-func (g *terminalFCControlProbe) Start(int, int) {}
-func (g *terminalFCControlProbe) Resize(int, int) {}
+func (g *terminalFCControlProbe) MinimumSize() (int, int)  { return 80, 24 }
+func (g *terminalFCControlProbe) Start(int, int)           {}
+func (g *terminalFCControlProbe) Resize(int, int)          {}
 func (g *terminalFCControlProbe) HandleInput(k engine.Key) { g.keys = append(g.keys, k) }
-func (g *terminalFCControlProbe) Update(time.Duration) {}
-func (g *terminalFCControlProbe) Render(engine.Canvas) {}
+func (g *terminalFCControlProbe) Update(time.Duration)     {}
+func (g *terminalFCControlProbe) Render(engine.Canvas)     {}
 
 func TestTerminalFCRemapsASDWWhileKeepingArrowsForMovement(t *testing.T) {
 	probe := &terminalFCControlProbe{}
