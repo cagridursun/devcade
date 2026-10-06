@@ -55,7 +55,8 @@ Block Drop:  Left/Right (A/D) move, Up (W) rotate clockwise,
              Z rotate counterclockwise, Down (S) soft drop, Enter hard drop
 Maze Chase:  arrows / WASD steer (a turn waits for an opening)
 Blast Grid:  arrows / WASD move one cell, Z place a bomb
-Terminal FC: arrows move, A lob pass/tackle, S ground pass/press, D shoot, W switch
+Terminal FC: choose Easy/Normal/Hard, then arrows move, A lob pass/tackle,
+             S ground pass/press, D shoot, W switch
 
 Terminal diagnostic:
   arrows / WASD           change direction
