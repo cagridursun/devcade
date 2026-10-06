@@ -264,19 +264,32 @@ player at a time; the other nine players are bots.
 | --- | --- |
 | Live match time | 180 s |
 | Simulation step | 20 ms fixed step |
-| Bot decision interval | 120 ms |
+| Difficulty | Easy / Normal / Hard; Normal is the default |
 | Human movement | One logical cell per accepted press; 80 ms cooldown |
 | Pass / shot cooldown | 300 ms |
-| Tackle cooldown | 700 ms |
+| Human tackle cooldown | 700 ms |
 | Manual player switch | 250 ms |
 | Pass speed | 12 logical cells/s |
 | Shot speed | 20 logical cells/s |
 | Free-ball deceleration | 4 logical cells/s² |
 | Kicker reclaim grace | 150 ms |
-| Ownership-change protection | 250 ms |
 | Goal overlay | 1.5 s |
 | Kickoff / other restart | 1 s |
 | Goalkeeper hold | At most 2 s |
+
+**Difficulty:** every new match opens with a pre-match selector. Easy gives
+the player the most room to build attacks; Normal is the default balanced
+mode; Hard preserves the original aggressive bot tuning.
+
+| Difficulty | Bot reaction | Bot speed | Bot tackle cooldown | Bot tackle range | New-possession protection | Press delay |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Easy | 240 ms | 4.0 cells/s | 1200 ms | 0.85 | 550 ms | 450 ms |
+| Normal | 180 ms | 4.5 cells/s | 1000 ms | 1.00 | 450 ms | 350 ms |
+| Hard | 120 ms | 6.0 cells/s | 700 ms | 1.20 | 250 ms | 0 ms |
+
+The football rules and leaderboard scoring formula are unchanged across
+difficulty levels. Use Up/Down (or Left/Right) on the selector and Enter to
+start. After full time, Enter returns to the selector for the next match.
 
 **Controls:** arrow keys move the selected player and update facing. `A`
 plays a lob pass in possession and tackles while defending. `S` plays a
@@ -328,7 +341,7 @@ policy keeps role-based home zones, chooses a primary presser or free-ball
 chaser, lets carriers dribble/pass/shoot, and bounds goalkeepers to their own
 area while tracking the ball and distributing within two seconds.
 
-**Current limitations:** there is one balanced standard match. There is no
+**Current limitations:** there is one standard 5v5 match format with three AI difficulty levels. There is no
 online/local two-player mode, season mode, licensed club content, offside,
 fouls/cards, stamina, substitutions, charged shots or audio. The first
 version deliberately favors a compact readable terminal match over a full
