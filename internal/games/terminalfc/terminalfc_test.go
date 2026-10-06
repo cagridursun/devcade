@@ -53,6 +53,8 @@ func TestLobPassClearsOutfieldInterceptionAndPressClosesDown(t *testing.T) {
 	g.players[1].pos = vec{10, 9}
 	g.players[1].facing = vec{1, 0}
 	g.players[2].pos = vec{18, 9}
+	g.players[3].pos = vec{8, 2}
+	g.players[4].pos = vec{8, 16}
 	g.players[6].pos = vec{14, 9}
 	g.ball = ballState{pos: g.players[1].pos, owner: 1, lastTouch: 1, releasedBy: noPlayer, mode: ballCarried}
 
@@ -60,8 +62,11 @@ func TestLobPassClearsOutfieldInterceptionAndPressClosesDown(t *testing.T) {
 	if g.ball.owner != noPlayer || g.ball.mode != ballLob || math.Abs(g.ball.vel.len()-lobSpeed) > 1e-9 {
 		t.Fatalf("lob pass did not release correctly: %+v", g.ball)
 	}
+	if g.passTarget != 2 {
+		t.Fatalf("lob selected target %d, want 2", g.passTarget)
+	}
 	if hit, _ := g.firstPlayerContact(g.players[1].pos, g.players[2].pos); hit != 2 {
-		t.Fatalf("lob should clear outfield interceptor and target receiver, hit=%d", hit)
+		t.Fatalf("lob should clear outfield interceptor and reach target receiver, hit=%d", hit)
 	}
 
 	g = seeded(23)
