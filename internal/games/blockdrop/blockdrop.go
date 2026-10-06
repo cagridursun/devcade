@@ -589,8 +589,9 @@ func (g *Game) Render(c engine.Canvas) {
 		box := []string{"", "GAME OVER", engine.Format(c, "Final score %d", g.score),
 			engine.Format(c, "Lines %d   Level %d", g.lines, g.Level()), "Enter: play again", ""}
 		top := by + (boardH-len(box))/2
+		left := fx + (frameW-32)/2
 		for i, line := range box {
-			c.Text(bx+(boardW-26)/2, top+i, " "+center(engine.Format(c, line), 24)+" ", engine.Warning)
+			c.Text(left, top+i, "  "+center(engine.Format(c, line), 28)+"  ", engine.Warning)
 		}
 	}
 }
