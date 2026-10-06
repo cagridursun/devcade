@@ -629,4 +629,3 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 }
-
