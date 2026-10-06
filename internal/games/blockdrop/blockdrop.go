@@ -509,28 +509,37 @@ const (
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	x0 := max(0, (w-layoutW)/2)
-	y0 := max(0, (h-1-boardH)/2)
+	const frameW = 78
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-(boardH+1))/2)
 
-	// Border.
+	// One-line HUD keeps the full twenty-row Tetris board visible at 80x24.
+	c.Text(x0, y0, engine.Format(c, "> BLOCK DROP   Score  %-5d Lines  %-3d Level  %-2d", g.score, g.lines, g.Level()), engine.Accent)
+
+	fx, fy := x0, y0+1
+	gameui.Box(c, fx, fy, frameW, boardH, engine.Border)
+	gameui.DotGrid(c, fx, fy, frameW, boardH, 2)
+
+	// Preserve the real 10x20 board inside the wider arcade frame. The right
+	// side becomes an integrated next/status/control panel instead of a
+	// separate terminal block.
+	bx, by := fx+2, fy
 	for x := 1; x < boardW-1; x++ {
-		c.Cell(x0+x, y0, '-', engine.Border)
-		c.Cell(x0+x, y0+boardH-1, '-', engine.Border)
+		c.Cell(bx+x, by, '-', engine.Border)
+		c.Cell(bx+x, by+boardH-1, '-', engine.Border)
 	}
 	for y := 0; y < boardH; y++ {
 		glyph := '|'
 		if y == 0 || y == boardH-1 {
 			glyph = '+'
 		}
-		c.Cell(x0, y0+y, glyph, engine.Border)
-		c.Cell(x0+boardW-1, y0+y, glyph, engine.Border)
+		c.Cell(bx, by+y, glyph, engine.Border)
+		c.Cell(bx+boardW-1, by+y, glyph, engine.Border)
 	}
-	gameui.DotGrid(c, x0, y0, boardW, boardH, 2)
 
-	// cell draws a board cell; hidden rows are never shown.
 	cell := func(p point, s string, color engine.Color) {
 		if p.y >= HiddenRows && p.y < Rows && p.x >= 0 && p.x < Cols {
-			c.Text(x0+1+p.x*2, y0+1+p.y-HiddenRows, s, color)
+			c.Text(bx+1+p.x*2, by+1+p.y-HiddenRows, s, color)
 		}
 	}
 	for y := HiddenRows; y < Rows; y++ {
@@ -546,62 +555,46 @@ func (g *Game) Render(c engine.Canvas) {
 		for _, p := range g.landing().cells() {
 			cell(p, "::", engine.Muted)
 		}
-		// The falling piece has its own glyph, so it never blends into the
-		// stack on a monochrome terminal (color is only decorative).
 		for _, p := range g.cur.cells() {
 			cell(p, "<>", engine.Player)
 		}
 	}
 
-	// Side panel.
-	px := x0 + panelX
+	px := fx + 27
 	status := "PLAYING"
 	if g.state == lost {
 		status = "GAME OVER"
 	}
-	for i, line := range []string{
-		"BLOCK DROP",
-		"",
-		engine.Format(c, "Score  %d", g.score),
-		engine.Format(c, "Lines  %d", g.lines),
-		engine.Format(c, "Level  %d", g.Level()),
-		status,
-		"",
-		"Next",
-	} {
-		color := engine.Default
-		if i == 0 {
-			color = engine.Accent
-		}
-		c.Text(px, y0+i, line, color)
-	}
-	// Preview: state 0 of the next piece, its top row aligned to row 9.
+	c.Text(px, fy+1, status, engine.Accent)
+	c.Text(px, fy+3, "Next", engine.Default)
+
 	top := 4
 	for _, p := range shapes[g.next][0] {
 		top = min(top, p.y)
 	}
 	for _, p := range shapes[g.next][0] {
-		c.Text(px+2+p.x*2, y0+9+p.y-top, "[]", engine.Player)
+		c.Text(px+2+p.x*2, fy+5+p.y-top, "[]", engine.Player)
 	}
+
 	for i, line := range []string{
 		"Left / Right   move",
 		"Up / Z         rotate cw / ccw",
 		"Down           soft drop",
 		"Enter          hard drop",
-		controlsLine,
+		"Pause: Space   Leave: Q / Esc",
+		"Exit: Ctrl+C",
 		"",
-		legendLine,
+		"Piece <>   Landing ::   Stack []",
 	} {
-		c.Text(px, y0+13+i, line, engine.Muted)
+		c.Text(px, fy+10+i, line, engine.Muted)
 	}
 
 	if g.state != playing {
-		// A blank-padded box centered on the board, above the footer row.
 		box := []string{"", "GAME OVER", engine.Format(c, "Final score %d", g.score),
 			engine.Format(c, "Lines %d   Level %d", g.lines, g.Level()), "Enter: play again", ""}
-		top := y0 + (boardH-len(box))/2
+		top := by + (boardH-len(box))/2
 		for i, line := range box {
-			c.Text(x0+(boardW-26)/2, top+i, " "+center(engine.Format(c, line), 24)+" ", engine.Warning)
+			c.Text(bx+(boardW-26)/2, top+i, " "+center(engine.Format(c, line), 24)+" ", engine.Warning)
 		}
 	}
 }
