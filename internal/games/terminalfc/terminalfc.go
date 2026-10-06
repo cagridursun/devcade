@@ -1142,10 +1142,10 @@ func (g *Game) Render(c engine.Canvas) {
 	for y := 1; y <= PitchH; y++ {
 		c.Cell(midX, oy+y, '|', engine.Border)
 	}
-	c.Text(midX-4, oy+7, " /---\ ", engine.Border)
+	c.Text(midX-4, oy+7, " /---\\ ", engine.Border)
 	c.Text(midX-5, oy+8, "(  |  )", engine.Border)
 	c.Text(midX-5, oy+9, "(  |  )", engine.Border)
-	c.Text(midX-4, oy+10, " \---/ ", engine.Border)
+	c.Text(midX-4, oy+10, " \\---/ ", engine.Border)
 
 	// Goal mouths.
 	for y := 6; y < 12; y++ {
