@@ -467,7 +467,7 @@ func TestEatenChaserRespawnAndGrace(t *testing.T) {
 	if c.removed || c.pos != maze.chasers[0] || c.graceUntil != 3180*ms {
 		t.Fatalf("respawn: %+v", *c)
 	}
-	if out := renderStrict(t, g, 80, 24); !strings.Contains(out, "~1") {
+	if out := renderStrict(t, g, 80, 24); !strings.Contains(out, "□") {
 		t.Fatalf("harmless chaser not shown:\n%s", out)
 	}
 	// Park it and put the player on it: harmless during grace.
@@ -683,8 +683,10 @@ func TestEngineIntegrationPauseResizeRestart(t *testing.T) {
 
 func playerCell(screen string) [2]int {
 	for y, line := range strings.Split(screen, "\n") {
-		if x := strings.Index(line, "@@"); x >= 0 {
-			return [2]int{x, y}
+		for x, r := range []rune(line) {
+			if r == '●' {
+				return [2]int{x, y}
+			}
 		}
 	}
 	return [2]int{-1, -1}
