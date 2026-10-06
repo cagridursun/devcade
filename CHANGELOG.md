@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add Terminal FC as game six: deterministic three-minute 5v5 football with Easy, Normal and Hard AI, passing, tackling, shooting, player switching, completed-match scores and leaderboard/analytics integration.
-- Refresh the README and GitHub Pages showcase for all seven playable games, including a seven-game animated terminal reel and Terminal FC artwork.
+- Refresh the README showcase for all seven playable games with a renderer-backed gameplay animation generated from the real game implementations.
 - Add Brick Breaker as the fifth game: ten levels, durable/steel bricks,
   progressive speed, three lives, paddle-angle physics and six power-ups.
 - Add combo scoring, clear/win bonuses, local/global scores and optional run

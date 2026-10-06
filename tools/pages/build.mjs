@@ -18,7 +18,6 @@ await rm(output, { recursive: true, force: true });
 await mkdir(resolve(output, 'assets'), { recursive: true });
 for (const file of ['index.html', 'style.css', 'app.mjs', 'data.mjs', 'favicon.svg', 'animation.css', 'snake-preview.mjs', 'usage.mjs', 'leaderboards.mjs']) await cp(resolve(root, 'site', file), resolve(output, file));
 for (const game of ['snake', 'blockdrop', 'mazechase', 'blastgrid', 'brickbreaker', 'spaceshooter']) await cp(resolve(root, 'docs/screenshots', `${game}.png`), resolve(output, 'assets', `${game}.png`));
-await cp(resolve(root, 'docs/screenshots', 'terminalfc.svg'), resolve(output, 'assets', 'terminalfc.svg'));
 await cp(resolve(root, 'site/assets/snake-demo.json'), resolve(output, 'assets/snake-demo.json'));
 await writeFile(resolve(output, 'leaderboards.json'), `${JSON.stringify(snapshot)}\n`);
 await writeFile(resolve(output, '.nojekyll'), '');
