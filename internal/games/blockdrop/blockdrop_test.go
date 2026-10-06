@@ -882,20 +882,17 @@ func TestRenderFitsAndShowsHUD(t *testing.T) {
 		g.fill("xxxxx.....")
 		out := renderStrict(t, g, size[0], size[1])
 		board := boardArea(t, out)
-		if strings.Count(board, "[]") != 5 || strings.Count(board, "<>") != 4 || strings.Count(board, "::") != 4 {
+		if strings.Count(board, "▓▓▓") != 5 || strings.Count(board, "███") != 4 || strings.Count(board, "░░░") != 4 {
 			t.Errorf("%v: want 5 settled cells, 4 piece cells, 4 projection cells:\n%s", size, board)
-		}
-		if n := strings.Count(out, "[]"); n != 5+4+1 { // board, preview, legend
-			t.Errorf("%v: %d [] glyphs on screen, want 10:\n%s", size, n, out)
 		}
 		for _, want := range []string{"BLOCK DROP", "Score  0", "Lines  0", "Level  1", "Next",
 			"rotate cw / ccw", "hard drop", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C",
-			"Piece <>   Landing ::   Stack []"} {
+			"Active █  Ghost ░  Stack ▓"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("%v: HUD lacks %q", size, want)
 			}
 		}
-		if strings.Count(out, "+--------------------+") != 2 {
+		if strings.Count(out, "+------------------------------+") != 2 {
 			t.Errorf("%v: board border not complete:\n%s", size, out)
 		}
 	}
@@ -905,7 +902,7 @@ func TestRenderHidesCellsInHiddenRows(t *testing.T) {
 	g, _ := seeded()
 	g.put(pieceI, 1, 3, 0) // column 5, rows 0..3: two cells hidden
 	board := boardArea(t, renderStrict(t, g, 80, 24))
-	if n := strings.Count(board, "<>"); n != 2 {
+	if n := strings.Count(board, "███"); n != 2 {
 		t.Fatalf("%d piece glyphs, want 2 visible piece cells:\n%s", n, board)
 	}
 }
@@ -914,13 +911,13 @@ func TestRenderHidesCellsInHiddenRows(t *testing.T) {
 func boardArea(t *testing.T, screen string) string {
 	t.Helper()
 	lines := strings.Split(screen, "\n")
-	at := position(screen, "+--------------------+")
+	at := position(screen, "+------------------------------+")
 	if at[1] < 0 || at[1]+21 >= len(lines) {
 		t.Fatalf("no board border:\n%s", screen)
 	}
 	rows := make([]string, VisibleRows)
 	for i := range rows {
-		rows[i] = lines[at[1]+1+i][at[0]+1 : at[0]+1+Cols*2]
+		rows[i] = lines[at[1]+1+i][at[0]+1 : at[0]+1+Cols*3]
 	}
 	return strings.Join(rows, "\n")
 }
@@ -933,11 +930,11 @@ func TestGroundedPieceIsDistinctFromTheStackWithoutColor(t *testing.T) {
 	g.put(pieceO, 0, 4, 20)
 	board := strings.Split(boardArea(t, renderStrict(t, g, 80, 24)), "\n")
 	for _, row := range board[VisibleRows-2:] {
-		if row != "[][][][]<><>[][][][]" {
-			t.Fatalf("bottom rows render as %q, want the piece as <>", board[VisibleRows-2:])
+		if row != "▓▓▓▓▓▓▓▓▓▓▓▓██████▓▓▓▓▓▓▓▓▓▓▓▓" {
+			t.Fatalf("bottom rows render as %q, want the active piece in solid blocks", board[VisibleRows-2:])
 		}
 	}
-	if strings.Contains(strings.Join(board, ""), "::") {
+	if strings.Contains(strings.Join(board, ""), "░░░") {
 		t.Fatal("projection drawn under a grounded piece")
 	}
 }
