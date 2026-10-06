@@ -446,7 +446,7 @@ func (g *Game) Render(c engine.Canvas) {
 	}
 	powerText := "Power --"
 	if g.vulnerable() {
-		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil-g.now).Seconds())
+		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil - g.now).Seconds())
 	}
 
 	c.Text(x0, y0, engine.Format(c, "> MAZE CHASE   Score %04d   Lives %d   %s   Left %03d   %s",
@@ -477,7 +477,6 @@ func (g *Game) Render(c engine.Canvas) {
 
 	for y := 1; y < Rows-1; y++ {
 		for x := 1; x < Cols-1; x++ {
-			p := point{x, y}
 			if maze.wall[y][x] {
 				for px := left(x); px < right(x); px++ {
 					c.Cell(px, rowY(y), '▓', engine.Border)
@@ -490,7 +489,6 @@ func (g *Game) Render(c engine.Canvas) {
 			case power:
 				c.Cell(centerX(x), rowY(y), '✱', engine.Warning)
 			}
-			_ = p
 		}
 	}
 
@@ -499,17 +497,17 @@ func (g *Game) Render(c engine.Canvas) {
 		if ch.removed {
 			continue
 		}
-		color := engine.Danger
+		glyph, color := '◆', engine.Danger
 		if g.now < ch.graceUntil {
-			color = engine.Muted
+			glyph, color = '□', engine.Muted
 		} else if g.vulnerable() {
-			color = engine.Accent
+			glyph, color = '◇', engine.Accent
 		}
-		c.Cell(centerX(ch.pos.x), rowY(ch.pos.y), '◆', color)
+		c.Cell(centerX(ch.pos.x), rowY(ch.pos.y), glyph, color)
 	}
 	c.Cell(centerX(g.player.x), rowY(g.player.y), '●', engine.Player)
 
-	c.Text(x0, y0+2+frameH, "● you   ◆ chasers   ✱ power pellet   ▓ wall", engine.Muted)
+	c.Text(x0, y0+2+frameH, "● you   ◆ chasers   ◇ vulnerable   ✱ power   ▓ wall", engine.Muted)
 
 	if g.state != playing {
 		title := "GAME OVER"
