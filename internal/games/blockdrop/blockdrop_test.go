@@ -885,8 +885,8 @@ func TestRenderFitsAndShowsHUD(t *testing.T) {
 		if strings.Count(board, "▓▓▓") != 5 || strings.Count(board, "███") != 4 || strings.Count(board, "░░░") != 4 {
 			t.Errorf("%v: want 5 settled cells, 4 piece cells, 4 projection cells:\n%s", size, board)
 		}
-		for _, want := range []string{"BLOCK DROP", "Score  0", "Lines  0", "Level  1", "Next",
-			"rotate cw / ccw", "hard drop", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C",
+		for _, want := range []string{"BLOCK DROP", "Score 00000", "Lines 000", "Level 01", "NEXT",
+			"rotate", "hard drop", "Pause: Space", "Leave: Q / Esc", "Exit: Ctrl+C",
 			"Active █  Ghost ░  Stack ▓"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("%v: HUD lacks %q", size, want)
