@@ -35,6 +35,7 @@ const (
 	botInterval     = 120 * time.Millisecond
 
 	passSpeed       = 12.0
+	lobSpeed        = 14.0
 	shotSpeed       = 20.0
 	freeDecel       = 4.0
 	interactRadius  = 0.60
@@ -90,6 +91,7 @@ const (
 	ballCarried ballMode = iota
 	ballFree
 	ballPass
+	ballLob
 	ballShot
 	ballKeeper
 )
@@ -254,13 +256,19 @@ func (g *Game) HandleInput(k engine.Key) {
 		return
 	}
 	switch k {
-	case engine.KeySecondary:
+	case engine.KeyTertiary:
 		g.switchPlayer()
 	case engine.KeyAction:
 		if g.ball.owner == g.active {
-			g.pass(g.active, true)
+			g.lobPass(g.active)
 		} else {
 			g.tackle(g.active)
+		}
+	case engine.KeySecondary:
+		if g.ball.owner == g.active {
+			g.pass(g.active, true)
+		} else {
+			g.pressHuman()
 		}
 	case engine.KeySelect:
 		if g.ball.owner == g.active {
@@ -300,6 +308,31 @@ func (g *Game) moveHuman(k engine.Key) {
 	} else if g.ball.owner == noPlayer {
 		g.tryAcquireOnSegment(g.active, from, to)
 	}
+}
+
+func (g *Game) pressHuman() {
+	if g.active < 1 || g.active > 4 {
+		return
+	}
+	target := g.ball.pos
+	if g.ball.owner != noPlayer {
+		target = g.players[g.ball.owner].pos
+	}
+	d := target.sub(g.players[g.active].pos)
+	if d.len() < 0.5 {
+		return
+	}
+	key := engine.KeyRight
+	if math.Abs(d.x) >= math.Abs(d.y) {
+		if d.x < 0 {
+			key = engine.KeyLeft
+		}
+	} else if d.y < 0 {
+		key = engine.KeyUp
+	} else {
+		key = engine.KeyDown
+	}
+	g.moveHuman(key)
 }
 
 func (g *Game) switchPlayer() {
@@ -559,6 +592,14 @@ func (g *Game) playerBlocked(i int, to vec, radius float64) bool {
 }
 
 func (g *Game) pass(i int, human bool) {
+	g.passBall(i, human, ballPass, passSpeed)
+}
+
+func (g *Game) lobPass(i int) {
+	g.passBall(i, true, ballLob, lobSpeed)
+}
+
+func (g *Game) passBall(i int, human bool, mode ballMode, speed float64) {
 	p := &g.players[i]
 	if g.ball.owner != i || g.now < p.nextAction {
 		return
@@ -578,7 +619,7 @@ func (g *Game) pass(i int, human bool) {
 		}
 		g.passTarget = noPlayer
 	}
-	g.release(i, aim.mul(passSpeed), ballPass)
+	g.release(i, aim.mul(speed), mode)
 	p.nextAction = g.now + actionCooldown
 }
 
@@ -767,7 +808,7 @@ func (g *Game) advanceBall(dt time.Duration) {
 		end = start.add(g.ball.vel.mul(seconds * (1 - hitT)))
 	}
 	g.ball.pos = end
-	if g.ball.mode == ballFree || g.ball.mode == ballPass {
+	if g.ball.mode == ballFree || g.ball.mode == ballPass || g.ball.mode == ballLob {
 		speed := g.ball.vel.len()
 		speed = math.Max(0, speed-freeDecel*seconds)
 		if speed == 0 {
@@ -807,6 +848,9 @@ func (g *Game) firstPlayerContact(a, b vec) (int, float64) {
 	bestID, bestT := noPlayer, math.Inf(1)
 	for i := range g.players {
 		if i == g.ball.releasedBy && g.now < g.ball.reclaimAfter {
+			continue
+		}
+		if g.ball.mode == ballLob && i != g.passTarget && g.players[i].role != goalkeeper {
 			continue
 		}
 		t := segmentContactT(g.players[i].pos, a, b, interactRadius)
@@ -978,7 +1022,7 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 	poss = translate(c, poss)
-	c.Text(max(0, ox), 1, engine.Format(c, "H%d  %s  WASD  Z pass/tackle  Enter shoot  X switch  Pause: Space", g.active+1, poss), engine.Default)
+	c.Text(max(0, ox), 1, engine.Format(c, "H%d  %s  Arrows move  A lob/tackle  S pass/press  D shoot  W switch", g.active+1, poss), engine.Default)
 
 	// Border and pitch markings. Exact goal mouth is rows 6..11.
 	c.Text(ox, oy, "+"+repeat("-", 72)+"+", engine.Default)
