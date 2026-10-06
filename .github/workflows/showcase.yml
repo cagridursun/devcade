@@ -21,6 +21,8 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+      - name: Show Space Shooter gofmt diff
+        run: gofmt -d internal/games/spaceshooter/spaceshooter.go || true
       - name: Generate showcase from real game renderers
         run: go run ./tools/showcase
       - name: Upload generated showcase
