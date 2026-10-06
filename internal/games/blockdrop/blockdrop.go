@@ -509,89 +509,83 @@ const (
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	const frameW = 78
+	const (
+		frameW = 78
+		cellW  = 3
+		wellW  = Cols*cellW + 2
+	)
 	x0 := max(0, (w-frameW)/2)
 	y0 := max(0, (h-1-(boardH+1))/2)
 
-	// One-line HUD keeps the full twenty-row Tetris board visible at 80x24.
-	c.Text(x0, y0, engine.Format(c, "> BLOCK DROP   Score  %-5d Lines  %-3d Level  %-2d", g.score, g.lines, g.Level()), engine.Accent)
+	status := "PLAYING"
+	if g.state == lost {
+		status = "GAME OVER"
+	}
+	c.Text(x0, y0, engine.Format(c, "> BLOCK DROP   Score %05d   Lines %03d   Level %02d   %s",
+		g.score, g.lines, g.Level(), engine.Format(c, status)), engine.Accent)
 
 	fx, fy := x0, y0+1
 	gameui.Box(c, fx, fy, frameW, boardH, engine.Border)
-	gameui.DotGrid(c, fx, fy, boardW, boardH, 2)
+	gameui.DotGrid(c, fx, fy, frameW, boardH, 2)
 
-	// The board is the left partition of the common arcade frame. This keeps
-	// the twenty gameplay rows intact without stacking two borders on top of
-	// each other.
-	bx, by := fx, fy
-	sep := fx + boardW - 1
-	for y := 0; y < boardH; y++ {
-		glyph := '|'
-		if y == 0 || y == boardH-1 {
-			glyph = '+'
-		}
-		c.Cell(sep, fy+y, glyph, engine.Border)
-	}
+	// Block Drop keeps the authentic 10x20 rules, but the board is rendered as
+	// a chunky arcade well rather than the old two-character ASCII panel.
+	wx := fx + 10
+	gameui.Box(c, wx, fy, wellW, boardH, engine.Border)
 
-	cell := func(p point, s string, color engine.Color) {
+	cell := func(p point, glyph string, color engine.Color) {
 		if p.y >= HiddenRows && p.y < Rows && p.x >= 0 && p.x < Cols {
-			c.Text(bx+1+p.x*2, by+1+p.y-HiddenRows, s, color)
+			c.Text(wx+1+p.x*cellW, fy+1+p.y-HiddenRows, glyph, color)
 		}
 	}
 	for y := HiddenRows; y < Rows; y++ {
 		for x := range Cols {
 			if g.board[y][x] != none {
-				cell(point{x, y}, "[]", engine.Accent)
-			} else {
-				cell(point{x, y}, " .", engine.Muted)
+				cell(point{x, y}, "▓▓▓", engine.Accent)
 			}
 		}
 	}
 	if g.state == playing {
 		for _, p := range g.landing().cells() {
-			cell(p, "::", engine.Muted)
+			cell(p, "░░░", engine.Muted)
 		}
 		for _, p := range g.cur.cells() {
-			cell(p, "<>", engine.Player)
+			cell(p, "███", engine.Player)
 		}
 	}
 
-	px := sep + 3
-	status := "PLAYING"
-	if g.state == lost {
-		status = "GAME OVER"
-	}
-	c.Text(px, fy+1, status, engine.Accent)
-	c.Text(px, fy+3, "Next", engine.Default)
+	px := wx + wellW + 4
+	c.Text(px, fy+2, engine.Format(c, status), engine.Accent)
+	c.Text(px, fy+4, "NEXT", engine.Default)
 
 	top := 4
 	for _, p := range shapes[g.next][0] {
 		top = min(top, p.y)
 	}
 	for _, p := range shapes[g.next][0] {
-		c.Text(px+2+p.x*2, fy+5+p.y-top, "[]", engine.Player)
+		c.Text(px+2+p.x*3, fy+6+p.y-top, "██", engine.Player)
 	}
 
 	for i, line := range []string{
-		"Left / Right   move",
-		"Up / Z         rotate cw / ccw",
-		"Down           soft drop",
-		"Enter          hard drop",
-		"Pause: Space   Leave: Q / Esc",
+		"Left / Right  move",
+		"Up / Z        rotate",
+		"Down          soft drop",
+		"Enter         hard drop",
+		"Pause: Space",
+		"Leave: Q / Esc",
 		"Exit: Ctrl+C",
-		"",
-		"Piece <>   Landing ::   Stack []",
 	} {
-		c.Text(px, fy+10+i, line, engine.Muted)
+		c.Text(px, fy+11+i, line, engine.Muted)
 	}
+	c.Text(px, fy+19, "Active █  Ghost ░  Stack ▓", engine.Muted)
 
 	if g.state != playing {
 		box := []string{"", "GAME OVER", engine.Format(c, "Final score %d", g.score),
 			engine.Format(c, "Lines %d   Level %d", g.lines, g.Level()), "Enter: play again", ""}
-		top := by + (boardH-len(box))/2
-		left := fx + (frameW-32)/2
+		top := fy + (boardH-len(box))/2
+		left := wx + (wellW-30)/2
 		for i, line := range box {
-			c.Text(left, top+i, "  "+center(engine.Format(c, line), 28)+"  ", engine.Warning)
+			c.Text(left, top+i, " "+center(engine.Format(c, line), 28)+" ", engine.Warning)
 		}
 	}
 }
