@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/devcade-four-games.gif" alt="DevCade — Snake, Block Drop, Maze Chase and Blast Grid running in the terminal" width="900">
+  <img src="docs/assets/devcade-seven-games.svg" alt="DevCade — animated terminal reel for Snake, Block Drop, Maze Chase, Blast Grid, Brick Breaker, Terminal FC and Space Shooter" width="900">
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
 [![CI](https://github.com/cagridursun/devcade/actions/workflows/ci.yml/badge.svg)](https://github.com/cagridursun/devcade/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Go 1.26](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
-[![Release](https://img.shields.io/badge/release-v1.0.0--rc.2-b8f878.svg)](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2)
+[![Release](https://img.shields.io/badge/release-v1.0.0--rc.3-b8f878.svg)](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.3)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-8a9490.svg)](docs/install.md)
 
 </p>
@@ -32,9 +32,9 @@
 
 DevCade is a free, open-source terminal arcade collection built for developers. Open another terminal, run `devcade`, pick a game and play without leaving the command line. No browser, graphical window or language runtime is required for the distributed binaries.
 
-The published release candidate includes **Snake**, **Block Drop**, **Maze Chase** and **Blast Grid**, with persistent personal bests, optional global leaderboards, five UI languages and three colour palettes.
+The current release candidate includes **seven playable games**: **Snake**, **Block Drop**, **Maze Chase**, **Blast Grid**, **Brick Breaker**, **Terminal FC** and **Space Shooter**, with persistent personal bests, optional global leaderboards, five UI languages and three colour palettes.
 
-> **Current release:** [v1.0.0-rc.2](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2)  
+> **Current release:** [v1.0.0-rc.3](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.3)  
 > **Website:** [cagridursun.github.io/devcade](https://cagridursun.github.io/devcade/)  
 > **Requirements:** an interactive terminal of at least **80 × 24**
 
@@ -62,13 +62,13 @@ devcade
 
 Requires [Homebrew](https://brew.sh) or [Scoop](https://scoop.sh) and an
 interactive terminal of at least **80 × 24**. The current version is
-**1.0.0-rc.2**. [Installation guide](docs/install.md) covers package-manager
+**1.0.0-rc.3**. [Installation guide](docs/install.md) covers package-manager
 setup, updates, uninstalling, direct downloads, installers and optional
 source builds.
 
 ## Status: v1 release candidate
 
-**Six games are playable; Terminal FC is reserved as planned game six, and Space Shooter is game seven.** Running `devcade` opens the arcade menu:
+**Seven games are playable.** Running `devcade` opens the arcade menu:
 
 | ID | Game | What you do |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ source builds.
 | `mazechase` | Maze Chase | Clear the maze of pellets, dodge four chasers, power up to eat them |
 | `blastgrid` | Blast Grid | Bomb crates and outlast three bots in a fixed arena |
 | `brickbreaker` | Brick Breaker | Ten levels, tough bricks, six bonuses and combo scoring |
-| `terminalfc` | Terminal FC (planned #6) | Five-a-side football; not playable yet |
+| `terminalfc` | Terminal FC (#6) | Three-minute 5v5 football with passing, tackling, shooting and three AI difficulty levels |
 | `spaceshooter` | Space Shooter (#7) | Endless waves, bosses, shields and rapid fire |
 
 Exact rules, scoring and timing for each game are in [docs/games.md](docs/games.md).
@@ -87,7 +87,7 @@ resize and terminal restoration.
 
 | Area | Status |
 | --- | --- |
-| Code: six playable games, menu, CLI, terminal core | Integrated with automated tests (see [CI](.github/workflows/ci.yml)) |
+| Code: seven playable games, menu, CLI, terminal core | Integrated with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
 | Distribution | Public [v1.0.0-rc.2](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
@@ -125,6 +125,9 @@ hold a key or press Enter to send it.
 | Block Drop | `Left`/`Right` (`A`/`D`) move, `Up` (`W`) rotate clockwise, `Z` rotate counterclockwise, `Down` (`S`) soft drop, `Enter` hard drop |
 | Maze Chase | arrows/WASD steer; a turn waits until the passage opens |
 | Blast Grid | arrows/WASD move one cell, `Z` place a bomb |
+| Brick Breaker | `Left`/`Right` (`A`/`D`) move the paddle, `Enter` or `Z` launch the ball |
+| Terminal FC | arrows move, `A` lob/tackle, `S` pass/press, `D` shoot, `W` switch player |
+| Space Shooter | arrows/WASD move, `Z` special attack; firing is automatic |
 | Terminal diagnostic | arrows/WASD change direction, `Space` pause |
 
 `devcade <game>` opens the same submenu. Only the direct diagnostic
@@ -178,6 +181,7 @@ internal/games/mazechase/ Maze Chase
 internal/games/spaceshooter/ Space Shooter
 internal/games/blastgrid/ Blast Grid
 internal/games/brickbreaker/ Brick Breaker
+internal/games/terminalfc/  Terminal FC
 internal/games/probe/     The terminal diagnostic, written as a game
 tools/release/            Release builder: archives, checksums, Homebrew/Scoop manifests
 packaging/                Installer scripts, manifest templates, license notice
@@ -234,11 +238,11 @@ used for the interactive-terminal check.
 
 | Target | Native tests | Cross-build (CGO_ENABLED=0) | Interactive terminal |
 | --- | --- | --- | --- |
-| Windows amd64 | Local (Windows 11) + CI | Yes | Owner-reported successful gameplay of all four games (2026-10-04); detailed terminal/checklist data not recorded |
+| Windows amd64 | Local (Windows 11) + CI | Yes | Owner-reported successful gameplay of the original four games (2026-10-04); newer games have automated coverage; detailed terminal/checklist data not recorded |
 | Windows arm64 | — | Yes | Untested |
 | macOS arm64 (Apple Silicon) | CI (`macos-latest`) | Yes | Pending |
 | macOS amd64 | — | Yes | Untested |
-| Linux amd64 | CI (`ubuntu-latest`) | Yes | All four games: PTY startup, gameplay input, normal quit and TTY restoration verified (2026-10-04). Human emulator acceptance pending |
+| Linux amd64 | CI (`ubuntu-latest`) | Yes | Original four games: PTY startup, gameplay input, normal quit and TTY restoration verified (2026-10-04). Newer games also have targeted PTY/automated coverage; human emulator acceptance pending |
 | Linux arm64 | — | Yes | Untested |
 
 Automated tests run every game through the real terminal loop on tcell's
@@ -258,7 +262,7 @@ use Windows Terminal, or run `winpty devcade` there.
 | M5 | Maze Chase | Merged |
 | M6 | Blast Grid | Merged |
 | M7 | Packaging, distribution and installers | Public RC with Homebrew/Scoop distribution, six archives, checksums and installers |
-| M8 | Four-game v1.0 | Public release candidate; remaining human macOS/Linux acceptance tracked before stable v1.0 |
+| M8 | v1.0 release candidate | Seven games integrated; remaining human macOS/Linux acceptance tracked before stable v1.0 |
 
 See [CHANGELOG.md](CHANGELOG.md) and the [v1 checkpoint log](docs/v1-checkpoint.md).
 Anonymous community leaderboards are included in this candidate; the shared
