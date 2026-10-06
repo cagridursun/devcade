@@ -139,7 +139,7 @@ jobs:
           binary="$RUNNER_TEMP/devcade-bin/devcade"
           test "$("$binary" --version)" = "devcade $VERSION"
           "$binary" --help >/dev/null
-          for id in snake blockdrop mazechase blastgrid brickbreaker spaceshooter; do
+          for id in snake blockdrop mazechase blastgrid brickbreaker terminalfc spaceshooter; do
             "$binary" list | grep "^$id .*Available" >/dev/null
           done
           set +e
