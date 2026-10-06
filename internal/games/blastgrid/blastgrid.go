@@ -491,7 +491,7 @@ func (g *Game) Render(c engine.Canvas) {
 		bombState = "armed"
 	}
 	line(y0, engine.Format(c, "BLAST GRID   Score %-5d Bots left %d   Bomb %s   %s", g.score, g.BotsLeft(), engine.Format(c, bombState), engine.Format(c, status)), engine.Accent)
-	line(y0+1, "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Default)
+	line(y0+1, "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Muted)
 
 	cell := func(p point, s string, color engine.Color) {
 		c.Text(ax+p.x*2, ay+p.y, s, color)
@@ -501,13 +501,13 @@ func (g *Game) Render(c engine.Canvas) {
 			p := point{x, y}
 			switch {
 			case g.grid[y][x] == wall:
-				cell(p, "##", engine.Default)
+				cell(p, "##", engine.Border)
 			case g.grid[y][x] == crate:
-				cell(p, "[]", engine.Default)
+				cell(p, "[]", engine.Accent)
 			case g.now < g.flameUntil[y][x]:
-				cell(p, "**", engine.Warning)
+				cell(p, "**", engine.Danger)
 			default:
-				cell(p, "  ", engine.Default)
+				cell(p, " .", engine.Muted)
 			}
 		}
 	}
@@ -520,14 +520,14 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 		glyph, color := "@@", engine.Player
 		if i != player {
-			glyph, color = engine.Format(c, "B%d", i), engine.Accent
+			glyph, color = engine.Format(c, "B%d", i), engine.Danger
 		}
 		if g.bombAt(a.pos) != nil {
 			glyph = "(" + glyph[1:] // standing on a bomb: "(@" or "(1"
 		}
 		cell(a.pos, glyph, color)
 	}
-	line(ay+Rows, "@@ you   B1-B3 bots   () bomb   ** flame   [] crate   ## wall", engine.Default)
+	line(ay+Rows, "@@ you   B1-B3 bots   () bomb   ** flame   [] crate   ## wall", engine.Muted)
 
 	if g.state != playing {
 		title := "GAME OVER"
