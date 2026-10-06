@@ -163,6 +163,18 @@ func (a *App) Input(ev engine.Event) bool {
 			a.choice = 0
 			return false
 		}
+		if a.activity == "terminalfc" {
+			switch ev.Char {
+			case 'a':
+				ev.Key = engine.KeyAction
+			case 's':
+				ev.Key = engine.KeySecondary
+			case 'd':
+				ev.Key = engine.KeySelect
+			case 'w':
+				ev.Key = engine.KeyTertiary
+			}
+		}
 		a.active.Input(ev)
 		a.observeScore()
 		return false
