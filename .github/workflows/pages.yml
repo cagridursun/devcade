@@ -3,7 +3,7 @@ name: Project website
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'tools/pages/**', 'docs/screenshots/**', '.github/workflows/pages.yml']
+    paths: ['site/**', 'tools/pages/**', 'tools/showcase/**', 'docs/screenshots/**', '.github/workflows/pages.yml']
   pull_request:
     paths: ['site/**', 'tools/pages/**', 'docs/screenshots/**', '.github/workflows/pages.yml']
   workflow_dispatch:
@@ -29,6 +29,9 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
       - name: Validate scores, fallback behavior and bilingual content
         run: |
           node --check site/app.mjs
@@ -39,6 +42,15 @@ jobs:
       - name: Build site and read public community scores
         if: github.event_name != 'pull_request'
         run: node tools/pages/build.mjs
+      - name: Generate real gameplay showcase
+        run: go run ./tools/showcase
+      - name: Upload gameplay showcase
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v6
+        with:
+          name: devcade-gameplay-showcase
+          path: dist/showcase/devcade-seven-games.svg
+          retention-days: 1
       - name: Upload reviewed website
         uses: actions/upload-pages-artifact@v5
         with:
