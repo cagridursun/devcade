@@ -26,17 +26,17 @@ const (
 	restartTime     = time.Second
 	keeperHoldTime  = 2 * time.Second
 
-	moveCooldown       = 80 * time.Millisecond
-	actionCooldown     = 300 * time.Millisecond
+	moveCooldown        = 80 * time.Millisecond
+	actionCooldown      = 300 * time.Millisecond
 	humanTackleCooldown = 700 * time.Millisecond
-	switchCooldown     = 250 * time.Millisecond
-	reclaimGrace       = 150 * time.Millisecond
+	switchCooldown      = 250 * time.Millisecond
+	reclaimGrace        = 150 * time.Millisecond
 
-	passSpeed      = 12.0
-	lobSpeed       = 14.0
-	shotSpeed      = 20.0
-	freeDecel      = 4.0
-	interactRadius = 0.60
+	passSpeed        = 12.0
+	lobSpeed         = 14.0
+	shotSpeed        = 20.0
+	freeDecel        = 4.0
+	interactRadius   = 0.60
 	humanTackleRange = 1.20
 )
 
@@ -55,13 +55,13 @@ const (
 )
 
 type difficultyConfig struct {
-	name            string
-	botInterval     time.Duration
-	botSpeed        float64
+	name              string
+	botInterval       time.Duration
+	botSpeed          float64
 	botTackleCooldown time.Duration
-	botTackleRange  float64
-	ownerProtection time.Duration
-	pressDelay      time.Duration
+	botTackleRange    float64
+	ownerProtection   time.Duration
+	pressDelay        time.Duration
 }
 
 var difficultyConfigs = [...]difficultyConfig{
@@ -214,7 +214,8 @@ var (
 )
 
 // New creates a fresh game with production randomness used only for bounded
-// bot tie-breaking. Rules, speeds and scoring are identical for every match.
+// bot tie-breaking. Normal is selected by default; difficulty changes bot
+// pressure and timing while preserving the match rules and scoring formula.
 func New() engine.Game {
 	return newGame(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64())))
 }
@@ -1179,7 +1180,7 @@ func (g *Game) Render(c engine.Canvas) {
 		} else if g.homeGoals < g.awayGoals {
 			result = "YOU LOSE"
 		}
-		g.overlay(c, engine.Format(c, "FULL TIME  %s  %d-%d  Arcade score %d  Enter: difficulty", result, g.homeGoals, g.awayGoals, g.finalScore))
+		g.overlay(c, engine.Format(c, "FULL TIME  %s  %d-%d  Arcade score %d  Enter: play again", result, g.homeGoals, g.awayGoals, g.finalScore))
 	}
 }
 
