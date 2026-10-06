@@ -851,10 +851,10 @@
     "VRIJ",
     "LIBRE"
   ],
-  "H%d  %s  Arrows move  A lob/tackle  S pass/press  D shoot  W switch": [
-    "H%d  %s  Oklar hareket  A aşırtma/tackle  S pas/press  D şut  W değiştir",
-    "H%d  %s  Flechas mover  A pase alto/entrada  S pase/presión  D tiro  W cambiar",
-    "H%d  %s  Pijlen bewegen  A lob/tackle  S pass/druk  D schot  W wissel",
-    "H%d  %s  Flèches bouger  A lob/tacle  S passe/pression  D tir  W changer"
+  "H%d %s  Arrows  A lob/tackle  S pass/press  D shoot  W switch  Pause: Space": [
+    "H%d %s  Oklar  A aşırt/tackle  S pas/press  D şut  W değiş  Pause: Space",
+    "H%d %s  Flechas  A globo/entrada  S pase/press  D tiro  W cambia  Pause: Space",
+    "H%d %s  Pijlen  A lob/tackle  S pass/druk  D schot  W wissel  Pause: Space",
+    "H%d %s  Flèches  A lob/tacle  S passe/press  D tir  W change  Pause: Space"
   ]
 }
