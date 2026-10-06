@@ -26,21 +26,18 @@ const (
 	restartTime     = time.Second
 	keeperHoldTime  = 2 * time.Second
 
-	moveCooldown    = 80 * time.Millisecond
-	actionCooldown  = 300 * time.Millisecond
-	tackleCooldown  = 700 * time.Millisecond
-	switchCooldown  = 250 * time.Millisecond
-	reclaimGrace    = 150 * time.Millisecond
-	ownerProtection = 250 * time.Millisecond
-	botInterval     = 120 * time.Millisecond
+	moveCooldown       = 80 * time.Millisecond
+	actionCooldown     = 300 * time.Millisecond
+	humanTackleCooldown = 700 * time.Millisecond
+	switchCooldown     = 250 * time.Millisecond
+	reclaimGrace       = 150 * time.Millisecond
 
-	passSpeed       = 12.0
-	lobSpeed        = 14.0
-	shotSpeed       = 20.0
-	freeDecel       = 4.0
-	interactRadius  = 0.60
-	tackleRange     = 1.20
-	botMovePerThink = 0.72 // 6 logical cells/s at 120 ms decisions
+	passSpeed      = 12.0
+	lobSpeed       = 14.0
+	shotSpeed      = 20.0
+	freeDecel      = 4.0
+	interactRadius = 0.60
+	humanTackleRange = 1.20
 )
 
 const (
@@ -48,6 +45,58 @@ const (
 	awayTeam = 1
 	noPlayer = -1
 )
+
+type difficulty uint8
+
+const (
+	difficultyEasy difficulty = iota
+	difficultyNormal
+	difficultyHard
+)
+
+type difficultyConfig struct {
+	name            string
+	botInterval     time.Duration
+	botSpeed        float64
+	botTackleCooldown time.Duration
+	botTackleRange  float64
+	ownerProtection time.Duration
+	pressDelay      time.Duration
+}
+
+var difficultyConfigs = [...]difficultyConfig{
+	{
+		name:              "EASY",
+		botInterval:       240 * time.Millisecond,
+		botSpeed:          4.0,
+		botTackleCooldown: 1200 * time.Millisecond,
+		botTackleRange:    0.85,
+		ownerProtection:   550 * time.Millisecond,
+		pressDelay:        450 * time.Millisecond,
+	},
+	{
+		name:              "NORMAL",
+		botInterval:       180 * time.Millisecond,
+		botSpeed:          4.5,
+		botTackleCooldown: 1000 * time.Millisecond,
+		botTackleRange:    1.0,
+		ownerProtection:   450 * time.Millisecond,
+		pressDelay:        350 * time.Millisecond,
+	},
+	{
+		name:              "HARD",
+		botInterval:       120 * time.Millisecond,
+		botSpeed:          6.0,
+		botTackleCooldown: 700 * time.Millisecond,
+		botTackleRange:    1.20,
+		ownerProtection:   250 * time.Millisecond,
+		pressDelay:        0,
+	},
+}
+
+func (d difficulty) config() difficultyConfig {
+	return difficultyConfigs[d]
+}
 
 type vec struct{ x, y float64 }
 
@@ -111,7 +160,8 @@ type ballState struct {
 type phase uint8
 
 const (
-	phaseKickoff phase = iota
+	phaseDifficulty phase = iota
+	phaseKickoff
 	phaseLive
 	phaseGoal
 	phaseRestart
@@ -131,9 +181,10 @@ type Game struct {
 	seed *rand.Rand
 	rng  *rand.Rand
 
-	players [10]player
-	ball    ballState
-	active  int
+	players    [10]player
+	ball       ballState
+	active     int
+	difficulty difficulty
 
 	phase         phase
 	phaseLeft     time.Duration
@@ -143,6 +194,7 @@ type Game struct {
 	nextThink     time.Duration
 	nextMove      time.Duration
 	nextSwitch    time.Duration
+	pressAllowedAt time.Duration
 	homeGoals     int
 	awayGoals     int
 	finalScore    int
@@ -189,12 +241,27 @@ func (g *Game) Score() int {
 
 func (g *Game) reset() {
 	g.rng = rand.New(rand.NewPCG(g.seed.Uint64(), g.seed.Uint64()))
-	g.homeGoals, g.awayGoals, g.finalScore = 0, 0, 0
-	g.now, g.accum, g.nextThink = 0, 0, botInterval
-	g.nextMove, g.nextSwitch = 0, 0
+	g.difficulty = difficultyNormal
+	g.phase = phaseDifficulty
+	g.phaseLeft = 0
 	g.liveLeft = matchTime
+	g.homeGoals, g.awayGoals, g.finalScore = 0, 0, 0
+	g.now, g.accum, g.nextThink = 0, 0, 0
+	g.nextMove, g.nextSwitch, g.pressAllowedAt = 0, 0, 0
 	g.kickoffTeam = homeTeam
 	g.active = 1
+	g.passTarget = noPlayer
+	g.setupFormation()
+}
+
+func (g *Game) startMatch() {
+	cfg := g.difficulty.config()
+	g.homeGoals, g.awayGoals, g.finalScore = 0, 0, 0
+	g.now, g.accum = 0, 0
+	g.nextThink = cfg.botInterval
+	g.nextMove, g.nextSwitch, g.pressAllowedAt = 0, 0, 0
+	g.liveLeft = matchTime
+	g.kickoffTeam = homeTeam
 	g.passTarget = noPlayer
 	g.setupKickoff(homeTeam)
 }
@@ -246,9 +313,20 @@ func (g *Game) clearCooldowns() {
 }
 
 func (g *Game) HandleInput(k engine.Key) {
+	if g.phase == phaseDifficulty {
+		switch k {
+		case engine.KeyUp, engine.KeyLeft:
+			g.difficulty = difficulty((int(g.difficulty) + len(difficultyConfigs) - 1) % len(difficultyConfigs))
+		case engine.KeyDown, engine.KeyRight:
+			g.difficulty = difficulty((int(g.difficulty) + 1) % len(difficultyConfigs))
+		case engine.KeySelect:
+			g.startMatch()
+		}
+		return
+	}
 	if g.phase == phaseFullTime {
 		if k == engine.KeySelect {
-			g.reset()
+			g.phase = phaseDifficulty
 		}
 		return
 	}
@@ -355,7 +433,7 @@ func (g *Game) switchPlayer() {
 }
 
 func (g *Game) Update(dt time.Duration) {
-	if dt <= 0 || g.phase == phaseFullTime {
+	if dt <= 0 || g.phase == phaseDifficulty || g.phase == phaseFullTime {
 		return
 	}
 	g.accum += dt
@@ -374,6 +452,9 @@ func (g *Game) step(dt time.Duration) {
 			switch g.phase {
 			case phaseKickoff:
 				g.phase = phaseLive
+				if g.ball.owner != noPlayer && g.players[g.ball.owner].team == homeTeam {
+					g.pressAllowedAt = g.now + g.difficulty.config().pressDelay
+				}
 			case phaseGoal:
 				g.setupKickoff(g.kickoffTeam)
 			case phaseRestart:
@@ -398,7 +479,7 @@ func (g *Game) step(dt time.Duration) {
 
 	for g.nextThink <= g.now && g.phase == phaseLive {
 		g.botThink()
-		g.nextThink += botInterval
+		g.nextThink += g.difficulty.config().botInterval
 	}
 
 	if g.phase == phaseLive {
@@ -492,11 +573,16 @@ func (g *Game) thinkCarrier(i int) {
 func (g *Game) thinkOutfield(i int) {
 	p := &g.players[i]
 	if g.ball.owner != noPlayer && g.players[g.ball.owner].team != p.team {
+		if p.team == awayTeam && g.players[g.ball.owner].team == homeTeam && g.now < g.pressAllowedAt {
+			g.lastDecision[i] = "delay press"
+			g.botMove(i, g.homeZone(i))
+			return
+		}
 		presser := g.nearestTeamTo(p.team, g.ball.pos, goalkeeper)
 		if presser == i {
 			g.lastDecision[i] = "press"
 			g.botMove(i, g.ball.pos)
-			if dist(p.pos, g.ball.pos) <= tackleRange {
+			if dist(p.pos, g.ball.pos) <= g.difficulty.config().botTackleRange {
 				g.tackle(i)
 			}
 			return
@@ -549,7 +635,8 @@ func (g *Game) botMove(i int, target vec) {
 	if d.len() < 0.05 {
 		return
 	}
-	step := d.norm().mul(math.Min(botMovePerThink, d.len()))
+	cfg := g.difficulty.config()
+	step := d.norm().mul(math.Min(cfg.botSpeed*cfg.botInterval.Seconds(), d.len()))
 	if math.Abs(step.x) > math.Abs(step.y) {
 		p.facing = vec{math.Copysign(1, step.x), 0}
 	} else {
@@ -696,7 +783,14 @@ func (g *Game) tackle(i int) {
 		return
 	}
 	d := g.players[owner].pos.sub(p.pos)
-	if d.len() > tackleRange {
+	rangeLimit := humanTackleRange
+	cooldown := humanTackleCooldown
+	if i != g.active {
+		cfg := g.difficulty.config()
+		rangeLimit = cfg.botTackleRange
+		cooldown = cfg.botTackleCooldown
+	}
+	if d.len() > rangeLimit {
 		return
 	}
 	f := p.facing.norm()
@@ -711,8 +805,8 @@ func (g *Game) tackle(i int) {
 	g.ball.lastTouch = i
 	g.ball.releasedBy = owner
 	g.ball.reclaimAfter = g.now + reclaimGrace
-	g.ball.protectedTil = g.now + ownerProtection
-	p.nextTackle = g.now + tackleCooldown
+	g.ball.protectedTil = g.now + g.difficulty.config().ownerProtection
+	p.nextTackle = g.now + cooldown
 	if g.players[owner].team == awayTeam {
 		g.active = i
 	}
@@ -726,7 +820,7 @@ func (g *Game) release(i int, velocity vec, mode ballMode) {
 	g.ball.lastTouch = i
 	g.ball.releasedBy = i
 	g.ball.reclaimAfter = g.now + reclaimGrace
-	g.ball.protectedTil = g.now + ownerProtection
+	g.ball.protectedTil = g.now + g.difficulty.config().ownerProtection
 }
 
 func (g *Game) acquire(i int) bool {
@@ -764,6 +858,9 @@ func (g *Game) acquire(i int) bool {
 	}
 	if p.team == homeTeam && p.role != goalkeeper {
 		g.active = i
+		cfg := g.difficulty.config()
+		g.ball.protectedTil = g.now + cfg.ownerProtection
+		g.pressAllowedAt = g.now + cfg.pressDelay
 	} else if p.team == awayTeam {
 		g.active = g.nearestHome(g.ball.pos, noPlayer)
 	}
@@ -1007,7 +1104,11 @@ func (g *Game) nearestOpponentDistance(i int) float64 {
 }
 
 func (g *Game) Render(c engine.Canvas) {
-	w, _ := c.Size()
+	w, h := c.Size()
+	if g.phase == phaseDifficulty {
+		g.renderDifficulty(c, w, h)
+		return
+	}
 	ox := (w - 74) / 2
 	oy := 2
 
@@ -1078,8 +1179,32 @@ func (g *Game) Render(c engine.Canvas) {
 		} else if g.homeGoals < g.awayGoals {
 			result = "YOU LOSE"
 		}
-		g.overlay(c, engine.Format(c, "FULL TIME  %s  %d-%d  Arcade score %d  Enter: play again", result, g.homeGoals, g.awayGoals, g.finalScore))
+		g.overlay(c, engine.Format(c, "FULL TIME  %s  %d-%d  Arcade score %d  Enter: difficulty", result, g.homeGoals, g.awayGoals, g.finalScore))
 	}
+}
+
+func (g *Game) renderDifficulty(c engine.Canvas, w, h int) {
+	center := func(y int, text string, color engine.Color) {
+		x := max(0, (w-len([]rune(text)))/2)
+		c.Text(x, y, text, color)
+	}
+	center(max(1, h/2-6), "TERMINAL FC", engine.Accent)
+	center(max(2, h/2-4), translate(c, "CHOOSE DIFFICULTY"), engine.Default)
+
+	options := []string{"EASY", "NORMAL", "HARD"}
+	for i, option := range options {
+		label := "  " + translate(c, option)
+		if difficulty(i) == g.difficulty {
+			label = "> " + translate(c, option)
+		}
+		center(max(3, h/2-2+i), label, engine.Default)
+	}
+
+	cfg := g.difficulty.config()
+	detail := engine.Format(c, "%s  Bot %.1f cells/s  React %dms", translate(c, cfg.name), cfg.botSpeed, cfg.botInterval.Milliseconds())
+	center(min(h-4, h/2+3), detail, engine.Default)
+	center(min(h-3, h/2+5), translate(c, "ARROWS: SELECT   ENTER: START"), engine.Default)
+	center(min(h-2, h/2+6), "Pause: Space   Q / Esc: back", engine.Default)
 }
 
 func translate(c engine.Canvas, s string) string {
@@ -1097,6 +1222,8 @@ func (g *Game) overlay(c engine.Canvas, s string) {
 
 func (g *Game) phaseText() string {
 	switch g.phase {
+	case phaseDifficulty:
+		return "DIFFICULTY"
 	case phaseKickoff:
 		return "KICKOFF"
 	case phaseLive:
