@@ -518,23 +518,19 @@ func (g *Game) Render(c engine.Canvas) {
 
 	fx, fy := x0, y0+1
 	gameui.Box(c, fx, fy, frameW, boardH, engine.Border)
-	gameui.DotGrid(c, fx, fy, frameW, boardH, 2)
+	gameui.DotGrid(c, fx, fy, boardW, boardH, 2)
 
-	// Preserve the real 10x20 board inside the wider arcade frame. The right
-	// side becomes an integrated next/status/control panel instead of a
-	// separate terminal block.
-	bx, by := fx+2, fy
-	for x := 1; x < boardW-1; x++ {
-		c.Cell(bx+x, by, '-', engine.Border)
-		c.Cell(bx+x, by+boardH-1, '-', engine.Border)
-	}
+	// The board is the left partition of the common arcade frame. This keeps
+	// the twenty gameplay rows intact without stacking two borders on top of
+	// each other.
+	bx, by := fx, fy
+	sep := fx + boardW - 1
 	for y := 0; y < boardH; y++ {
 		glyph := '|'
 		if y == 0 || y == boardH-1 {
 			glyph = '+'
 		}
-		c.Cell(bx, by+y, glyph, engine.Border)
-		c.Cell(bx+boardW-1, by+y, glyph, engine.Border)
+		c.Cell(sep, fy+y, glyph, engine.Border)
 	}
 
 	cell := func(p point, s string, color engine.Color) {
@@ -560,7 +556,7 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 
-	px := fx + 27
+	px := sep + 3
 	status := "PLAYING"
 	if g.state == lost {
 		status = "GAME OVER"
