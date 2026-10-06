@@ -530,7 +530,7 @@ func (g *Game) Render(c engine.Canvas) {
 
 	// Block Drop keeps the authentic 10x20 rules, but the board is rendered as
 	// a chunky arcade well rather than the old two-character ASCII panel.
-	wx := fx + 10
+	wx := fx + 5
 	gameui.Box(c, wx, fy, wellW, boardH, engine.Border)
 
 	cell := func(p point, glyph string, color engine.Color) {
