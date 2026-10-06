@@ -521,28 +521,24 @@ func (g *Game) Render(c engine.Canvas) {
 		return t + max(0, (b-t-1)/2)
 	}
 
+	drawTile := func(x, y int, glyph rune, color engine.Color) {
+		l, r := left(x), right(x)
+		width := min(3, max(1, r-l))
+		start := l + max(0, (r-l-width)/2)
+		for px := start; px < start+width; px++ {
+			c.Cell(px, centerY(y), glyph, color)
+		}
+	}
 	for y := 1; y < Rows-1; y++ {
 		for x := 1; x < Cols-1; x++ {
 			switch g.grid[y][x] {
 			case wall:
-				for py := top(y); py < bottom(y); py++ {
-					for px := left(x); px < right(x); px++ {
-						c.Cell(px, py, '█', engine.Border)
-					}
-				}
+				drawTile(x, y, '█', engine.Border)
 			case crate:
-				for py := top(y); py < bottom(y); py++ {
-					for px := left(x); px < right(x); px++ {
-						c.Cell(px, py, '▓', engine.Accent)
-					}
-				}
+				drawTile(x, y, '▓', engine.Accent)
 			}
 			if g.now < g.flameUntil[y][x] {
-				for py := top(y); py < bottom(y); py++ {
-					for px := left(x); px < right(x); px++ {
-						c.Cell(px, py, '✱', engine.Danger)
-					}
-				}
+				drawTile(x, y, '✱', engine.Danger)
 			}
 		}
 	}
