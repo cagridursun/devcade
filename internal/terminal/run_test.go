@@ -606,7 +606,7 @@ func TestSnakeFromMenuRestartAndReturn(t *testing.T) {
 	// Space on the end screen must not pause it, so Enter still restarts.
 	s.InjectKey(tcell.KeyRune, ' ', 0)
 	s.InjectKey(tcell.KeyEnter, 0, 0)
-	if frame := s.waitFor(t, "Score: 0000"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "PLAYING") {
+	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score: 0000") {
 		t.Fatalf("restart blocked by pause:\n%s", frame)
 	}
 
