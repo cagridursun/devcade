@@ -278,10 +278,11 @@ player at a time; the other nine players are bots.
 | Kickoff / other restart | 1 s |
 | Goalkeeper hold | At most 2 s |
 
-**Controls:** arrows or WASD move the selected player and update facing.
-`Z` passes while in possession and attempts a tackle while defending.
-`Enter` shoots while in possession. `X` switches to another Home outfield
-player. Space uses the shared pause behavior; Q/Esc leaves the match.
+**Controls:** arrow keys move the selected player and update facing. `A`
+plays a lob pass in possession and tackles while defending. `S` plays a
+ground pass in possession and presses toward the ball while defending. `D`
+shoots while in possession. `W` switches to another Home outfield player.
+Space uses the shared pause behavior; Q/Esc leaves the match.
 
 **Ball and contacts:** passes and shots release one independent ball rather
 than teleporting possession. Ball contacts and boundary crossings are swept
@@ -294,7 +295,7 @@ ties.
 
 **Selection:** a Home outfield player receiving possession becomes selected.
 When Away gains possession, the nearest Home outfield player is selected once.
-`X` explicitly switches according to ball ownership and distance. The
+`W` explicitly switches according to ball ownership and distance. The
 selected player is never moved by teammate bot logic.
 
 **Restarts:** a goal shows a short GOAL overlay, then the conceding side takes
