@@ -61,6 +61,10 @@ func styleOfTheme(theme string, color engine.Color) tcell.Style {
 			return style.Foreground(tcell.NewHexColor(0x7891a8))
 		case engine.Danger:
 			return style.Foreground(tcell.NewHexColor(0xff6b6b)).Bold(true)
+		case engine.TeamHome:
+			return style.Foreground(tcell.NewHexColor(0xff6b6b)).Bold(true)
+		case engine.TeamAway:
+			return style.Foreground(tcell.NewHexColor(0x61afef)).Bold(true)
 		}
 		return style
 	}
@@ -81,6 +85,10 @@ func styleOfTheme(theme string, color engine.Color) tcell.Style {
 		return style.Foreground(tcell.NewHexColor(0xb9d8c0))
 	case engine.Danger:
 		return style.Foreground(tcell.NewHexColor(0xff5f56)).Bold(true)
+	case engine.TeamHome:
+		return style.Foreground(tcell.NewHexColor(0xff5f56)).Bold(true)
+	case engine.TeamAway:
+		return style.Foreground(tcell.NewHexColor(0x4da3ff)).Bold(true)
 	}
 	return style
 }
