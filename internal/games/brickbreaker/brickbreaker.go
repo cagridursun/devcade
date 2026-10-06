@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 const (
@@ -242,6 +243,7 @@ func (g *Game) step() {
 	}
 	g.balls = alive
 	remaining := false
+	gameui.DotGrid(c, bx, by, Cols+2, Rows+2, 2)
 	for _, r := range g.bricks {
 		if !r.steel && r.hp > 0 {
 			remaining = true
@@ -334,18 +336,18 @@ func (g *Game) Render(c engine.Canvas) {
 	x0 := max(0, (w-Cols-2)/2)
 	y0 := max(0, (h-23)/2)
 	c.Text(x0, y0, engine.Format(c, "BRICK BREAKER  Score %-6d Level %d/10 Lives %d Combo %d", g.score, g.level, g.lives, g.combo), engine.Accent)
-	c.Text(x0, y0+1, "Move: arrows/A/D  Launch: Enter/Z  Pause: Space", engine.Default)
+	c.Text(x0, y0+1, "Move: arrows/A/D  Launch: Enter/Z  Pause: Space", engine.Muted)
 	bx, by := x0, y0+2
 	if !g.ended {
 		c.Text(x0+62, y0+1, engine.Format(c, "PLAYING"), engine.Default)
 	}
 	for x := 0; x < Cols+2; x++ {
-		c.Cell(bx+x, by, '-', engine.Default)
-		c.Cell(bx+x, by+Rows+1, '-', engine.Default)
+		c.Cell(bx+x, by, '-', engine.Border)
+		c.Cell(bx+x, by+Rows+1, '-', engine.Border)
 	}
 	for y := 0; y < Rows+2; y++ {
-		c.Cell(bx, by+y, '|', engine.Default)
-		c.Cell(bx+Cols+1, by+y, '|', engine.Default)
+		c.Cell(bx, by+y, '|', engine.Border)
+		c.Cell(bx+Cols+1, by+y, '|', engine.Border)
 	}
 	for _, r := range g.bricks {
 		if r.hp == 0 {
@@ -355,7 +357,7 @@ func (g *Game) Render(c engine.Canvas) {
 		color := engine.Accent
 		if r.steel {
 			s = "####"
-			color = engine.Default
+			color = engine.Border
 		}
 		c.Text(bx+1+r.x, by+1+r.y, s, color)
 	}
@@ -374,7 +376,7 @@ func (g *Game) Render(c engine.Canvas) {
 		c.Cell(bx+1+int(g.paddle), by+paddleY, 'o', engine.Player)
 		c.Text(bx+15, by+12, "Enter/Z: launch (auto in 1.5s)", engine.Warning)
 	}
-	c.Text(x0, y0+22, engine.Format(c, "Bricks %d Cleared %d Best combo %d | W M S L P X: bonuses", g.stats.BricksDestroyed, g.stats.LevelsCleared, g.stats.HighestCombo), engine.Default)
+	c.Text(x0, y0+22, engine.Format(c, "Bricks %d Cleared %d Best combo %d | W M S L P X: bonuses", g.stats.BricksDestroyed, g.stats.LevelsCleared, g.stats.HighestCombo), engine.Muted)
 	if g.ended {
 		title := "GAME OVER"
 		if g.won {
