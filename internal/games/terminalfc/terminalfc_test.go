@@ -46,6 +46,36 @@ func TestMovementCooldownAndCarriedBall(t *testing.T) {
 	}
 }
 
+func TestLobPassClearsOutfieldInterceptionAndPressClosesDown(t *testing.T) {
+	g := seeded(22)
+	makeLive(g)
+	g.active = 1
+	g.players[1].pos = vec{10, 9}
+	g.players[1].facing = vec{1, 0}
+	g.players[2].pos = vec{18, 9}
+	g.players[6].pos = vec{14, 9}
+	g.ball = ballState{pos: g.players[1].pos, owner: 1, lastTouch: 1, releasedBy: noPlayer, mode: ballCarried}
+
+	g.HandleInput(engine.KeyAction)
+	if g.ball.owner != noPlayer || g.ball.mode != ballLob || math.Abs(g.ball.vel.len()-lobSpeed) > 1e-9 {
+		t.Fatalf("lob pass did not release correctly: %+v", g.ball)
+	}
+	if hit, _ := g.firstPlayerContact(g.players[1].pos, g.players[2].pos); hit != 2 {
+		t.Fatalf("lob should clear outfield interceptor and target receiver, hit=%d", hit)
+	}
+
+	g = seeded(23)
+	makeLive(g)
+	g.active = 1
+	g.players[1].pos = vec{10, 9}
+	g.players[6].pos = vec{13, 9}
+	g.ball = ballState{pos: g.players[6].pos, owner: 6, lastTouch: 6, releasedBy: noPlayer, mode: ballCarried}
+	g.HandleInput(engine.KeySecondary)
+	if g.players[1].pos.x != 11 || g.players[1].pos.y != 9 {
+		t.Fatalf("press did not close down toward carrier: %+v", g.players[1].pos)
+	}
+}
+
 func TestPassReleasesIndependentBallAndKickerGrace(t *testing.T) {
 	g := seeded(2)
 	makeLive(g)
@@ -58,7 +88,7 @@ func TestPassReleasesIndependentBallAndKickerGrace(t *testing.T) {
 	}
 	g.ball = ballState{pos: g.players[1].pos, owner: 1, lastTouch: 1, releasedBy: noPlayer, mode: ballCarried}
 
-	g.HandleInput(engine.KeyAction)
+	g.HandleInput(engine.KeySecondary)
 	if g.ball.owner != noPlayer || g.ball.mode != ballPass || math.Abs(g.ball.vel.len()-passSpeed) > 1e-9 {
 		t.Fatalf("pass did not release a moving ball: %+v", g.ball)
 	}
