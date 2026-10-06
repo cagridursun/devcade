@@ -339,6 +339,14 @@ func (g *Game) Render(c engine.Canvas) {
 
 	c.Text(x0, y0, engine.Format(c, "> BRICK BREAKER   Score %05d   Level %d/10   Lives %d   Combo %d",
 		g.score, g.level, g.lives, g.combo), engine.Accent)
+	status := "PLAYING"
+	if g.ended {
+		status = "GAME OVER"
+		if g.won {
+			status = "YOU WIN"
+		}
+	}
+	gameui.RightText(c, x0, y0, frameW, engine.Format(c, status), engine.Muted)
 	c.Text(x0, y0+1, "Move: arrows/A/D   Launch: Enter/Z   Pause: Space", engine.Muted)
 
 	fx, fy := x0, y0+2
