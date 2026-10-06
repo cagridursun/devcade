@@ -344,16 +344,8 @@ func (g *Game) Render(c engine.Canvas) {
 	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
 	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
 
-	bx := fx + (frameW-(Cols+2))/2
-	by := fy
-	for x := 0; x < Cols+2; x++ {
-		c.Cell(bx+x, by, '-', engine.Border)
-		c.Cell(bx+x, by+Rows+1, '-', engine.Border)
-	}
-	for y := 0; y < Rows+2; y++ {
-		c.Cell(bx, by+y, '|', engine.Border)
-		c.Cell(bx+Cols+1, by+y, '|', engine.Border)
-	}
+	bx := fx + (frameW-Cols)/2
+	by := fy + 1
 
 	for _, r := range g.bricks {
 		if r.hp == 0 {
@@ -365,21 +357,21 @@ func (g *Game) Render(c engine.Canvas) {
 			s = "▓▓▓▓"
 			color = engine.Border
 		}
-		c.Text(bx+1+r.x, by+1+r.y, s, color)
+		c.Text(bx+r.x, by+r.y, s, color)
 	}
 	for _, d := range g.drops {
-		c.Cell(bx+1+int(d.x), by+1+int(d.y), bonusGlyph[d.kind], engine.Warning)
+		c.Cell(bx+int(d.x), by+int(d.y), bonusGlyph[d.kind], engine.Warning)
 	}
 	for _, b := range g.balls {
-		c.Cell(bx+1+int(b.x), by+1+int(b.y), '●', engine.Player)
+		c.Cell(bx+int(b.x), by+int(b.y), '●', engine.Player)
 	}
 	half := g.paddleWidth() / 2
 	for x := int(math.Ceil(g.paddle - half)); float64(x) < g.paddle+half; x++ {
-		c.Cell(bx+1+x, by+1+paddleY, '█', engine.Player)
+		c.Cell(bx+x, by+paddleY, '█', engine.Player)
 	}
 	if g.serve > 0 {
 		c.Text(bx+8, by+11, "W:wide M:multi S:slow L:life P:pierce X:2x", engine.Muted)
-		c.Cell(bx+1+int(g.paddle), by+paddleY, '●', engine.Player)
+		c.Cell(bx+int(g.paddle), by+paddleY, '●', engine.Player)
 		c.Text(bx+15, by+12, "Enter/Z: launch (auto in 1.5s)", engine.Warning)
 	}
 
