@@ -833,12 +833,6 @@
     "VERLOREN",
     "DÉFAITE"
   ],
-  "H%d  %s  WASD  Z pass/tackle  Enter shoot  X switch  Pause: Space": [
-    "H%d  %s  WASD  Z pas/tackle  Enter şut  X değiştir  Space: duraklat",
-    "H%d  %s  WASD  Z pase/entrada  Enter tiro  X cambiar  Space: pausa",
-    "H%d  %s  WASD  Z pass/tackle  Enter schot  X wissel  Space: pauze",
-    "H%d  %s  WASD  Z passe/tacle  Enter tir  X changer  Space : pause"
-  ],
   "HOME": [
     "EV",
     "LOCAL",
@@ -856,5 +850,11 @@
     "LIBRE",
     "VRIJ",
     "LIBRE"
+  ],
+  "H%d  %s  Arrows move  A lob/tackle  S pass/press  D shoot  W switch": [
+    "H%d  %s  Oklar hareket  A aşırtma/tackle  S pas/press  D şut  W değiştir",
+    "H%d  %s  Flechas mover  A pase alto/entrada  S pase/presión  D tiro  W cambiar",
+    "H%d  %s  Pijlen bewegen  A lob/tackle  S pass/druk  D schot  W wissel",
+    "H%d  %s  Flèches bouger  A lob/tacle  S passe/pression  D tir  W changer"
   ]
 }
