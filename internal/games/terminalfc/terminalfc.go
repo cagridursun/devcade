@@ -1124,19 +1124,19 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 	poss = translate(c, poss)
-	c.Text(max(0, ox), 1, engine.Format(c, "H%d %s  Arrows  A lob/tackle  S pass/press  D shoot  W switch  Pause: Space", g.active+1, poss), engine.Default)
+	c.Text(max(0, ox), 1, engine.Format(c, "H%d %s  Arrows  A lob/tackle  S pass/press  D shoot  W switch  Pause: Space", g.active+1, poss), engine.Muted)
 
 	// Border and pitch markings. Exact goal mouth is rows 6..11.
-	c.Text(ox, oy, "+"+repeat("-", 72)+"+", engine.Default)
+	c.Text(ox, oy, "+"+repeat("-", 72)+"+", engine.Border)
 	for y := 0; y < PitchH; y++ {
 		left, right := "|", "|"
 		if y >= 6 && y < 12 {
 			left, right = "[", "]"
 		}
-		c.Text(ox, oy+1+y, left+repeat(" ", 72)+right, engine.Default)
-		c.Cell(ox+1+PitchW, oy+1+y, '|', engine.Default)
+		c.Text(ox, oy+1+y, left+repeat(" ", 72)+right, engine.Border)
+		c.Cell(ox+1+PitchW, oy+1+y, '|', engine.Border)
 	}
-	c.Text(ox, oy+19, "+"+repeat("-", 72)+"+", engine.Default)
+	c.Text(ox, oy+19, "+"+repeat("-", 72)+"+", engine.Border)
 
 	// Suggested pass target first, then players, possession markers, then ball.
 	if g.passTarget != noPlayer && g.phase == phaseLive {
@@ -1148,9 +1148,11 @@ func (g *Game) Render(c engine.Canvas) {
 		if p.team == awayTeam {
 			label = fmt.Sprintf("A%d", i-4)
 		}
-		color := engine.Default
+			color := engine.TeamHome
+		if p.team == awayTeam {
+			color = engine.TeamAway
+		}
 		if i == g.active {
-			color = engine.Player
 			label = ">" + label[1:]
 		}
 		x := ox + 1 + int(clamp(p.pos.x, 0, PitchW-1))*2
