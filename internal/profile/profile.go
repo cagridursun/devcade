@@ -29,22 +29,33 @@ type Profile struct {
 }
 
 func Default() Profile {
-	return Profile{Version: 1, Language: "en", Theme: "mono", Best: map[string]int{}}
+	return Profile{Version: 1, Language: "en", Theme: "mono", Share: true, Metrics: true, Best: map[string]int{}}
 }
 
 var usageID = regexp.MustCompile(`^[a-f0-9]{32}$`)
 var username = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
 
 func ValidUsername(s string) bool { return username.MatchString(s) }
-func ValidGame(s string) bool {
-	return s == "snake" || s == "blockdrop" || s == "mazechase" || s == "blastgrid" || s == "brickbreaker" || s == "spaceshooter"
+
+var validGames = map[string]struct{}{
+	"snake": {}, "blockdrop": {}, "mazechase": {}, "blastgrid": {}, "brickbreaker": {}, "terminalfc": {}, "spaceshooter": {},
 }
+
+func ValidGame(s string) bool {
+	_, ok := validGames[s]
+	return ok
+}
+
+func GameCount() int { return len(validGames) }
 func ValidScore(game string, n int) bool {
 	if !ValidGame(game) || n < 0 || n > 1000000000 {
 		return false
 	}
 	if game == "snake" {
 		return n <= 6450 && n%10 == 0
+	}
+	if game == "terminalfc" {
+		return n <= 1750
 	}
 	return true
 }

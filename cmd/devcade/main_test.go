@@ -89,14 +89,15 @@ func TestHelpVersionAndListNeedNoTerminal(t *testing.T) {
 		t.Fatalf("list: code=%d stderr=%q", code, errOut)
 	}
 	for _, want := range []string{"snake", "Snake", "blockdrop", "Block Drop",
-		"mazechase", "Maze Chase", "blastgrid", "Blast Grid", "brickbreaker", "Brick Breaker", "spaceshooter", "Space Shooter", "--diagnostic"} {
+		"mazechase", "Maze Chase", "blastgrid", "Blast Grid", "brickbreaker", "Brick Breaker", "terminalfc", "Terminal FC", "spaceshooter", "Space Shooter", "--diagnostic"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("list output lacks %q:\n%s", want, out)
 		}
 	}
 	if strings.Index(out, "snake") > strings.Index(out, "blockdrop") ||
 		strings.Index(out, "blockdrop") > strings.Index(out, "mazechase") ||
-		strings.Index(out, "mazechase") > strings.Index(out, "blastgrid") {
+		strings.Index(out, "mazechase") > strings.Index(out, "blastgrid") ||
+		strings.Index(out, "blastgrid") > strings.Index(out, "terminalfc") {
 		t.Errorf("list order is not the catalog order:\n%s", out)
 	}
 	if h.checks != 0 || h.plays != 0 {
@@ -120,14 +121,8 @@ func TestListNeverConstructsGames(t *testing.T) {
 func TestBuiltinGamesAreListedWithCatalogAvailability(t *testing.T) {
 	stub(t, nil, nil)
 	_, out, _ := runArgs("list")
-	available := 0
-	for i := range catalog.Len() {
-		if catalog.Entry(i).Available() {
-			available++
-		}
-	}
-	if n := strings.Count(out, "Available"); n != available || !strings.Contains(out, "terminalfc") || !strings.Contains(out, "Coming soon (TFC)") {
-		t.Fatalf("catalog availability mismatch:\n%s", out)
+	if n := strings.Count(out, "Available"); n != arcade.Builtin().Len() || strings.Contains(out, "Coming soon") {
+		t.Fatalf("want every built-in game available:\n%s", out)
 	}
 }
 
@@ -285,7 +280,7 @@ func TestBuiltinIDsDoNotShadowCommands(t *testing.T) {
 // TestRedirectedProcessFailsPromptly runs the real binary with piped stdio
 // and no terminal hooks replaced.
 func TestRedirectedProcessFailsPromptly(t *testing.T) {
-	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}, {"blockdrop"}, {"mazechase"}, {"blastgrid"}, {"brickbreaker"}, {"spaceshooter"}} {
+	for _, args := range [][]string{{}, {"--diagnostic"}, {"snake"}, {"blockdrop"}, {"mazechase"}, {"blastgrid"}, {"brickbreaker"}, {"terminalfc"}, {"spaceshooter"}} {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		cmd := exec.CommandContext(ctx, os.Args[0], args...) // TestMain calls main(), which exits
 		cmd.Env = append(os.Environ(), "DEVCADE_RUN_MAIN=1")

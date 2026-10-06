@@ -32,7 +32,7 @@ func TestFirstRunUsernameCapturesMovementQuitAndDigits(t *testing.T) {
 	a.Input(key(engine.KeyErase))
 	a.Input(char('8'))
 	a.Input(key(engine.KeySelect))
-	if a.state != gameMenu || a.active != nil || a.profile.Username != "qwasd_8" || a.profile.Share {
+	if a.state != gameMenu || a.active != nil || a.profile.Username != "qwasd_8" || !a.profile.Share || !a.profile.Metrics {
 		t.Fatal(a.state, a.profile)
 	}
 	p, err := store.Load()
@@ -40,6 +40,44 @@ func TestFirstRunUsernameCapturesMovementQuitAndDigits(t *testing.T) {
 		t.Fatal(p, err)
 	}
 }
+func TestSharingAndUsageDefaultOnCanBeTurnedOffAndPersisted(t *testing.T) {
+	store := profile.Store{Path: filepath.Join(t.TempDir(), "profile.json")}
+	p := profile.Default()
+	p.Username = "player_one"
+	a := NewAppWithOptions(Builtin(), nil, Options{Profile: p, Save: store.Save})
+	defer a.Close()
+	a.Resize(80, 24)
+	a.Input(char('o'))
+
+	out := render(a, 80, 24)
+	if !strings.Contains(out, "Global score sharing: On") || !strings.Contains(out, "Usage statistics: On") {
+		t.Fatalf("default settings are not on:\n%s", out)
+	}
+
+	for range 3 {
+		a.Input(key(engine.KeyDown))
+	}
+	a.Input(key(engine.KeySelect))
+	a.Input(key(engine.KeyDown))
+	a.Input(key(engine.KeySelect))
+
+	if a.profile.Share || a.profile.Metrics {
+		t.Fatalf("settings did not turn off: %+v", a.profile)
+	}
+	out = render(a, 80, 24)
+	if !strings.Contains(out, "Global score sharing: Off") || !strings.Contains(out, "Usage statistics: Off") {
+		t.Fatalf("off state not rendered:\n%s", out)
+	}
+
+	persisted, err := store.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if persisted.Share || persisted.Metrics {
+		t.Fatalf("opt-out did not persist: %+v", persisted)
+	}
+}
+
 func TestSettingsPersistLanguagesPalettesAndRemainReadable(t *testing.T) {
 	store := profile.Store{Path: filepath.Join(t.TempDir(), "profile.json")}
 	a := NewAppWithOptions(Builtin(), nil, Options{Profile: profile.Default(), Save: store.Save})
@@ -71,7 +109,7 @@ func TestSettingsPersistLanguagesPalettesAndRemainReadable(t *testing.T) {
 	}
 	a.Input(key(engine.KeyBack))
 	out := render(a, 80, 24)
-	if !strings.Contains(out, "Yeni oyunlar yakında") || !strings.Contains(out, "c__dursun") {
+	if !strings.Contains(out, "c__dursun") {
 		t.Fatal(out)
 	}
 }
@@ -93,7 +131,7 @@ func (g *scoreGame) HandleInput(k engine.Key) {
 	}
 }
 func TestFinishedRunsSaveOnceAndRestartNeverLowersBest(t *testing.T) {
-	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker", "spaceshooter"} {
+	for _, id := range []string{"snake", "blockdrop", "mazechase", "blastgrid", "brickbreaker", "terminalfc", "spaceshooter"} {
 		t.Run(id, func(t *testing.T) {
 			g := &scoreGame{score: 100}
 			c, _ := NewCatalog(Entry{ID: id, Name: id, Description: "Test game.", New: func() engine.Game { return g }})
@@ -203,7 +241,9 @@ func TestSlowOfflineServiceDoesNotBlockMenuOrExit(t *testing.T) {
 	h := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { waiting <- struct{}{}; <-r.Context().Done() }))
 	defer h.Close()
 	c, _ := leaderboard.NewClient(h.URL)
-	a := NewAppWithOptions(Builtin(), nil, Options{Profile: profile.Default(), Client: c})
+	p := profile.Default()
+	p.Share = false
+	a := NewAppWithOptions(Builtin(), nil, Options{Profile: p, Client: c})
 	a.Resize(80, 24)
 	a.state = scores
 	start := time.Now()

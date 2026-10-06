@@ -72,7 +72,7 @@ jobs:
           bin/devcade --version
           bin/devcade --help
           # Read the full output so pipefail cannot report a producer SIGPIPE.
-          for id in snake blockdrop mazechase blastgrid brickbreaker spaceshooter; do
+          for id in snake blockdrop mazechase blastgrid brickbreaker terminalfc spaceshooter; do
             bin/devcade list | grep "^$id .*Available" >/dev/null || { echo "$id not listed as available"; exit 1; }
           done
           expect() { # expect <status> <args...>

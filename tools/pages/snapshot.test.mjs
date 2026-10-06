@@ -91,6 +91,7 @@ test('rejects untrusted names, invalid scores, ranks, duplicate aliases and unso
   }
   assert.throws(() => cleanRows('snake', [{ ...row, score: 315 }]));
   assert.throws(() => cleanRows('snake', [{ ...row, score: 6460 }]));
+  assert.throws(() => cleanRows('terminalfc', [{ ...row, score: 1751 }]));
   assert.throws(() => cleanRows('snake', [row, { ...row, rank: 2 }]));
   assert.throws(() => cleanRows('snake', [row, { ...row, rank: 2, username: 'player_two', score: 400 }]));
   assert.throws(() => cleanRows('unknown', []));
@@ -136,11 +137,12 @@ test('site has working install commands, both languages, social links and safe t
   }
 });
 
- test('Space Shooter is game seven and Terminal FC slot is planned', async () => {
- const html = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
- assert.ok(html.includes('07 /</span><h3>Space Shooter'));
- assert.ok(html.includes('06 /</span><h3>Terminal FC'));
- assert.ok(html.indexOf('05 /</span><h3>Brick Breaker') < html.indexOf('06 /</span><h3>Terminal FC'));
- assert.ok(!games.includes('terminalfc'));
- assert.ok(games.includes('brickbreaker') && games.includes('spaceshooter'));
+test('Brick Breaker, Terminal FC and Space Shooter occupy games five through seven', async () => {
+  const html = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
+  assert.ok(html.includes('05 /</span><h3>Brick Breaker'));
+  assert.ok(html.includes('06 /</span><h3>Terminal FC'));
+  assert.ok(html.includes('07 /</span><h3>Space Shooter'));
+  assert.ok(html.indexOf('05 /</span><h3>Brick Breaker') < html.indexOf('06 /</span><h3>Terminal FC'));
+  assert.ok(html.indexOf('06 /</span><h3>Terminal FC') < html.indexOf('07 /</span><h3>Space Shooter'));
+  assert.ok(games.includes('brickbreaker') && games.includes('terminalfc') && games.includes('spaceshooter'));
 });

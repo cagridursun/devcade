@@ -191,9 +191,8 @@ new optional run summary. Local play and personal bests remain available.
 
 ## Space Shooter (`spaceshooter`)
 
-Space Shooter is game seven. Brick Breaker is game five; Terminal FC has
-its sixth catalog slot reserved as coming soon until its implementation merges.
-There are six playable games and one planned entry.
+Space Shooter is game seven. Brick Breaker is game five and Terminal FC is
+game six. There are seven playable games.
 
 - Arrows/WASD move one cell within the bottom four rows; movement accepts at
   most one press per 70 ms of active time. Fire is automatic every 240 ms.
@@ -247,7 +246,103 @@ There are six playable games and one planned entry.
   while retaining lives, unexpired power-ups and protection.
 
 Local bests follow the shared completed-run policy; quitting unfinished does
-not submit a best. Score and usage sharing remain separate and default off.
+not submit a best. Score and usage sharing remain separate and default on; players can opt out independently in Settings.
 Deploy a backend recognizing `spaceshooter` **before** publishing the new
 client or website. Older servers reject the new ID. Preserve existing
 profile/server data and identities; no migration or reset is required.
+
+
+## Terminal FC (`terminalfc`)
+
+Terminal FC is a three-minute 5v5 arcade football match on a fixed **36 × 18**
+logical pitch. Each logical cell is two terminal columns wide. Home always
+attacks right and Away always attacks left. Each side has one goalkeeper,
+one defender, two midfielders and one forward. You control one Home outfield
+player at a time; the other nine players are bots.
+
+| Rule | Value |
+| --- | --- |
+| Live match time | 180 s |
+| Simulation step | 20 ms fixed step |
+| Difficulty | Easy / Normal / Hard; Normal is the default |
+| Human movement | One logical cell per accepted press; 80 ms cooldown |
+| Pass / shot cooldown | 300 ms |
+| Human tackle cooldown | 700 ms |
+| Manual player switch | 250 ms |
+| Pass speed | 12 logical cells/s |
+| Shot speed | 20 logical cells/s |
+| Free-ball deceleration | 4 logical cells/s² |
+| Kicker reclaim grace | 150 ms |
+| Goal overlay | 1.5 s |
+| Kickoff / other restart | 1 s |
+| Goalkeeper hold | At most 2 s |
+
+**Difficulty:** every new match opens with a pre-match selector. Easy gives
+the player the most room to build attacks; Normal is the default balanced
+mode; Hard preserves the original aggressive bot tuning.
+
+| Difficulty | Bot reaction | Bot speed | Bot tackle cooldown | Bot tackle range | New-possession protection | Press delay |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Easy | 240 ms | 4.0 cells/s | 1200 ms | 0.85 | 550 ms | 450 ms |
+| Normal | 180 ms | 4.5 cells/s | 1000 ms | 1.00 | 450 ms | 350 ms |
+| Hard | 120 ms | 6.0 cells/s | 700 ms | 1.20 | 250 ms | 0 ms |
+
+The football rules and leaderboard scoring formula are unchanged across
+difficulty levels. Use Up/Down (or Left/Right) on the selector and Enter to
+start. After full time, Enter returns to the selector for the next match.
+
+**Controls:** arrow keys move the selected player and update facing. `A`
+plays a lob pass in possession and tackles while defending. `S` plays a
+ground pass in possession and presses toward the ball while defending. `D`
+shoots while in possession. `W` switches to another Home outfield player.
+Space uses the shared pause behavior; Q/Esc leaves the match.
+
+**Ball and contacts:** passes and shots release one independent ball rather
+than teleporting possession. Ball contacts and boundary crossings are swept
+along the movement segment. The earliest event wins; an exact goal-line
+contact/crossing tie goes to the boundary crossing. A goal is therefore
+decided by the actual crossing point inside the six-row goal mouth. Fast
+shots are deflected by outfield contacts rather than instantly controlled;
+goalkeepers may control a valid contact. Stable player IDs break geometric
+ties.
+
+**Selection:** a Home outfield player receiving possession becomes selected.
+When Away gains possession, the nearest Home outfield player is selected once.
+`W` explicitly switches according to ball ownership and distance. The
+selected player is never moved by teammate bot logic.
+
+**Restarts:** a goal shows a short GOAL overlay, then the conceding side takes
+the next kickoff. Touchline exits become throw-ins for the team opposite the
+last touch. End-line exits outside the goal become either a goal kick or a
+corner. Restarts use a deterministic one-second phase and an automatic short
+release.
+
+**Clock:** only live play consumes the 180-second clock. Kickoff countdowns,
+goal overlays, restarts, shared pause and undersized-window suspension do not.
+At full time the match freezes immediately; no contact or goal after the
+deadline is accepted. Enter then creates a completely fresh match.
+
+**Leaderboard score:** football goals are separate from the DevCade arcade
+score. On a completed match:
+
+```text
+resultPoints     = 1000 win, 500 draw, 0 loss
+goalPoints       = 50 × min(10, homeGoals)
+differencePoints = 25 × min(10, max(0, homeGoals - awayGoals))
+arcadeScore      = resultPoints + goalPoints + differencePoints
+```
+
+The valid range is **0–1750** and only the best single completed match is
+stored. Leaving early records no completed result. A completed zero-point
+match still follows the same personal-best and sharing policy.
+
+**Bot policy:** both teams use the same movement/action limits. The current
+policy keeps role-based home zones, chooses a primary presser or free-ball
+chaser, lets carriers dribble/pass/shoot, and bounds goalkeepers to their own
+area while tracking the ball and distributing within two seconds.
+
+**Current limitations:** there is one standard 5v5 match format with three AI difficulty levels. There is no
+online/local two-player mode, season mode, licensed club content, offside,
+fouls/cards, stamina, substitutions, charged shots or audio. The first
+version deliberately favors a compact readable terminal match over a full
+football simulation.

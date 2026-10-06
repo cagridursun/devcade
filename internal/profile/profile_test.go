@@ -9,7 +9,7 @@ import (
 func TestPersistenceAndPersonalBests(t *testing.T) {
 	s := Store{filepath.Join(t.TempDir(), "nested", "profile.json")}
 	p, err := s.Load()
-	if err != nil || p.Language != "en" || p.Theme != "mono" || p.Share {
+	if err != nil || p.Language != "en" || p.Theme != "mono" || !p.Share || !p.Metrics {
 		t.Fatal(p, err)
 	}
 	p.Language = "tr"
@@ -35,7 +35,34 @@ func TestPersistenceAndPersonalBests(t *testing.T) {
 	if p.Best["snake"] != 100 {
 		t.Fatal("snapshot aliases bests")
 	}
+	for _, n := range []int{-1, 1751, 1000000001} {
+		if ValidScore("terminalfc", n) {
+			t.Error("terminalfc", n)
+		}
+	}
+	for _, n := range []int{0, 500, 1000, 1750} {
+		if !ValidScore("terminalfc", n) {
+			t.Error("terminalfc valid", n)
+		}
+	}
 }
+func TestExplicitOptOutPersistsAcrossLoad(t *testing.T) {
+	s := Store{filepath.Join(t.TempDir(), "profile.json")}
+	p := Default()
+	p.Share = false
+	p.Metrics = false
+	if err := s.Save(p); err != nil {
+		t.Fatal(err)
+	}
+	q, err := s.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if q.Share || q.Metrics {
+		t.Fatalf("explicit opt-out was not preserved: %+v", q)
+	}
+}
+
 func TestCorruptProfileIsNotSilentlyOverwritten(t *testing.T) {
 	s := Store{filepath.Join(t.TempDir(), "profile.json")}
 	original := []byte(`{"version":99,"username":"old"}`)
