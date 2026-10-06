@@ -73,15 +73,15 @@ type Event struct {
 type Color uint8
 
 const (
-	Default Color = iota
-	Accent        // headers and highlighted text
-	Player        // the player-controlled glyph
-	Warning       // pause and size warnings
-	Muted         // low-contrast grids and secondary chrome
-	Border        // game-area borders and structural lines
-	Danger        // hazards, enemies and destructive events
-	TeamHome      // home-side player or marker (red in the arcade palette)
-	TeamAway      // away-side player or marker (blue in the arcade palette)
+	Default  Color = iota
+	Accent         // headers and highlighted text
+	Player         // the player-controlled glyph
+	Warning        // pause and size warnings
+	Muted          // low-contrast grids and secondary chrome
+	Border         // game-area borders and structural lines
+	Danger         // hazards, enemies and destructive events
+	TeamHome       // home-side player or marker (red in the arcade palette)
+	TeamAway       // away-side player or marker (blue in the arcade palette)
 )
 
 // Canvas is a grid of single-width cells addressed from (0, 0) at the top
