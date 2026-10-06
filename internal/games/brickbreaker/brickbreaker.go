@@ -332,14 +332,20 @@ func (g *Game) apply(kind int) {
 }
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	x0 := max(0, (w-Cols-2)/2)
-	y0 := max(0, (h-23)/2)
-	c.Text(x0, y0, engine.Format(c, "BRICK BREAKER  Score %-6d Level %d/10 Lives %d Combo %d", g.score, g.level, g.lives, g.combo), engine.Accent)
-	c.Text(x0, y0+1, "Move: arrows/A/D  Launch: Enter/Z  Pause: Space", engine.Muted)
-	bx, by := x0, y0+2
-	if !g.ended {
-		c.Text(x0+62, y0+1, engine.Format(c, "PLAYING"), engine.Default)
-	}
+	const frameW = 78
+	const frameH = Rows + 2
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-(2+frameH+1))/2)
+
+	c.Text(x0, y0, engine.Format(c, "> BRICK BREAKER   Score %-6d Level %d/10 Lives %d Combo %d", g.score, g.level, g.lives, g.combo), engine.Accent)
+	c.Text(x0, y0+1, "Move: arrows/A/D   Launch: Enter/Z   Pause: Space", engine.Muted)
+
+	fx, fy := x0, y0+2
+	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
+	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
+
+	bx := fx + (frameW-(Cols+2))/2
+	by := fy
 	for x := 0; x < Cols+2; x++ {
 		c.Cell(bx+x, by, '-', engine.Border)
 		c.Cell(bx+x, by+Rows+1, '-', engine.Border)
@@ -348,16 +354,15 @@ func (g *Game) Render(c engine.Canvas) {
 		c.Cell(bx, by+y, '|', engine.Border)
 		c.Cell(bx+Cols+1, by+y, '|', engine.Border)
 	}
-	gameui.DotGrid(c, bx, by, Cols+2, Rows+2, 2)
-	gameui.DotGrid(c, bx, by, Cols+2, Rows+2, 2)
+
 	for _, r := range g.bricks {
 		if r.hp == 0 {
 			continue
 		}
-		s := fmt.Sprintf("[%d] ", r.hp)
+		s := "████"
 		color := engine.Accent
 		if r.steel {
-			s = "####"
+			s = "▓▓▓▓"
 			color = engine.Border
 		}
 		c.Text(bx+1+r.x, by+1+r.y, s, color)
@@ -366,18 +371,21 @@ func (g *Game) Render(c engine.Canvas) {
 		c.Cell(bx+1+int(d.x), by+1+int(d.y), bonusGlyph[d.kind], engine.Warning)
 	}
 	for _, b := range g.balls {
-		c.Cell(bx+1+int(b.x), by+1+int(b.y), 'o', engine.Player)
+		c.Cell(bx+1+int(b.x), by+1+int(b.y), '●', engine.Player)
 	}
 	half := g.paddleWidth() / 2
 	for x := int(math.Ceil(g.paddle - half)); float64(x) < g.paddle+half; x++ {
-		c.Cell(bx+1+x, by+1+paddleY, '=', engine.Player)
+		c.Cell(bx+1+x, by+1+paddleY, '█', engine.Player)
 	}
 	if g.serve > 0 {
-		c.Text(bx+8, by+11, "W:wide M:multi S:slow L:life P:pierce X:2x", engine.Default)
-		c.Cell(bx+1+int(g.paddle), by+paddleY, 'o', engine.Player)
+		c.Text(bx+8, by+11, "W:wide M:multi S:slow L:life P:pierce X:2x", engine.Muted)
+		c.Cell(bx+1+int(g.paddle), by+paddleY, '●', engine.Player)
 		c.Text(bx+15, by+12, "Enter/Z: launch (auto in 1.5s)", engine.Warning)
 	}
-	c.Text(x0, y0+22, engine.Format(c, "Bricks %d Cleared %d Best combo %d | W M S L P X: bonuses", g.stats.BricksDestroyed, g.stats.LevelsCleared, g.stats.HighestCombo), engine.Muted)
+
+	c.Text(x0, y0+22, engine.Format(c, "Bricks %d   Cleared %d   Best combo %d   W M S L P X: bonuses",
+		g.stats.BricksDestroyed, g.stats.LevelsCleared, g.stats.HighestCombo), engine.Muted)
+
 	if g.ended {
 		title := "GAME OVER"
 		if g.won {
