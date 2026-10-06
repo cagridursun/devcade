@@ -619,7 +619,7 @@ func TestSnakeFromMenuRestartAndReturn(t *testing.T) {
 	s.InjectKey(tcell.KeyEnter, 0, 0)
 	s.waitFor(t, "New game")
 	s.InjectKey(tcell.KeyEnter, 0, 0) // fresh, unpaused run
-	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score 0") {
+	if frame := s.waitFor(t, "PLAYING"); strings.Contains(frame, "PAUSED") || !strings.Contains(frame, "Score: 0000") {
 		t.Fatalf("relaunch is not fresh:\n%s", frame)
 	}
 	h.crashSnake(t)
