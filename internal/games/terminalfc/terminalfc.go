@@ -1143,17 +1143,15 @@ func (g *Game) Render(c engine.Canvas) {
 	midY := oy + 1 + PitchH/2
 	for y := 1; y <= PitchH; y++ {
 		sy := oy + y
-		if sy < midY-3 || sy > midY+3 {
+		if sy < midY-2 || sy > midY+2 {
 			c.Cell(midX, sy, '|', engine.Border)
 		}
 	}
-	c.Text(midX-4, midY-3, "  /---\\  ", engine.Border)
-	c.Text(midX-4, midY-2, " /     \\ ", engine.Border)
-	c.Text(midX-4, midY-1, "(       )", engine.Border)
+	c.Text(midX-4, midY-2, "  /---\\  ", engine.Border)
+	c.Text(midX-4, midY-1, " /     \\ ", engine.Border)
 	c.Text(midX-4, midY, "(   +   )", engine.Border)
-	c.Text(midX-4, midY+1, "(       )", engine.Border)
-	c.Text(midX-4, midY+2, " \\     / ", engine.Border)
-	c.Text(midX-4, midY+3, "  \\---/  ", engine.Border)
+	c.Text(midX-4, midY+1, " \\     / ", engine.Border)
+	c.Text(midX-4, midY+2, "  \\---/  ", engine.Border)
 
 	// Goal mouths.
 	for y := 6; y < 12; y++ {
