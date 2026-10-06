@@ -1136,16 +1136,24 @@ func (g *Game) Render(c engine.Canvas) {
 	gameui.Box(c, ox, oy, pitchFrameW, PitchH+2, engine.Border)
 	gameui.DotGrid(c, ox, oy, pitchFrameW, PitchH+2, 2)
 
-	// Halfway line and a compact ASCII center circle make the pitch read as a
-	// football field even when colors are unavailable.
-	midX := ox + 1 + PitchW
+	// Draw a real center circle instead of crossing the halfway line through an
+	// ASCII oval. The line deliberately stops around the circle so players can
+	// move through the center without turning the marking into visual noise.
+	midX := ox + pitchFrameW/2
+	midY := oy + 1 + PitchH/2
 	for y := 1; y <= PitchH; y++ {
-		c.Cell(midX, oy+y, '|', engine.Border)
+		sy := oy + y
+		if sy < midY-3 || sy > midY+3 {
+			c.Cell(midX, sy, '|', engine.Border)
+		}
 	}
-	c.Text(midX-4, oy+7, " /---\\ ", engine.Border)
-	c.Text(midX-5, oy+8, "(  |  )", engine.Border)
-	c.Text(midX-5, oy+9, "(  |  )", engine.Border)
-	c.Text(midX-4, oy+10, " \\---/ ", engine.Border)
+	c.Text(midX-4, midY-3, "  /---\\  ", engine.Border)
+	c.Text(midX-4, midY-2, " /     \\ ", engine.Border)
+	c.Text(midX-4, midY-1, "(       )", engine.Border)
+	c.Text(midX-4, midY, "(   +   )", engine.Border)
+	c.Text(midX-4, midY+1, "(       )", engine.Border)
+	c.Text(midX-4, midY+2, " \\     / ", engine.Border)
+	c.Text(midX-4, midY+3, "  \\---/  ", engine.Border)
 
 	// Goal mouths.
 	for y := 6; y < 12; y++ {
@@ -1158,14 +1166,15 @@ func (g *Game) Render(c engine.Canvas) {
 		c.Text(ox+1+int(p.pos.x)*2, oy+1+int(p.pos.y), ">>", engine.Warning)
 	}
 	for i, p := range g.players {
-		label := fmt.Sprintf("■%d", i+1)
+		number := i + 1
 		color := engine.TeamHome
 		if p.team == awayTeam {
-			label = fmt.Sprintf("■%d", i-4)
+			number = i - 4
 			color = engine.TeamAway
 		}
+		label := fmt.Sprintf("■%d", number)
 		if i == g.active {
-			label = "▣" + label[1:]
+			label = fmt.Sprintf("▣%d", number)
 		}
 		x := ox + 1 + int(clamp(p.pos.x, 0, PitchW-1))*2
 		y := oy + 1 + int(clamp(p.pos.y, 0, PitchH-1))
