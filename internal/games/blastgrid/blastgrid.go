@@ -554,7 +554,11 @@ func (g *Game) Render(c engine.Canvas) {
 			continue
 		}
 		if i == player {
-			c.Cell(centerX(a.pos.x), centerY(a.pos.y), '▲', engine.Player)
+			glyph := '▲'
+			if g.bombAt(a.pos) != nil {
+				glyph = '▣'
+			}
+			c.Cell(centerX(a.pos.x), centerY(a.pos.y), glyph, engine.Player)
 			continue
 		}
 		label := engine.Format(c, "B%d", i)
