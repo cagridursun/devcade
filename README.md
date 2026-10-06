@@ -89,7 +89,7 @@ resize and terminal restoration.
 | --- | --- |
 | Code: seven playable games, menu, CLI, terminal core | Integrated with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
-| Distribution | Public [v1.0.0-rc.2](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.2) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
+| Distribution | Public [v1.0.0-rc.3](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.3) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
 | Global leaderboard | Live at `https://devcade.cinesdigital.com`; Windows score submission and server restart persistence verified ([service](docs/leaderboard.md)) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
