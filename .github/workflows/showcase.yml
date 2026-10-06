@@ -1,0 +1,30 @@
+name: Generate gameplay showcase
+
+on:
+  push:
+    branches: [main, fix/real-gameplay-showcase]
+    paths:
+      - 'tools/showcase/**'
+      - '.github/workflows/showcase.yml'
+      - 'internal/engine/**'
+      - 'internal/games/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Generate showcase from real game renderers
+        run: go run ./tools/showcase
+      - name: Upload generated showcase
+        uses: actions/upload-artifact@v6
+        with:
+          name: devcade-gameplay-showcase
+          path: dist/showcase/devcade-seven-games.svg
