@@ -389,7 +389,7 @@ func TestRenderFitsAndShowsOneHeadAndFood(t *testing.T) {
 		if strings.Count(out, "▣▣") != 1 || strings.Count(out, "✱ ") != 1 || strings.Count(out, "██") != 2 {
 			t.Errorf("%v: want one head, one food, two body cells:\n%s", size, out)
 		}
-		for _, want := range []string{"> Snake", "Score: 0000", "Level: 1", "Space: pause", "Q / Esc: menu"} {
+		for _, want := range []string{"> SNAKE", "Score: 0000", "Level: 1", "PLAYING", "Pause: Space", "Q / Esc: menu"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("%v: HUD lacks %q", size, want)
 			}
