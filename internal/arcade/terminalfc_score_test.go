@@ -12,6 +12,47 @@ import (
 	"github.com/cagridursun/devcade/internal/profile"
 )
 
+type terminalFCControlProbe struct {
+	keys []engine.Key
+}
+
+func (g *terminalFCControlProbe) MinimumSize() (int, int) { return 80, 24 }
+func (g *terminalFCControlProbe) Start(int, int)          {}
+func (g *terminalFCControlProbe) Resize(int, int)         {}
+func (g *terminalFCControlProbe) HandleInput(k engine.Key) { g.keys = append(g.keys, k) }
+func (g *terminalFCControlProbe) Update(time.Duration)     {}
+func (g *terminalFCControlProbe) Render(engine.Canvas)     {}
+
+func TestTerminalFCRemapsASDWWhileKeepingArrowsForMovement(t *testing.T) {
+	probe := &terminalFCControlProbe{}
+	c, err := NewCatalog(Entry{ID: "terminalfc", Name: "Terminal FC", Description: "test", New: func() engine.Game { return probe }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := NewAppWithOptions(c, nil, Options{Profile: profile.Default(), InitialGame: "terminalfc"})
+	defer a.Close()
+	a.Resize(80, 24)
+	a.Input(engine.Event{Key: engine.KeySelect})
+	for _, ev := range []engine.Event{
+		{Key: engine.KeyLeft},
+		{Key: engine.KeyLeft, Char: 'a'},
+		{Key: engine.KeyDown, Char: 's'},
+		{Key: engine.KeyRight, Char: 'd'},
+		{Key: engine.KeyUp, Char: 'w'},
+	} {
+		a.Input(ev)
+	}
+	want := []engine.Key{engine.KeyLeft, engine.KeyAction, engine.KeySecondary, engine.KeySelect, engine.KeyTertiary}
+	if len(probe.keys) != len(want) {
+		t.Fatalf("keys=%v want=%v", probe.keys, want)
+	}
+	for i := range want {
+		if probe.keys[i] != want[i] {
+			t.Fatalf("keys=%v want=%v", probe.keys, want)
+		}
+	}
+}
+
 func TestRealTerminalFCFinishedScoreIsSavedSubmittedAndRestarted(t *testing.T) {
 	s, err := leaderboard.Open(filepath.Join(t.TempDir(), "scores.json"))
 	if err != nil {
