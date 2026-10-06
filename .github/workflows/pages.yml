@@ -50,13 +50,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           HEAD_REF: ${{ github.head_ref }}
         run: |
-          content="$(base64 -w0 dist/showcase/devcade-seven-games.svg)"
+          base64 -w0 dist/showcase/devcade-seven-games.svg > /tmp/showcase.b64
           sha="$(gh api "repos/${GITHUB_REPOSITORY}/contents/docs/assets/devcade-seven-games.svg?ref=${HEAD_REF}" --jq .sha)"
+          jq -n \
+            --rawfile content /tmp/showcase.b64 \
+            --arg sha "$sha" \
+            --arg branch "$HEAD_REF" \
+            '{message:"docs: replace showcase with real gameplay capture", content:$content, sha:$sha, branch:$branch}' \
+            > /tmp/showcase-update.json
           gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/docs/assets/devcade-seven-games.svg" \
-            -f message='docs: replace showcase with real gameplay capture' \
-            -f content="$content" \
-            -f sha="$sha" \
-            -f branch="$HEAD_REF"
+            --input /tmp/showcase-update.json
       - name: Upload gameplay showcase
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v6
