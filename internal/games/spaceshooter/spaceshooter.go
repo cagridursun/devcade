@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 const (
@@ -522,17 +523,18 @@ func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
 	x0, y0 := max(0, (w-74)/2), max(0, (h-23)/2)
 	text := func(x, y int, s string, args ...any) { c.Text(x, y, engine.Format(c, s, args...), engine.Default) }
-	text(x0, y0, "SPACE SHOOTER  Score %d Wave %d Lives %d Z %d", g.score, g.wave, g.lives, g.charges)
-	text(x0, y0+1, "Move: arrows/WASD  Auto-fire  Z: special  Pause: Space")
+	c.Text(x0, y0, engine.Format(c, "SPACE SHOOTER  Score %d Wave %d Lives %d Z %d", g.score, g.wave, g.lives, g.charges), engine.Accent)
+	c.Text(x0, y0+1, "Move: arrows/WASD  Auto-fire  Z: special  Pause: Space", engine.Muted)
 	bx, by := x0, y0+2
 	for x := 0; x < 74; x++ {
-		c.Cell(bx+x, by, '-', engine.Default)
-		c.Cell(bx+x, by+19, '-', engine.Default)
+		c.Cell(bx+x, by, '-', engine.Border)
+		c.Cell(bx+x, by+19, '-', engine.Border)
 	}
 	for y := 0; y < 20; y++ {
-		c.Cell(bx, by+y, '|', engine.Default)
-		c.Cell(bx+73, by+y, '|', engine.Default)
+		c.Cell(bx, by+y, '|', engine.Border)
+		c.Cell(bx+73, by+y, '|', engine.Border)
 	}
+	gameui.DotGrid(c, bx, by, 74, 20, 2)
 	cell := func(x, y int, s string, color engine.Color) {
 		if x >= 0 && x < Cols && y >= 0 && y < Rows {
 			c.Text(bx+1+x*2, by+1+y, s, color)
@@ -560,14 +562,20 @@ func (g *Game) Render(c engine.Canvas) {
 				glyph = "!![==]!!  "
 			}
 		}
-		cell(e.x, e.y, glyph, engine.Accent)
+		color := engine.Accent
+		if e.warning > 0 {
+			color = engine.Danger
+		}
+		cell(e.x, e.y, glyph, color)
 	}
 	for _, b := range g.bullets {
 		s := "| "
+		color := engine.Accent
 		if b.hostile {
 			s = ". "
+			color = engine.Danger
 		}
-		cell(int(b.x), int(b.y), s, engine.Warning)
+		cell(int(b.x), int(b.y), s, color)
 	}
 	for _, p := range g.pickups {
 		s := "RF"
@@ -602,7 +610,7 @@ func (g *Game) Render(c engine.Canvas) {
 	if g.ended {
 		status = "GAME OVER"
 	}
-	text(x0, y0+22, status)
+	c.Text(x0, y0+22, status, engine.Muted)
 	for _, e := range g.enemies {
 		if e.kind == boss {
 			text(x0+28, y0+22, "Boss HP %d", e.hp)
