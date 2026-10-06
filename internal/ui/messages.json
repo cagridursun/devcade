@@ -856,5 +856,35 @@
     "H%d %s Flechas A globo/tacle S pase/press D tiro W cambia Pause: Space",
     "H%d %s  Pijlen  A lob/tackle  S pass/druk  D schot  W wissel  Pause: Space",
     "H%d %s  Flèches  A lob/tacle  S passe/press  D tir  W change  Pause: Space"
+  ],
+  "CHOOSE DIFFICULTY": [
+    "ZORLUK SEÇ",
+    "ELIGE DIFICULTAD",
+    "KIES MOEILIJKHEID",
+    "CHOISIR LA DIFFICULTÉ"
+  ],
+  "EASY": [
+    "KOLAY",
+    "FÁCIL",
+    "MAKKELIJK",
+    "FACILE"
+  ],
+  "NORMAL": [
+    "NORMAL",
+    "NORMAL",
+    "NORMAAL",
+    "NORMAL"
+  ],
+  "HARD": [
+    "ZOR",
+    "DIFÍCIL",
+    "MOEILIJK",
+    "DIFFICILE"
+  ],
+  "ARROWS: SELECT   ENTER: START": [
+    "OKLAR: SEÇ   ENTER: BAŞLAT",
+    "FLECHAS: ELEGIR   ENTER: EMPEZAR",
+    "PIJLEN: KIES   ENTER: START",
+    "FLÈCHES : CHOISIR   ENTER : DÉMARRER"
   ]
 }
