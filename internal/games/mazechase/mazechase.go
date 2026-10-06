@@ -444,7 +444,7 @@ func (g *Game) Render(c engine.Canvas) {
 	}
 	powerText := "Power  -- "
 	if g.vulnerable() {
-		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil-g.now).Seconds())
+		powerText = engine.Format(c, "Power %4.1fs", (g.powerUntil - g.now).Seconds())
 	}
 
 	c.Text(x0, y0, engine.Format(c, "> MAZE CHASE   Score %d   Lives %d   %s   Left %d   %s",
