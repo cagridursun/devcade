@@ -186,26 +186,26 @@ type Game struct {
 	active     int
 	difficulty difficulty
 
-	phase         phase
-	phaseLeft     time.Duration
-	liveLeft      time.Duration
-	accum         time.Duration
-	now           time.Duration
-	nextThink     time.Duration
-	nextMove      time.Duration
-	nextSwitch    time.Duration
+	phase          phase
+	phaseLeft      time.Duration
+	liveLeft       time.Duration
+	accum          time.Duration
+	now            time.Duration
+	nextThink      time.Duration
+	nextMove       time.Duration
+	nextSwitch     time.Duration
 	pressAllowedAt time.Duration
-	homeGoals     int
-	awayGoals     int
-	finalScore    int
-	kickoffTeam   int
-	restartTeam   int
-	restartSpot   vec
-	restartKind   restartKind
-	restartTaker  int
-	passTarget    int
-	lastDecision  [10]string
-	width, height int
+	homeGoals      int
+	awayGoals      int
+	finalScore     int
+	kickoffTeam    int
+	restartTeam    int
+	restartSpot    vec
+	restartKind    restartKind
+	restartTaker   int
+	passTarget     int
+	lastDecision   [10]string
+	width, height  int
 }
 
 var (
