@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 // Arena and rules.
@@ -471,13 +472,10 @@ const (
 
 func (g *Game) Render(c engine.Canvas) {
 	w, h := c.Size()
-	y0 := max(0, (h-1-blockH)/2)
-	ax := max(0, (w-arenaW)/2)
-	ay := y0 + hudH
-	line := func(y int, s string, color engine.Color) {
-		s = engine.Format(c, s)
-		c.Text(max(0, (w-len([]rune(s)))/2), y, s, color)
-	}
+	const frameW = 78
+	const frameH = 20
+	x0 := max(0, (w-frameW)/2)
+	y0 := max(0, (h-1-(2+frameH))/2)
 
 	status := "PLAYING"
 	switch g.state {
@@ -490,9 +488,17 @@ func (g *Game) Render(c engine.Canvas) {
 	if g.hasBomb(player) {
 		bombState = "armed"
 	}
-	line(y0, engine.Format(c, "BLAST GRID   Score %-5d Bots left %d   Bomb %s   %s", g.score, g.BotsLeft(), engine.Format(c, bombState), engine.Format(c, status)), engine.Accent)
-	line(y0+1, "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Muted)
 
+	c.Text(x0, y0, engine.Format(c, "> BLAST GRID   Score %d   Bots left %d   Bomb %s   %s",
+		g.score, g.BotsLeft(), engine.Format(c, bombState), engine.Format(c, status)), engine.Accent)
+	c.Text(x0, y0+1, "Move: arrows / WASD   Bomb: Z   Pause: Space   Leave: Q / Esc   Exit: Ctrl+C", engine.Muted)
+
+	fx, fy := x0, y0+2
+	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
+	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
+
+	ax := fx + (frameW-arenaW)/2
+	ay := fy + 3
 	cell := func(p point, s string, color engine.Color) {
 		c.Text(ax+p.x*2, ay+p.y, s, color)
 	}
@@ -523,11 +529,12 @@ func (g *Game) Render(c engine.Canvas) {
 			glyph, color = engine.Format(c, "B%d", i), engine.Danger
 		}
 		if g.bombAt(a.pos) != nil {
-			glyph = "(" + glyph[1:] // standing on a bomb: "(@" or "(1"
+			glyph = "(" + glyph[1:]
 		}
 		cell(a.pos, glyph, color)
 	}
-	line(ay+Rows, "@@ you   B1-B3 bots   () bomb   ** flame   [] crate   ## wall", engine.Muted)
+
+	c.Text(fx+2, fy+frameH-1, "@@ you   B1-B3 bots   () bomb   ** flame   [] crate   ## wall", engine.Muted)
 
 	if g.state != playing {
 		title := "GAME OVER"
