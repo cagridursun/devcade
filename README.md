@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/devcade-seven-games.svg" alt="DevCade — animated terminal reel for Snake, Block Drop, Maze Chase, Blast Grid, Brick Breaker, Terminal FC and Space Shooter" width="900">
+  <img src="docs/assets/devcade-seven-games.gif" alt="DevCade — real gameplay reel for Snake, Block Drop, Maze Chase, Blast Grid, Brick Breaker, Terminal FC and Space Shooter" width="900">
 </p>
 
 <p align="center">
