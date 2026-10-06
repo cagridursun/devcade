@@ -77,14 +77,17 @@ const (
 	Accent        // headers and highlighted text
 	Player        // the player-controlled glyph
 	Warning       // pause and size warnings
+	Muted         // low-contrast grids and secondary chrome
+	Border        // game-area borders and structural lines
+	Danger        // hazards, enemies and destructive events
 )
 
 // Canvas is a grid of single-width cells addressed from (0, 0) at the top
 // left. Drawing outside the grid is silently clipped.
 //
-// Cells hold ASCII and single-width Latin letters used by the five UI languages.
-// Wider or non-printable runes
-// would break the one-rune-per-cell alignment that games rely on, so
+// Cells hold ASCII, single-width Latin letters used by the five UI languages,
+// and a small allowlist of terminal-safe arcade glyphs. Wider or non-printable
+// runes would break the one-rune-per-cell alignment that games rely on, so
 // implementations replace them with '?' (see Printable).
 type Canvas interface {
 	Size() (width, height int)
@@ -92,13 +95,21 @@ type Canvas interface {
 	Text(x, y int, text string, color Color)
 }
 
-// Printable accepts ASCII and precomposed Latin letters, otherwise '?'. Canvas
-// implementations use it to enforce the single-cell glyph contract.
+// Printable accepts ASCII, precomposed Latin letters and a deliberately small
+// set of single-cell arcade glyphs, otherwise '?'. Canvas implementations use
+// it to enforce the single-cell glyph contract.
 func Printable(r rune) rune {
-	if (r < 0x20 || r > 0x7e) && !(r >= 0x00a1 && r <= 0x024f && (unicode.IsLetter(r) || r == '¡' || r == '¿')) {
-		return '?'
+	if r >= 0x20 && r <= 0x7e {
+		return r
 	}
-	return r
+	if r >= 0x00a1 && r <= 0x024f && (unicode.IsLetter(r) || r == '¡' || r == '¿') {
+		return r
+	}
+	switch r {
+	case '█', '▓', '░', '■', '□', '▣', '✱', '·':
+		return r
+	}
+	return '?'
 }
 
 // Game is the contract between the engine and a built-in game. The engine is
