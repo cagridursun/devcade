@@ -126,5 +126,5 @@ func main() {
 
 	if err := os.MkdirAll("dist/showcase", 0755); err != nil { panic(err) }
 	if err := writeSVG("dist/showcase/devcade-seven-games.svg", frames); err != nil { panic(err) }
-	fmt.Printf("wrote %d real gameplay frames\n", len(frames))
+	fmt.Printf("generated %d real gameplay frames\n", len(frames))
 }
