@@ -27,6 +27,7 @@ const (
 	KeyExit      // leave the whole application from anywhere (Ctrl+C)
 	KeyAction    // the game's primary action (Z): rotate counterclockwise, place a bomb
 	KeySecondary // the game's secondary action (X), used by games that need one
+	KeyTertiary  // a third game-specific action, remapped only by games that need it
 	KeyErase     // Backspace in text entry
 )
 
@@ -52,6 +53,8 @@ func (k Key) String() string {
 		return "action"
 	case KeySecondary:
 		return "secondary"
+	case KeyTertiary:
+		return "tertiary"
 	}
 	return "none"
 }
