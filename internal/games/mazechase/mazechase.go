@@ -455,7 +455,6 @@ func (g *Game) Render(c engine.Canvas) {
 
 	fx, fy := x0, y0+2
 	gameui.Box(c, fx, fy, frameW, frameH, engine.Border)
-	gameui.DotGrid(c, fx, fy, frameW, frameH, 2)
 
 	// The fixed 29-column maze is stretched across the whole arcade viewport.
 	// Its authored outer wall is represented by the shared frame, eliminating
