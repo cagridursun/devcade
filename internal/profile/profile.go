@@ -32,10 +32,152 @@ func Default() Profile {
 	return Profile{Version: 1, Language: "en", Theme: "mono", Share: true, Metrics: true, Best: map[string]int{}}
 }
 
-var usageID = regexp.MustCompile(`^[a-f0-9]{32}$`)
-var username = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
+var usageID = regexp.MustCompile(`^[a-f0-9]{32}// Package profile persists preferences, anonymous identity and personal bests.
+package profile
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+)
+
+type Identity struct {
+	ID       string `json:"id,omitempty"`
+	Token    string `json:"token,omitempty"`
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
+type Profile struct {
+	Version   int            `json:"version"`
+	Language  string         `json:"language"`
+	Theme     string         `json:"theme"`
+	Username  string         `json:"username,omitempty"`
+	Share     bool           `json:"share_scores"`
+	Metrics   bool           `json:"share_usage"`
+	MetricsID string         `json:"usage_id,omitempty"`
+	Identity  Identity       `json:"identity,omitempty"`
+	Best      map[string]int `json:"personal_best"`
+}
+
+func Default() Profile {
+	return Profile{Version: 1, Language: "en", Theme: "mono", Share: true, Metrics: true, Best: map[string]int{}}
+}
+
+)
+var identityID = regexp.MustCompile(`^[a-f0-9]{32}// Package profile persists preferences, anonymous identity and personal bests.
+package profile
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+)
+
+type Identity struct {
+	ID       string `json:"id,omitempty"`
+	Token    string `json:"token,omitempty"`
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
+type Profile struct {
+	Version   int            `json:"version"`
+	Language  string         `json:"language"`
+	Theme     string         `json:"theme"`
+	Username  string         `json:"username,omitempty"`
+	Share     bool           `json:"share_scores"`
+	Metrics   bool           `json:"share_usage"`
+	MetricsID string         `json:"usage_id,omitempty"`
+	Identity  Identity       `json:"identity,omitempty"`
+	Best      map[string]int `json:"personal_best"`
+}
+
+func Default() Profile {
+	return Profile{Version: 1, Language: "en", Theme: "mono", Share: true, Metrics: true, Best: map[string]int{}}
+}
+
+)
+var identityToken = regexp.MustCompile(`^[a-f0-9]{64}// Package profile persists preferences, anonymous identity and personal bests.
+package profile
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+)
+
+type Identity struct {
+	ID       string `json:"id,omitempty"`
+	Token    string `json:"token,omitempty"`
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
+type Profile struct {
+	Version   int            `json:"version"`
+	Language  string         `json:"language"`
+	Theme     string         `json:"theme"`
+	Username  string         `json:"username,omitempty"`
+	Share     bool           `json:"share_scores"`
+	Metrics   bool           `json:"share_usage"`
+	MetricsID string         `json:"usage_id,omitempty"`
+	Identity  Identity       `json:"identity,omitempty"`
+	Best      map[string]int `json:"personal_best"`
+}
+
+func Default() Profile {
+	return Profile{Version: 1, Language: "en", Theme: "mono", Share: true, Metrics: true, Best: map[string]int{}}
+}
+
+)
+var username = regexp.MustCompile(`^[a-z0-9_]{3,20}// Package profile persists preferences, anonymous identity and personal bests.
+package profile
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+)
+
+type Identity struct {
+	ID       string `json:"id,omitempty"`
+	Token    string `json:"token,omitempty"`
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
+type Profile struct {
+	Version   int            `json:"version"`
+	Language  string         `json:"language"`
+	Theme     string         `json:"theme"`
+	Username  string         `json:"username,omitempty"`
+	Share     bool           `json:"share_scores"`
+	Metrics   bool           `json:"share_usage"`
+	MetricsID string         `json:"usage_id,omitempty"`
+	Identity  Identity       `json:"identity,omitempty"`
+	Best      map[string]int `json:"personal_best"`
+}
+
+func Default() Profile {
+	return Profile{Version: 1, Language: "en", Theme: "mono", Share: true, Metrics: true, Best: map[string]int{}}
+}
+
+)
 
 func ValidUsername(s string) bool { return username.MatchString(s) }
+
+func (i Identity) Valid(endpoint string) bool {
+	return i.Endpoint == endpoint && identityID.MatchString(i.ID) && identityToken.MatchString(i.Token)
+}
 
 var validGames = map[string]struct{}{
 	"snake": {}, "blockdrop": {}, "mazechase": {}, "blastgrid": {}, "brickbreaker": {}, "terminalfc": {}, "spaceshooter": {},
@@ -127,6 +269,9 @@ func (s Store) Load() (Profile, error) {
 	}
 	if p.MetricsID != "" && !usageID.MatchString(p.MetricsID) {
 		p.MetricsID = ""
+	}
+	if p.Identity != (Identity{}) && (p.Identity.Endpoint == "" || !identityID.MatchString(p.Identity.ID) || !identityToken.MatchString(p.Identity.Token)) {
+		p.Identity = Identity{}
 	}
 	if p.Best == nil {
 		p.Best = map[string]int{}
