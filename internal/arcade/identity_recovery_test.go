@@ -93,8 +93,8 @@ func TestRejectedIdentityCanReconnectAndSyncRecentGameBests(t *testing.T) {
 	}
 	for game, want := range map[string]int{
 		"brickbreaker": 420,
-		"terminalfc":    1275,
-		"spaceshooter":  860,
+		"terminalfc":   1275,
+		"spaceshooter": 860,
 	} {
 		board, err := client.Fetch(context.Background(), game, saved.Identity.ID)
 		if err != nil {
