@@ -108,7 +108,7 @@ func Printable(r rune) rune {
 		return r
 	}
 	switch r {
-	case '█', '▓', '░', '■', '□', '▣', '✱', '·':
+	case '█', '▓', '░', '■', '□', '▣', '✱', '·', '●', '▲', '▼', '◆', '│':
 		return r
 	}
 	return '?'
