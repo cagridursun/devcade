@@ -37,5 +37,3 @@ sweep in a Turkish/Mono 80x24 PTY on 2026-10-05. The actual client was built
 from the special-attack fix, with both service endpoints disabled. PTY checks
 confirmed the line moving upward, holding on pause, expiring and preserving
 wave one; Ctrl+C restored the terminal attributes.
-
-`terminalfc.svg` is a lightweight vector preview used by the project website. It is illustrative artwork rather than a PTY capture; Terminal FC gameplay behavior is documented in `docs/games.md` and covered by its automated test suite.
