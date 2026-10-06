@@ -234,7 +234,14 @@ func (g *Game) Render(c engine.Canvas) {
 	y0 := max(0, (h-1-viewH)/2)
 
 	// Shared game chrome: title, compact HUD and a phosphor-style speed meter.
-	c.Text(x0, y0, "> Snake", engine.Accent)
+	status := "PLAYING"
+	if g.state == lost {
+		status = "GAME OVER"
+	} else if g.state == won {
+		status = "BOARD COMPLETE"
+	}
+	c.Text(x0, y0, "> SNAKE", engine.Accent)
+	gameui.RightText(c, x0, y0, frameW, engine.Format(c, status), engine.Muted)
 	c.Text(x0, y0+1, engine.Format(c, "Score: %04d     Level: %-2d     Length: %-3d", g.Score(), g.Level(), len(g.body)), engine.Default)
 	speed := 1 + min(3, g.Level()-1)
 	gameui.RightText(c, x0, y0+1, frameW, "Speed: "+gameui.Meter(speed, 4), engine.Accent)
@@ -271,7 +278,7 @@ func (g *Game) Render(c engine.Canvas) {
 		}
 	}
 
-	c.Text(x0, y0+22, "Arrows / WASD: move   Space: pause   Q / Esc: menu", engine.Muted)
+	c.Text(x0, y0+22, "Arrows / WASD: move   Pause: Space   Q / Esc: menu", engine.Muted)
 }
 
 func center(s string, width int) string {
