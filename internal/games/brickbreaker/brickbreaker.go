@@ -243,7 +243,6 @@ func (g *Game) step() {
 	}
 	g.balls = alive
 	remaining := false
-	gameui.DotGrid(c, bx, by, Cols+2, Rows+2, 2)
 	for _, r := range g.bricks {
 		if !r.steel && r.hp > 0 {
 			remaining = true
@@ -349,6 +348,7 @@ func (g *Game) Render(c engine.Canvas) {
 		c.Cell(bx, by+y, '|', engine.Border)
 		c.Cell(bx+Cols+1, by+y, '|', engine.Border)
 	}
+	gameui.DotGrid(c, bx, by, Cols+2, Rows+2, 2)
 	gameui.DotGrid(c, bx, by, Cols+2, Rows+2, 2)
 	for _, r := range g.bricks {
 		if r.hp == 0 {
