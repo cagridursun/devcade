@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/cagridursun/devcade/internal/engine"
+	"github.com/cagridursun/devcade/internal/gameui"
 )
 
 // Board and rules.
@@ -513,17 +514,19 @@ func (g *Game) Render(c engine.Canvas) {
 
 	// Border.
 	for x := 1; x < boardW-1; x++ {
-		c.Cell(x0+x, y0, '-', engine.Default)
-		c.Cell(x0+x, y0+boardH-1, '-', engine.Default)
+		c.Cell(x0+x, y0, '-', engine.Border)
+		c.Cell(x0+x, y0+boardH-1, '-', engine.Border)
 	}
 	for y := 0; y < boardH; y++ {
 		glyph := '|'
 		if y == 0 || y == boardH-1 {
 			glyph = '+'
 		}
-		c.Cell(x0, y0+y, glyph, engine.Default)
-		c.Cell(x0+boardW-1, y0+y, glyph, engine.Default)
+		c.Cell(x0, y0+y, glyph, engine.Border)
+		c.Cell(x0+boardW-1, y0+y, glyph, engine.Border)
 	}
+	gameui.DotGrid(c, x0, y0, boardW, boardH, 2)
+
 	// cell draws a board cell; hidden rows are never shown.
 	cell := func(p point, s string, color engine.Color) {
 		if p.y >= HiddenRows && p.y < Rows && p.x >= 0 && p.x < Cols {
@@ -535,13 +538,13 @@ func (g *Game) Render(c engine.Canvas) {
 			if g.board[y][x] != none {
 				cell(point{x, y}, "[]", engine.Accent)
 			} else {
-				cell(point{x, y}, " .", engine.Default)
+				cell(point{x, y}, " .", engine.Muted)
 			}
 		}
 	}
 	if g.state == playing {
 		for _, p := range g.landing().cells() {
-			cell(p, "::", engine.Default)
+			cell(p, "::", engine.Muted)
 		}
 		// The falling piece has its own glyph, so it never blends into the
 		// stack on a monochrome terminal (color is only decorative).
@@ -589,7 +592,7 @@ func (g *Game) Render(c engine.Canvas) {
 		"",
 		legendLine,
 	} {
-		c.Text(px, y0+13+i, line, engine.Default)
+		c.Text(px, y0+13+i, line, engine.Muted)
 	}
 
 	if g.state != playing {
