@@ -52,7 +52,10 @@ var endRecipes = map[string]func(t *testing.T, h *harness){
 		h.tickUntil(t, endPrompt, 2000)
 	},
 	// The football match ends after 180 seconds of live play plus kickoff/restarts.
-	"terminalfc": func(t *testing.T, h *harness) { h.tickUntil(t, endPrompt, 3000) },
+	"terminalfc": func(t *testing.T, h *harness) {
+		h.screen.InjectKey(tcell.KeyEnter, 0, 0)
+		h.tickUntil(t, endPrompt, 3000)
+	},
 }
 
 // tickUntil sends 100 ms frames until a rendered frame contains text, or
