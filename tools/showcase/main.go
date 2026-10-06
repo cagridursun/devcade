@@ -1,4 +1,3 @@
-
 // Showcase frames are rendered by the real DevCade game implementations.
 package main
 
@@ -19,26 +18,34 @@ import (
 	"github.com/cagridursun/devcade/internal/games/terminalfc"
 )
 
-type cell struct{ r rune; c engine.Color }
+type cell struct {
+	r rune
+	c engine.Color
+}
 
 type canvas struct {
-	w, h int
+	w, h  int
 	cells []cell
 }
 
-func newCanvas(w, h int) *canvas { return &canvas{w: w, h: h, cells: make([]cell, w*h)} }
+func newCanvas(w, h int) *canvas   { return &canvas{w: w, h: h, cells: make([]cell, w*h)} }
 func (c *canvas) Size() (int, int) { return c.w, c.h }
 func (c *canvas) Cell(x, y int, glyph rune, color engine.Color) {
-	if x < 0 || y < 0 || x >= c.w || y >= c.h { return }
+	if x < 0 || y < 0 || x >= c.w || y >= c.h {
+		return
+	}
 	c.cells[y*c.w+x] = cell{r: engine.Printable(glyph), c: color}
 }
 func (c *canvas) Text(x, y int, s string, color engine.Color) {
-	for _, r := range s { c.Cell(x, y, r, color); x++ }
+	for _, r := range s {
+		c.Cell(x, y, r, color)
+		x++
+	}
 }
 func (c *canvas) reset() { clear(c.cells) }
 
 type frame struct {
-	game string
+	game  string
 	lines []string
 }
 
@@ -51,11 +58,19 @@ func render(g engine.Game, c *canvas, game string) frame {
 		last := -1
 		for x := 0; x < c.w; x++ {
 			r := c.cells[y*c.w+x].r
-			if r == 0 { r = ' ' } else { last = x }
+			if r == 0 {
+				r = ' '
+			} else {
+				last = x
+			}
 			b.WriteRune(r)
 		}
 		s := b.String()
-		if last < 0 { s = "" } else { s = strings.TrimRight(s, " ") }
+		if last < 0 {
+			s = ""
+		} else {
+			s = strings.TrimRight(s, " ")
+		}
 		lines[y] = s
 	}
 	return frame{game: game, lines: lines}
@@ -64,12 +79,18 @@ func render(g engine.Game, c *canvas, game string) frame {
 func simulate(name string, g engine.Game, before func(engine.Game), step func(engine.Game, int), pre time.Duration) []frame {
 	const w, h = 80, 24
 	g.Start(w, h)
-	if before != nil { before(g) }
-	if pre > 0 { g.Update(pre) }
+	if before != nil {
+		before(g)
+	}
+	if pre > 0 {
+		g.Update(pre)
+	}
 	c := newCanvas(w, h)
 	out := make([]frame, 0, 10)
 	for i := 0; i < 10; i++ {
-		if step != nil { step(g, i) }
+		if step != nil {
+			step(g, i)
+		}
 		g.Update(220 * time.Millisecond)
 		out = append(out, render(g, c, name))
 	}
@@ -103,28 +124,96 @@ func writeSVG(path string, frames []frame) error {
 func main() {
 	var frames []frame
 	frames = append(frames, simulate("Snake", snake.New(), nil, func(g engine.Game, i int) {
-		switch i { case 2: g.HandleInput(engine.KeyUp); case 4: g.HandleInput(engine.KeyLeft); case 6: g.HandleInput(engine.KeyDown); case 8: g.HandleInput(engine.KeyRight) }
+		switch i {
+		case 2:
+			g.HandleInput(engine.KeyUp)
+		case 4:
+			g.HandleInput(engine.KeyLeft)
+		case 6:
+			g.HandleInput(engine.KeyDown)
+		case 8:
+			g.HandleInput(engine.KeyRight)
+		}
 	}, 0)...)
 	frames = append(frames, simulate("Block Drop", blockdrop.New(), nil, func(g engine.Game, i int) {
-		switch i { case 1: g.HandleInput(engine.KeyRight); case 2: g.HandleInput(engine.KeyAction); case 4: g.HandleInput(engine.KeySelect); case 6: g.HandleInput(engine.KeyLeft); case 8: g.HandleInput(engine.KeySelect) }
+		switch i {
+		case 1:
+			g.HandleInput(engine.KeyRight)
+		case 2:
+			g.HandleInput(engine.KeyAction)
+		case 4:
+			g.HandleInput(engine.KeySelect)
+		case 6:
+			g.HandleInput(engine.KeyLeft)
+		case 8:
+			g.HandleInput(engine.KeySelect)
+		}
 	}, 0)...)
-	frames = append(frames, simulate("Maze Chase", mazechase.New(), func(g engine.Game){ g.HandleInput(engine.KeyLeft) }, func(g engine.Game, i int) {
-		switch i { case 2: g.HandleInput(engine.KeyUp); case 5: g.HandleInput(engine.KeyRight); case 8: g.HandleInput(engine.KeyDown) }
+	frames = append(frames, simulate("Maze Chase", mazechase.New(), func(g engine.Game) { g.HandleInput(engine.KeyLeft) }, func(g engine.Game, i int) {
+		switch i {
+		case 2:
+			g.HandleInput(engine.KeyUp)
+		case 5:
+			g.HandleInput(engine.KeyRight)
+		case 8:
+			g.HandleInput(engine.KeyDown)
+		}
 	}, 300*time.Millisecond)...)
-	frames = append(frames, simulate("Blast Grid", blastgrid.New(), func(g engine.Game){ g.HandleInput(engine.KeyAction) }, func(g engine.Game, i int) {
-		switch i { case 0: g.HandleInput(engine.KeyRight); case 2: g.HandleInput(engine.KeyDown); case 4: g.HandleInput(engine.KeyDown); case 6: g.HandleInput(engine.KeyRight); case 8: g.HandleInput(engine.KeyAction) }
+	frames = append(frames, simulate("Blast Grid", blastgrid.New(), func(g engine.Game) { g.HandleInput(engine.KeyAction) }, func(g engine.Game, i int) {
+		switch i {
+		case 0:
+			g.HandleInput(engine.KeyRight)
+		case 2:
+			g.HandleInput(engine.KeyDown)
+		case 4:
+			g.HandleInput(engine.KeyDown)
+		case 6:
+			g.HandleInput(engine.KeyRight)
+		case 8:
+			g.HandleInput(engine.KeyAction)
+		}
 	}, 100*time.Millisecond)...)
-	frames = append(frames, simulate("Brick Breaker", brickbreaker.New(), func(g engine.Game){ g.HandleInput(engine.KeySelect) }, func(g engine.Game, i int) {
-		if i%4 < 2 { g.HandleInput(engine.KeyLeft) } else { g.HandleInput(engine.KeyRight) }
+	frames = append(frames, simulate("Brick Breaker", brickbreaker.New(), func(g engine.Game) { g.HandleInput(engine.KeySelect) }, func(g engine.Game, i int) {
+		if i%4 < 2 {
+			g.HandleInput(engine.KeyLeft)
+		} else {
+			g.HandleInput(engine.KeyRight)
+		}
 	}, 200*time.Millisecond)...)
-	frames = append(frames, simulate("Terminal FC", terminalfc.New(), func(g engine.Game){ g.HandleInput(engine.KeySelect) }, func(g engine.Game, i int) {
-		switch i { case 1,2: g.HandleInput(engine.KeyRight); case 3: g.HandleInput(engine.KeySecondary); case 5: g.HandleInput(engine.KeySelect); case 7: g.HandleInput(engine.KeyTertiary); case 8: g.HandleInput(engine.KeyUp) }
+	frames = append(frames, simulate("Terminal FC", terminalfc.New(), func(g engine.Game) { g.HandleInput(engine.KeySelect) }, func(g engine.Game, i int) {
+		switch i {
+		case 1, 2:
+			g.HandleInput(engine.KeyRight)
+		case 3:
+			g.HandleInput(engine.KeySecondary)
+		case 5:
+			g.HandleInput(engine.KeySelect)
+		case 7:
+			g.HandleInput(engine.KeyTertiary)
+		case 8:
+			g.HandleInput(engine.KeyUp)
+		}
 	}, 1200*time.Millisecond)...)
 	frames = append(frames, simulate("Space Shooter", spaceshooter.New(), nil, func(g engine.Game, i int) {
-		switch i { case 1: g.HandleInput(engine.KeyLeft); case 3: g.HandleInput(engine.KeyRight); case 5: g.HandleInput(engine.KeyAction); case 7: g.HandleInput(engine.KeyUp); case 9: g.HandleInput(engine.KeyRight) }
+		switch i {
+		case 1:
+			g.HandleInput(engine.KeyLeft)
+		case 3:
+			g.HandleInput(engine.KeyRight)
+		case 5:
+			g.HandleInput(engine.KeyAction)
+		case 7:
+			g.HandleInput(engine.KeyUp)
+		case 9:
+			g.HandleInput(engine.KeyRight)
+		}
 	}, 1200*time.Millisecond)...)
 
-	if err := os.MkdirAll("dist/showcase", 0755); err != nil { panic(err) }
-	if err := writeSVG("dist/showcase/devcade-seven-games.svg", frames); err != nil { panic(err) }
+	if err := os.MkdirAll("dist/showcase", 0755); err != nil {
+		panic(err)
+	}
+	if err := writeSVG("dist/showcase/devcade-seven-games.svg", frames); err != nil {
+		panic(err)
+	}
 	fmt.Printf("captured %d renderer-backed gameplay frames\n", len(frames))
 }
