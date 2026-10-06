@@ -19,7 +19,45 @@ func makeLive(g *Game) {
 	g.liveLeft = matchTime
 	g.accum = 0
 	g.now = 0
-	g.nextThink = botInterval
+	g.nextThink = g.difficulty.config().botInterval
+}
+
+func TestDifficultySelectionAndTuning(t *testing.T) {
+	g := seeded(30)
+	if g.phase != phaseDifficulty || g.difficulty != difficultyNormal {
+		t.Fatalf("initial difficulty phase=%v difficulty=%v", g.phase, g.difficulty)
+	}
+
+	g.HandleInput(engine.KeyUp)
+	if g.difficulty != difficultyEasy {
+		t.Fatalf("up selected %v, want easy", g.difficulty)
+	}
+	g.HandleInput(engine.KeyDown)
+	if g.difficulty != difficultyNormal {
+		t.Fatalf("down selected %v, want normal", g.difficulty)
+	}
+	g.HandleInput(engine.KeyDown)
+	if g.difficulty != difficultyHard {
+		t.Fatalf("down selected %v, want hard", g.difficulty)
+	}
+	g.HandleInput(engine.KeySelect)
+	if g.phase != phaseKickoff {
+		t.Fatalf("Enter phase=%v, want kickoff", g.phase)
+	}
+
+	easy, normal, hard := difficultyEasy.config(), difficultyNormal.config(), difficultyHard.config()
+	if !(easy.botInterval > normal.botInterval && normal.botInterval > hard.botInterval) {
+		t.Fatalf("reaction intervals easy=%v normal=%v hard=%v", easy.botInterval, normal.botInterval, hard.botInterval)
+	}
+	if !(easy.botSpeed < normal.botSpeed && normal.botSpeed < hard.botSpeed) {
+		t.Fatalf("bot speeds easy=%v normal=%v hard=%v", easy.botSpeed, normal.botSpeed, hard.botSpeed)
+	}
+	if !(easy.botTackleCooldown > normal.botTackleCooldown && normal.botTackleCooldown > hard.botTackleCooldown) {
+		t.Fatalf("tackle cooldowns easy=%v normal=%v hard=%v", easy.botTackleCooldown, normal.botTackleCooldown, hard.botTackleCooldown)
+	}
+	if !(easy.ownerProtection > normal.ownerProtection && normal.ownerProtection > hard.ownerProtection) {
+		t.Fatalf("protection easy=%v normal=%v hard=%v", easy.ownerProtection, normal.ownerProtection, hard.ownerProtection)
+	}
 }
 
 func TestMovementCooldownAndCarriedBall(t *testing.T) {
@@ -165,8 +203,8 @@ func TestArcadeScoreFormulaAndReset(t *testing.T) {
 			t.Fatalf("%d-%d score=%d want=%d", tt.home, tt.away, got, tt.want)
 		}
 		g.HandleInput(engine.KeySelect)
-		if g.Finished() || g.Score() != 0 || g.homeGoals != 0 || g.awayGoals != 0 || g.phase != phaseKickoff {
-			t.Fatal("Enter did not reset the entire match")
+		if g.Finished() || g.Score() != 0 || g.phase != phaseDifficulty {
+			t.Fatal("Enter did not return to difficulty selection")
 		}
 	}
 }
@@ -196,6 +234,7 @@ func TestSeededMatchesFinishWithinBound(t *testing.T) {
 	totalHome, totalAway := 0, 0
 	for seed := uint64(1); seed <= 8; seed++ {
 		g := seeded(seed)
+		g.startMatch()
 		for step := 0; step < 4000 && !g.Finished(); step++ {
 			g.Update(100 * time.Millisecond)
 		}
