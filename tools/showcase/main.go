@@ -1,3 +1,5 @@
+
+// Code generated showcase frames are rendered by the real DevCade game implementations.
 package main
 
 import (
