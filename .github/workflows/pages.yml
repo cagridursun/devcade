@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths: ['site/**', 'tools/pages/**', 'tools/showcase/**', 'docs/screenshots/**', '.github/workflows/pages.yml']
   pull_request:
-    paths: ['site/**', 'tools/pages/**', 'docs/screenshots/**', '.github/workflows/pages.yml']
+    paths: ['site/**', 'tools/pages/**', 'tools/showcase/**', 'docs/screenshots/**', '.github/workflows/pages.yml']
   workflow_dispatch:
   schedule:
     # Offset from the top of the hour. GitHub schedules can still be delayed.
