@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A little arcade in your terminal. Play Snake, Block Drop, Maze Chase, Blast Grid and Terminal FC on macOS, Linux and Windows. Install with Homebrew or Scoop.">
+  <meta name="description" content="A little arcade in your terminal. Play seven games including Snake, Brick Breaker, Terminal FC and Space Shooter on macOS, Linux and Windows. Install with Homebrew or Scoop.">
   <meta name="theme-color" content="#111512">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self' https://devcade.cinesdigital.com; object-src 'none'; base-uri 'self'">
   <meta property="og:title" content="DevCade — A little arcade in your terminal">
@@ -34,7 +34,7 @@
       <div class="hero-copy">
         <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span><span data-i18n="eyebrow">A small break between builds</span></p>
         <h1 data-i18n="headline">Your terminal.<br>Your next high score.</h1>
-        <p class="intro" data-i18n="intro">Waiting on a build, a test run or an AI response? Open another terminal and play. DevCade brings six arcade games to the place you already work.</p>
+        <p class="intro" data-i18n="intro">Waiting on a build, a test run or an AI response? Open another terminal and play. DevCade brings seven arcade games to the place you already work.</p>
         <div class="hero-actions">
           <a class="button primary" href="#install"><span data-i18n="get">Install DevCade</span><span aria-hidden="true">↗</span></a>
           <a class="button secondary" href="https://github.com/cagridursun/devcade" target="_blank" rel="noopener noreferrer"><span data-i18n="github">View on GitHub</span><span aria-hidden="true">↗</span></a>
@@ -65,7 +65,7 @@
         <article class="game-card"><div class="game-top"><span class="game-no">03 /</span><h3>Maze Chase</h3><span class="game-icon" aria-hidden="true">⊙</span></div><img src="./assets/mazechase.png" alt="Maze Chase gameplay" data-i18n-alt="mazeAlt" loading="lazy" width="1000" height="664"><p data-i18n="maze">Clear the maze, dodge four chasers and turn the tables with a power pellet.</p><div class="game-bottom"><code>devcade mazechase</code><span data-i18n="arrows">Arrows / WASD</span></div></article>
         <article class="game-card"><div class="game-top"><span class="game-no">04 /</span><h3>Blast Grid</h3><span class="game-icon" aria-hidden="true">✳</span></div><img src="./assets/blastgrid.png" alt="Blast Grid gameplay" data-i18n-alt="blastAlt" loading="lazy" width="1000" height="664"><p data-i18n="blast">Place bombs, break crates and outlast three bots. Leave yourself an escape route.</p><div class="game-bottom"><code>devcade blastgrid</code><span data-i18n="bomb">Move / Z to bomb</span></div></article>
         <article class="game-card"><div class="game-top"><span class="game-no">05 /</span><h3>Brick Breaker</h3><span class="game-icon" aria-hidden="true">▦</span></div><img src="./assets/brickbreaker.png" alt="Brick Breaker with durable bricks, paddle and ball" data-i18n-alt="brickAlt" loading="lazy" width="1000" height="664"><p data-i18n="brick">Break tough bricks across ten levels. Catch six bonuses and build combos.</p><div class="game-bottom"><code>devcade brickbreaker</code><span data-i18n="brickControls">Left / Right · Enter to launch</span></div></article>
-        <article class="game-card"><div class="game-top"><span class="game-no">06 /</span><h3>Terminal FC</h3><span class="game-icon" aria-hidden="true">FC</span></div><p data-i18n="terminalfc">Play a three-minute 5v5 match with passes, tackles, shots and bot teammates.</p><div class="game-bottom"><code>devcade terminalfc</code><span data-i18n="terminalfcControls">Arrows · A lob/tackle · S pass/press · D shoot · W switch</span></div></article>
+        <article class="game-card"><div class="game-top"><span class="game-no">06 /</span><h3>Terminal FC</h3><span class="game-icon" aria-hidden="true">FC</span></div><img src="./assets/terminalfc.svg" alt="Terminal FC 5v5 match on the terminal pitch" loading="lazy" width="1000" height="664"><p data-i18n="terminalfc">Play a three-minute 5v5 match with passes, tackles, shots and bot teammates.</p><div class="game-bottom"><code>devcade terminalfc</code><span data-i18n="terminalfcControls">Arrows · A lob/tackle · S pass/press · D shoot · W switch</span></div></article>
         <article class="game-card"><div class="game-top"><span class="game-no">07 /</span><h3>Space Shooter</h3><span class="game-icon" aria-hidden="true">^</span></div><img src="./assets/spaceshooter.png" alt="Space Shooter waves and spaceship" data-i18n-alt="spaceAlt" loading="lazy" width="1000" height="664"><p data-i18n="space">Dodge enemy fire, clear endless waves and defeat bosses. Catch shields and rapid fire.</p><div class="game-bottom"><code>devcade spaceshooter</code><span data-i18n="spaceControls">Arrows / WASD · Z for special</span></div></article>
       </div>
     </section>
@@ -79,7 +79,7 @@ devcade</code></pre><button class="copy" type="button" data-copy="brew-command" 
 scoop install devcade
 devcade</code></pre><button class="copy" type="button" data-copy="scoop-command" data-i18n="copy">Copy</button></div><p><span data-i18n="scoopsetup">First time using Scoop?</span> <a href="https://scoop.sh" target="_blank" rel="noopener noreferrer" data-i18n="setup">Set it up here ↗</a></p></article>
       </div>
-      <div class="install-meta"><span><span class="status-dot" aria-hidden="true"></span><span data-i18n="version">Current release: v1.0.0-rc.2</span></span><span data-i18n="size">An interactive terminal of at least 80 × 24.</span></div>
+      <div class="install-meta"><span><span class="status-dot" aria-hidden="true"></span><span data-i18n="version">Current release: v1.0.0-rc.3</span></span><span data-i18n="size">An interactive terminal of at least 80 × 24.</span></div>
       <p id="copy-status" class="sr-only" role="status"></p>
       </div>
     </section>
