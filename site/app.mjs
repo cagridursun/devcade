@@ -1,6 +1,5 @@
 import { loadBoards } from './leaderboards.mjs';
 import { gameNames, isStale } from './data.mjs';
-import { initSnakePreview } from './snake-preview.mjs';
 import { initUsage } from './usage.mjs';
 
 const messages = {
@@ -60,7 +59,6 @@ const messages = {
   },
 };
 
-const preview = initSnakePreview();
 const usage = initUsage();
 
 let language = 'en';
@@ -119,7 +117,6 @@ function setLanguage(next) {
   for (const button of document.querySelectorAll('[data-language]')) button.setAttribute('aria-pressed', String(button.dataset.language === next));
   try { localStorage.setItem('devcade-page-language', next); } catch { /* Private browsing may disable storage. */ }
   document.querySelector('#copy-status').textContent = '';
-  preview.setLabels({ play: t('playAnimation'), pause: t('pauseAnimation'), alt: t('animationAlt') });
   usage.setLabels({ on: t('usageOn'), off: t('usageOff') });
   renderBoard();
 }
