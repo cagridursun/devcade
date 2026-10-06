@@ -33,9 +33,15 @@ func Default() Profile {
 }
 
 var usageID = regexp.MustCompile(`^[a-f0-9]{32}$`)
+var identityID = regexp.MustCompile(`^[a-f0-9]{32}$`)
+var identityToken = regexp.MustCompile(`^[a-f0-9]{64}$`)
 var username = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
 
 func ValidUsername(s string) bool { return username.MatchString(s) }
+
+func (i Identity) Valid(endpoint string) bool {
+	return i.Endpoint == endpoint && identityID.MatchString(i.ID) && identityToken.MatchString(i.Token)
+}
 
 var validGames = map[string]struct{}{
 	"snake": {}, "blockdrop": {}, "mazechase": {}, "blastgrid": {}, "brickbreaker": {}, "terminalfc": {}, "spaceshooter": {},
@@ -127,6 +133,9 @@ func (s Store) Load() (Profile, error) {
 	}
 	if p.MetricsID != "" && !usageID.MatchString(p.MetricsID) {
 		p.MetricsID = ""
+	}
+	if p.Identity != (Identity{}) && (p.Identity.Endpoint == "" || !identityID.MatchString(p.Identity.ID) || !identityToken.MatchString(p.Identity.Token)) {
+		p.Identity = Identity{}
 	}
 	if p.Best == nil {
 		p.Best = map[string]int{}

@@ -15,7 +15,7 @@ func TestPersistenceAndPersonalBests(t *testing.T) {
 	p.Language = "tr"
 	p.Theme = "midnight"
 	p.Username = "q_w7"
-	p.Identity = Identity{ID: "id", Token: "secret", Endpoint: "https://scores.example"}
+	p.Identity = Identity{ID: "0123456789abcdef0123456789abcdef", Token: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef", Endpoint: "https://scores.example"}
 	if !p.Record("snake", 0) || !p.Record("snake", 100) || p.Record("snake", 90) || p.Record("snake", 100) || p.Record("snake", 101) || p.Record("bad", 99) {
 		t.Fatal("best policy")
 	}
@@ -23,7 +23,7 @@ func TestPersistenceAndPersonalBests(t *testing.T) {
 		t.Fatal(err)
 	}
 	q, err := s.Load()
-	if err != nil || q.Best["snake"] != 100 || q.Identity.Token != "secret" || q.Language != "tr" {
+	if err != nil || q.Best["snake"] != 100 || q.Identity.Token != "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" || q.Language != "tr" {
 		t.Fatal(q, err)
 	}
 	q.Best["snake"] = 0

@@ -60,7 +60,7 @@ func (a *App) sync(game string) {
 		defer cancel()
 		out := result{game: game, name: p.Username}
 		if p.Share && p.Username != "" {
-			if p.Identity.Endpoint != client.Endpoint || p.Identity.ID == "" {
+			if !p.Identity.Valid(client.Endpoint) {
 				registration, err := client.Register(ctx, p.Username)
 				out.err = err
 				if err == nil {
@@ -117,9 +117,11 @@ func (a *App) poll() {
 		}
 		switch {
 		case errors.Is(out.err, leaderboard.ErrNameTaken):
-			a.networkNotice = "Username taken. Choose another in Settings, then refresh."
+			a.networkNotice = "Username already belongs to another online identity. Choose a different username; local bests are safe."
 		case errors.Is(out.err, leaderboard.ErrIdentity):
-			a.networkNotice = "Online identity rejected. Restore your profile or choose a new username."
+			a.profile.Identity = profile.Identity{}
+			a.persist()
+			a.networkNotice = "Online identity expired. Choose a new username in Settings; local bests are safe and will sync after reconnecting."
 		case out.err != nil:
 			a.networkNotice = "Offline: global scores unavailable. Local bests are kept."
 		default:
