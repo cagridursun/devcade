@@ -17,7 +17,7 @@
 [![CI](https://github.com/cagridursun/devcade/actions/workflows/ci.yml/badge.svg)](https://github.com/cagridursun/devcade/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Go 1.26](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
-[![Release](https://img.shields.io/badge/release-v1.0.0--rc.3-b8f878.svg)](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.3)
+[![Release](https://img.shields.io/badge/release-v1.0.0--rc.3-b8f878.svg)](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.4)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-8a9490.svg)](docs/install.md)
 
 </p>
@@ -34,7 +34,7 @@ DevCade is a free, open-source terminal arcade collection built for developers. 
 
 The current release candidate includes **seven playable games**: **Snake**, **Block Drop**, **Maze Chase**, **Blast Grid**, **Brick Breaker**, **Terminal FC** and **Space Shooter**, with persistent personal bests, optional global leaderboards, five UI languages and three colour palettes.
 
-> **Current release:** [v1.0.0-rc.3](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.3)  
+> **Current release:** [v1.0.0-rc.4](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.4)  
 > **Website:** [cagridursun.github.io/devcade](https://cagridursun.github.io/devcade/)  
 > **Requirements:** an interactive terminal of at least **80 × 24**
 
@@ -62,7 +62,7 @@ devcade
 
 Requires [Homebrew](https://brew.sh) or [Scoop](https://scoop.sh) and an
 interactive terminal of at least **80 × 24**. The current version is
-**1.0.0-rc.3**. [Installation guide](docs/install.md) covers package-manager
+**1.0.0-rc.4**. [Installation guide](docs/install.md) covers package-manager
 setup, updates, uninstalling, direct downloads, installers and optional
 source builds.
 
@@ -89,7 +89,7 @@ resize and terminal restoration.
 | --- | --- |
 | Code: seven playable games, menu, CLI, terminal core | Integrated with automated tests (see [CI](.github/workflows/ci.yml)) |
 | Release tooling (M7) | Ready: reproducible archives, `SHA256SUMS`, installer scripts, Homebrew formula and Scoop manifest generators ([docs/releasing.md](docs/releasing.md)) |
-| Distribution | Public [v1.0.0-rc.3](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.3) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
+| Distribution | Public [v1.0.0-rc.4](https://github.com/cagridursun/devcade/releases/tag/v1.0.0-rc.4) via Homebrew (macOS/Linux) and Scoop (Windows); see [installation](docs/install.md) |
 | Settings and player profile | Five UI languages, three palettes, persistent personal bests; see [settings](docs/settings.md) |
 | Global leaderboard | Live at `https://devcade.cinesdigital.com`; Windows score submission and server restart persistence verified ([service](docs/leaderboard.md)) |
 | Real-terminal acceptance | **Partial.** See the [terminal checklist](docs/terminal-checklist.md) |
